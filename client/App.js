@@ -17,6 +17,11 @@ var device = Dimensions.get('window');
 // Sends a request to backend when clicking the "generate" button
 
 export default class App extends Component {
+  // React state: store the image data
+  state = {
+    imageData: 'data:image/jpg;base64,',
+  };
+
   sendRequest = () => {
     console.log('Sending API request');
     Snackbar.show({
@@ -24,7 +29,9 @@ export default class App extends Component {
       duration: Snackbar.LENGTH_SHORT,
     });
 
-    this.grabPixels();
+    // Fetch image data
+    const imageData = this.grabPixels();
+    console.log('imagedata now is', imageData);
 
     // Send the request to backend
     axios.get('http://10.0.2.2:8080/ping').then(function (response) {
@@ -36,13 +43,34 @@ export default class App extends Component {
         duration: Snackbar.LENGTH_SHORT,
       });
     });
+
+    // Send the request to backend
+    axios
+      .post(
+        (url = 'http://10.0.2.2:8000/generate'),
+        (data = {
+          imageData: this.state.imageData,
+        }),
+      )
+      .then(function (response) {
+        console.log(response.data.message);
+
+        // Show toast message on bottom of app
+        Snackbar.show({
+          text: 'Received response!!',
+          duration: Snackbar.LENGTH_SHORT,
+        });
+      });
   };
 
-  // Get image data from canvas
+  // Fetch image data from canvas
   grabPixels = () => {
+    // Use react-native-sketch-canvas api
     this.canvas.getBase64('jpg', false, true, false, false, (_err, result) => {
       const resultImage = `data:image/jpg;base64,${result}`;
-      return resultImage;
+
+      // Update the state
+      this.setState({imageData: resultImage});
     });
   };
 
@@ -71,6 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'skyblue',
   },
+
   drawBox: {
     aspectRatio: 1,
     backgroundColor: 'white',
