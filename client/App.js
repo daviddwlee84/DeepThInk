@@ -22,25 +22,30 @@ export default class App extends Component {
     generatedImageData: 'data:image/png;base64,',
   };
 
+  // Fetch image data from canvas
+  // Then call sendRequest to send the data to backend
+  grabPixels = () => {
+    // Use react-native-sketch-canvas api
+    this.canvas.getBase64('png', false, true, false, false, (_err, result) => {
+      const resultImage = `${result}`;
+
+      // Update the state
+      this.setState(
+        prevState => ({
+          ...prevState,
+          imageData: resultImage,
+        }),
+        // Do callback to send to server after the imageData is set
+        this.sendRequest,
+      );
+    });
+  };
+
   sendRequest = () => {
     console.log('Sending API request');
     Snackbar.show({
       text: 'Sending API request to server...',
       duration: Snackbar.LENGTH_SHORT,
-    });
-
-    // Fetch image data
-    const imageData = this.grabPixels();
-
-    // Send the request to backend
-    axios.get('http://10.0.2.2:8080/ping').then(function (response) {
-      console.log(response.data.message);
-
-      // Show toast message on bottom of app
-      Snackbar.show({
-        text: 'Received response!',
-        duration: Snackbar.LENGTH_SHORT,
-      });
     });
 
     // Send the request to backend
@@ -70,21 +75,11 @@ export default class App extends Component {
           }));
           console.log('state is', this.state);
         }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
-      );
-  };
-
-  // Fetch image data from canvas
-  grabPixels = () => {
-    // Use react-native-sketch-canvas api
-    this.canvas.getBase64('png', false, true, false, false, (_err, result) => {
-      const resultImage = `${result}`;
-
-      // Update the state
-      this.setState(prevState => ({
-        ...prevState,
-        imageData: resultImage,
-      }));
-    });
+      )
+      .catch(function (error) {
+        console.log('Error generating image: ' + error.message);
+        throw error;
+      });
   };
 
   render() {
@@ -98,7 +93,7 @@ export default class App extends Component {
             strokeWidth={15}
           />
         </View>
-        <Button title="Generate!" onPress={this.sendRequest.bind(this)} />
+        <Button title="Generate!" onPress={this.grabPixels.bind(this)} />
         <View style={styles.generatedImageBox}>
           {this.state.generatedImageData != null ? (
             <Image
