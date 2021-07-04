@@ -2,6 +2,7 @@
 Flask deployment server for running deployed gauGAN model
 """
 
+from model_utils import processByte64
 from flask import Flask, request
 from flask_cors import CORS
 import json
@@ -17,10 +18,14 @@ def hello_world():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    imageData = request.get_json()
+    # Fetch image data
+    data = request.get_json()
 
-    print("image data is", imageData)
+    image_data = data.get("imageData")
 
+    print("IMG DATA IS", repr(image_data))
+
+    image_array = processByte64(image_data)
     return {"message": "Successfully got image"}
 
 

@@ -14,8 +14,6 @@ import axios from 'axios';
 
 var device = Dimensions.get('window');
 
-// Sends a request to backend when clicking the "generate" button
-
 export default class App extends Component {
   // React state: store the image data
   state = {
@@ -31,7 +29,6 @@ export default class App extends Component {
 
     // Fetch image data
     const imageData = this.grabPixels();
-    console.log('imagedata now is', imageData);
 
     // Send the request to backend
     axios.get('http://10.0.2.2:8080/ping').then(function (response) {
@@ -67,7 +64,7 @@ export default class App extends Component {
   grabPixels = () => {
     // Use react-native-sketch-canvas api
     this.canvas.getBase64('jpg', false, true, false, false, (_err, result) => {
-      const resultImage = `data:image/jpg;base64,${result}`;
+      const resultImage = `${result}`;
 
       // Update the state
       this.setState({imageData: resultImage});
