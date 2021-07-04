@@ -63,7 +63,7 @@ export default class App extends Component {
   // Fetch image data from canvas
   grabPixels = () => {
     // Use react-native-sketch-canvas api
-    this.canvas.getBase64('jpg', false, true, false, false, (_err, result) => {
+    this.canvas.getBase64('png', false, true, false, false, (_err, result) => {
       const resultImage = `${result}`;
 
       // Update the state

@@ -2,13 +2,16 @@
 Flask deployment server for running deployed gauGAN model
 """
 
-from model_utils import processByte64
+from model_utils import (processByte64, load_model, run_inference)
 from flask import Flask, request
 from flask_cors import CORS
 import json
 
 app = Flask(__name__)
 CORS(app)
+
+# Load the model
+model, opt = load_model()
 
 
 @app.route('/')
@@ -26,6 +29,10 @@ def generate():
     print("IMG DATA IS", repr(image_data))
 
     image_array = processByte64(image_data)
+
+    # Perform inference
+    generated_image = run_inference(image_array, model, opt)
+
     return {"message": "Successfully got image"}
 
 
