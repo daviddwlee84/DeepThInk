@@ -6,6 +6,7 @@ import {
   Button,
   Alert,
   Dimensions,
+  Image,
 } from 'react-native';
 
 import {SketchCanvas} from '@terrylinla/react-native-sketch-canvas';
@@ -17,7 +18,8 @@ var device = Dimensions.get('window');
 export default class App extends Component {
   // React state: store the image data
   state = {
-    imageData: 'data:image/jpg;base64,',
+    imageData: 'data:image/png;base64,',
+    generatedImageData: 'data:image/png;base64,',
   };
 
   sendRequest = () => {
@@ -49,15 +51,26 @@ export default class App extends Component {
           imageData: this.state.imageData,
         }),
       )
-      .then(function (response) {
-        console.log(response.data.message);
+      .then(
+        function (response) {
+          console.log(response.data.message);
 
-        // Show toast message on bottom of app
-        Snackbar.show({
-          text: 'Received response!!',
-          duration: Snackbar.LENGTH_SHORT,
-        });
-      });
+          // Show toast message on bottom of app
+          Snackbar.show({
+            text: 'Received response!!',
+            duration: Snackbar.LENGTH_SHORT,
+          });
+
+          // Set generated image data
+          // Update the generated image state
+          var generated_image = response.data.data;
+          this.setState(prevState => ({
+            ...prevState,
+            generatedImageData: generated_image,
+          }));
+          console.log('state is', this.state);
+        }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
+      );
   };
 
   // Fetch image data from canvas
@@ -67,7 +80,10 @@ export default class App extends Component {
       const resultImage = `${result}`;
 
       // Update the state
-      this.setState({imageData: resultImage});
+      this.setState(prevState => ({
+        ...prevState,
+        imageData: resultImage,
+      }));
     });
   };
 
@@ -82,7 +98,15 @@ export default class App extends Component {
             strokeWidth={15}
           />
         </View>
-        <Button title="Generate!" onPress={() => this.sendRequest()} />
+        <Button title="Generate!" onPress={this.sendRequest.bind(this)} />
+        <View style={styles.generatedImageBox}>
+          {this.state.generatedImageData != null ? (
+            <Image
+              style={styles.generatedImage}
+              source={{uri: this.state.generatedImageData}}
+            />
+          ) : null}
+        </View>
       </View>
     );
   }
@@ -102,6 +126,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: 'lightblue',
     borderWidth: 10,
+    width: device.width * 0.75,
+    height: device.width * 0.75,
+  },
+  generatedImageBox: {
+    aspectRatio: 1,
+    borderWidth: 10,
+    borderColor: 'lightblue',
+
+    width: device.width * 0.75,
+    height: device.width * 0.75,
+  },
+  generatedImage: {
     width: device.width * 0.75,
     height: device.width * 0.75,
   },

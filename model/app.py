@@ -33,7 +33,7 @@ def generate():
     # Perform inference
     generated_image = run_inference(image_array, model, opt)
 
-    return {"message": "Successfully got image"}
+    return {"message": "Successfully got image", "data": generated_image}
 
 
 if __name__ == "__main__":

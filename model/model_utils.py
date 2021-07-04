@@ -8,6 +8,7 @@ import torch
 from easydict import EasyDict
 import os
 from matplotlib.colors import rgb2hex
+from torchvision.transforms import ToPILImage
 
 import sys
 
@@ -69,11 +70,35 @@ def processByte64(base64_string):
     return image_label
 
 
-def tensor_to_base64():
+def tensor_to_base64(image_torch: torch.Tensor):
     """
-    Converts a torch tensor of normalized rgb values into 
+    Converts a torch tensor of normalized rgb values into a base64 jpg string
     """
-    return None
+    print("image torch is", image_torch, "image torched")
+
+    to_img = ToPILImage()
+    normalized_img = ((image_torch.reshape([3, 512, 512]) + 1) / 2.0) * 255.0
+    img = to_img(normalized_img.byte().cpu())
+    print(type(img))
+
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    buffered.seek(0)
+    img_byte = buffered.getvalue()
+    img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
+    print(img_str, "final str is")
+    return img_str
+
+
+# Get PIL image
+# image = Image.fromarray(image_torch.cpu().numpy())
+
+# # Get Base64 string
+# buffered = io.BytesIO()
+# image.save(buffered, format="JPEG")
+# img_str = base64.b64encode(buffered.getvalue())
+# print("IMG STR IS", img_str, "DONE")
+# return img_str
 
 
 def getLabelMap(image_hex):
@@ -170,5 +195,8 @@ def run_inference(label_data, model, opt):
         'image': image_tensor.unsqueeze(0)
     }
     generated = model(data, mode='inference')
-    print("Genreated is", generated)
-    return generated
+
+    # Get the base64 string to send back to frontend
+    generated_base64 = tensor_to_base64(generated)
+
+    return generated_base64
