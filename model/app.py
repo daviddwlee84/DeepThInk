@@ -26,8 +26,6 @@ def generate():
 
     image_data = data.get("imageData")
 
-    print("IMG DATA IS", repr(image_data))
-
     image_array = processByte64(image_data)
 
     # Perform inference

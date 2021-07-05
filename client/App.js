@@ -35,7 +35,7 @@ export default class App extends Component {
   ];
 
 
-  // Fetch image data from canvas
+  // Fetch image data from canvas 
   // Then call sendRequest to send the data to backend
   grabPixels = () => {
     // Use react-native-sketch-canvas api

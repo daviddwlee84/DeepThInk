@@ -38,7 +38,7 @@ def processByte64(base64_string):
     """
     Returns:
     """
-    print("base64 is ", base64_string)
+    # print("base64 is ", base64_string)
 
     base64_decoded = base64.b64decode(base64_string)
 
@@ -48,7 +48,7 @@ def processByte64(base64_string):
     image = image.resize((512, 512), Image.NEAREST)
 
     image_np = np.array(image)
-    print("image np is", image_np, image_np.shape)
+    # print("image np is", image_np, image_np.shape)
 
     # Get array of hex
     image_hex = []
@@ -73,7 +73,7 @@ def tensor_to_base64(image_torch: torch.Tensor):
     """
     Converts a torch tensor of normalized rgb values into a base64 jpg string
     """
-    print("image torch is", image_torch, "image torched")
+    # print("image torch is", image_torch, "image torched")
 
     to_img = ToPILImage()
     normalized_img = ((image_torch.reshape([3, 512, 512]) + 1) / 2.0) * 255.0
@@ -85,7 +85,8 @@ def tensor_to_base64(image_torch: torch.Tensor):
     buffered.seek(0)
     img_byte = buffered.getvalue()
     img_str = "data:image/png;base64," + base64.b64encode(img_byte).decode()
-    print(img_str, "final str is")
+    # print(img_str, "final str is")
+    print("Successfully sent img str")
     return img_str
 
 
@@ -127,7 +128,7 @@ def getLabelMap(image_hex):
             label = colorMap.get(image_hex[i, j], colorMap['#ffffff'])['id']
             image_labels_row.append(label)
         image_labels.append(image_labels_row)
-    print("image labels is", image_labels)
+    # print("image labels is", image_labels)
     return np.array(image_labels)
 
 
