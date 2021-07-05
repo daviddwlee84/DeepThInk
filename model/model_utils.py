@@ -1,7 +1,6 @@
 import base64
 from typing import Tuple
 import numpy as np
-import cv2
 from PIL import Image
 import io
 import torch
