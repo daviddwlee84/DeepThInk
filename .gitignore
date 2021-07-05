@@ -1,3 +1,5 @@
 model/SPADE_pretrained
 __pycache__/
 .ipynb_checkpoints
+node_modules
+.idea
