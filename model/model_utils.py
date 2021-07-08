@@ -99,33 +99,20 @@ def tensor_to_base64(image_torch: torch.Tensor):
 # img_str = base64.b64encode(buffered.getvalue())
 # print("IMG STR IS", img_str, "DONE")
 # return img_str
+from constants import colorMap
 
 
 def getLabelMap(image_hex):
     """
     
     """
-    colorMap = {
-        "#384f83": {
-            "id": 154,
-            "label": "sea"
-        },
-        "#ffffff": {
-            "id": 156,
-            "label": "sky"
-        },
-        "#000000": {
-            "id": 154,
-            "label": "sea"
-        }
-    }
 
     image_labels = []
     for i in range(image_hex.shape[0]):
         image_labels_row = []
         for j in range(image_hex.shape[1]):
             # By default, fill with sky if some loss happened.
-            label = colorMap.get(image_hex[i, j], colorMap['#ffffff'])['id']
+            label = colorMap.get(image_hex[i, j], colorMap['#759edf'])['id']
             image_labels_row.append(label)
         image_labels.append(image_labels_row)
     # print("image labels is", image_labels)
