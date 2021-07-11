@@ -3,6 +3,7 @@ Flask server for running deployed gauGAN model
 """
 
 from model_utils import (processByte64, load_model, run_inference)
+from style_transfer.style_utils import stylizeImage
 from flask import Flask, request
 from flask_cors import CORS
 import json
@@ -75,6 +76,18 @@ def stylize():
     Returns:
 
     """
+    # Generate a request id for saving the images
+    request_id = str(uuid.uuid4())
+
+    # Fetch image data
+    data = request.get_json()
+    image_data = data.get("imageData")
+
+    style = data.get("style")
+
+    styled_image_str = stylizeImage(image_data, "starry_night")
+
+    return {"message": "Successfully got image", "data": styled_image_str}
 
 
 if __name__ == "__main__":
