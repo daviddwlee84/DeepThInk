@@ -1,5 +1,5 @@
 """
-Flask deployment server for running deployed gauGAN model
+Flask server for running deployed gauGAN model
 """
 
 from model_utils import (processByte64, load_model, run_inference)
@@ -23,9 +23,9 @@ def hello_world():
 def generate():
     # Fetch image data
     data = request.get_json()
-
     image_data = data.get("imageData")
 
+    # Convert byte64 into labelmap
     image_array = processByte64(image_data)
 
     # Perform inference
