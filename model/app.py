@@ -53,6 +53,17 @@ def generate():
     # Remove the javascript file type header
     generated_image_strip_header = generated_image.lstrip(
         "data:image/png;base64")
+    # """
+    # STYLIZE
+    # """
+    # styled_image_str = stylizeImage(generated_image_strip_header,
+    #                                 "starry_night")['data']
+    # generated_image = styled_image_str
+    # generated_image_strip_header = styled_image_str.lstrip(
+    #     "data:image/png;base64")
+    # """
+    # END STYLIZE
+    # """
 
     # Save the generated image
     with open(f"outputs/{request_id}_GENERATED.png", "wb") as fh:

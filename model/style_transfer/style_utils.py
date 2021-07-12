@@ -1,9 +1,9 @@
-from pytorch_examples.examples.fast_neural_style.neural_style.vgg import Vgg16
-from pytorch_examples.examples.fast_neural_style.neural_style.transformer_net import TransformerNet
+from style_transfer.pytorch_examples.examples.fast_neural_style.neural_style.vgg import Vgg16
+from style_transfer.pytorch_examples.examples.fast_neural_style.neural_style.transformer_net import TransformerNet
 import torch
 import re
 import cv2
-from pytorch_examples.examples.fast_neural_style.neural_style import utils
+from style_transfer.pytorch_examples.examples.fast_neural_style.neural_style import utils
 import torch
 from torch.optim import Adam
 from torch.utils.data import DataLoader
@@ -19,10 +19,10 @@ import io
 
 device = torch.device("cuda")
 # Loads pre-trained weights
-rain_princess_path = './saved_models/rain_princess.pth'
-candy_path = './saved_models/candy.pth'
-mosaic_path = './saved_models/mosaic.pth'
-udnie_path = './saved_models/udnie.pth'
+rain_princess_path = './style_transfer/saved_models/rain_princess.pth'
+candy_path = './style_transfer/saved_models/candy.pth'
+mosaic_path = './style_transfer/saved_models/mosaic.pth'
+udnie_path = './style_transfer/saved_models/udnie.pth'
 
 
 # Loads the pre-trained weights into the fast neural style transfer
@@ -65,7 +65,7 @@ def stylizeImage(imageData: str, style: str):
         #   output = mosaic(content_image)
 
         # Perform model inference
-        output = udnie(content_image)
+        output = mosaic(content_image)
 
         # Get base64 string representation
         output_str = utils.save_image_base64(output[0].cpu())
