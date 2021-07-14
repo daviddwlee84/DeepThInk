@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 SPADE_weights/
+=======
+model/SPADE_pretrained
+>>>>>>> 4996b8ea479a1e815d3d74b002a1165a9e7510da
 datasets/
 __pycache__/
 .ipynb_checkpoints
