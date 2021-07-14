@@ -200,6 +200,20 @@ export default class App extends Component {
             alignItems: 'center',
           }}>
           <View style={{flexDirection: 'row'}}>
+            {/* None style button */}
+            <View style={{margin: 2}}>
+              <TouchableOpacity
+                style={[styles.functionButton, {backgroundColor: 'gray'}]}
+                onPress={() => {
+                  this.setState(prevState => ({
+                    ...prevState,
+                    displayedImageData: this.state.generatedImageData,
+                  }));
+                }}>
+                <Text style={{color: 'white'}}>None</Text>
+              </TouchableOpacity>
+            </View>
+            {/* Programmatically render all style options */}
             {styleTransferOptions.styles.map(obj => {
               return (
                 <View style={{margin: 2}}>

@@ -101,6 +101,9 @@ def tensor_to_base64(image_torch: torch.Tensor):
 # return img_str
 from constants import colorMap
 
+device = torch.device("cuda")
+# device = torch.device("cpu")
+
 
 def getLabelMap(image_hex):
     """

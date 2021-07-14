@@ -18,11 +18,14 @@ import base64
 import io
 
 device = torch.device("cuda")
+# device = torch.device("cpu")
+
 # Loads pre-trained weights
 rain_princess_path = './style_transfer/saved_models/rain_princess.pth'
 candy_path = './style_transfer/saved_models/candy.pth'
 mosaic_path = './style_transfer/saved_models/mosaic.pth'
 udnie_path = './style_transfer/saved_models/udnie.pth'
+starry_night_path = './style_transfer/saved_models/starry_night.pth'
 
 
 # Loads the pre-trained weights into the fast neural style transfer
@@ -44,12 +47,13 @@ rain_princess = load_style(rain_princess_path)
 candy = load_style(candy_path)
 mosaic = load_style(mosaic_path)
 udnie = load_style(udnie_path)
+# starry_night = load_style(starry_night_path)
 
 style_models = {
     "rain_princess": rain_princess,
     "candy": candy,
     "mosaic": mosaic,
-    "udnie": udnie
+    "udnie": udnie,
 }
 
 
