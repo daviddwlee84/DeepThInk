@@ -45,6 +45,13 @@ candy = load_style(candy_path)
 mosaic = load_style(mosaic_path)
 udnie = load_style(udnie_path)
 
+style_models = {
+    "rain_princess": rain_princess,
+    "candy": candy,
+    "mosaic": mosaic,
+    "udnie": udnie
+}
+
 
 def stylizeImage(imageData: str, style: str):
 
@@ -65,12 +72,9 @@ def stylizeImage(imageData: str, style: str):
         #   output = mosaic(content_image)
 
         # Perform model inference
-        output = mosaic(content_image)
+        output = style_models[style](content_image)
 
         # Get base64 string representation
         output_str = utils.save_image_base64(output[0].cpu())
 
-    return {
-        "message": f"Successfully stylized image with style: {style}",
-        "data": output_str
-    }
+    return output_str

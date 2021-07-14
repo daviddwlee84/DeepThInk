@@ -96,8 +96,10 @@ def stylize():
 
     style = data.get("style")
 
-    styled_image_str = stylizeImage(image_data, "starry_night")
+    # Remove the javascript file type header
+    image_data_strip_header = image_data.lstrip("data:image/png;base64")
 
+    styled_image_str = stylizeImage(image_data_strip_header, style)
     return {"message": "Successfully got image", "data": styled_image_str}
 
 

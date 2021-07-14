@@ -15,17 +15,21 @@ import Slider from '@react-native-community/slider';
 import {SketchCanvas} from '@terrylinla/react-native-sketch-canvas';
 import Snackbar from 'react-native-snackbar';
 import axios from 'axios';
-import colorMap from './constants.js';
+import colorMap from './constants/colorMap.js';
+import styleTransferOptions from './constants/styleTransferOptions.js';
 
 var device = Dimensions.get('window');
 
 export default class App extends Component {
   // React state: store the image data
   state = {
-    imageData: 'data:image/png;base64,',
-    generatedImageData: 'data:image/png;base64,',
-    color: '#384f83',
-    thickness: 10,
+    imageData: 'data:image/png;base64,', // raw image data of the segmentation image
+    generatedImageData: 'data:image/png;base64,', // raw image data of the generated image
+    stylizedImageData: 'data:image/png;base64,', // raw image data of stylized generated image
+    displayedImageData: 'data:image/png;base64,', // raw image data of displayed image
+    style: 'none', // selected style
+    color: '#384f83', // pen color
+    thickness: 10, // stroke thickness
   };
 
   // Fetch image data from canvas
@@ -68,7 +72,7 @@ export default class App extends Component {
 
           // Show toast message on bottom of app
           Snackbar.show({
-            text: 'Received response!!',
+            text: 'Received response!',
             duration: Snackbar.LENGTH_SHORT,
           });
 
@@ -78,6 +82,7 @@ export default class App extends Component {
           this.setState(prevState => ({
             ...prevState,
             generatedImageData: generated_image,
+            displayedImageData: generated_image,
           }));
           console.log('state is', this.state);
         }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
@@ -86,6 +91,47 @@ export default class App extends Component {
         console.log('Error generating image: ' + error.message);
         throw error;
       });
+  };
+
+  sendRequestStyle = newStyle => {
+    // Set new style state
+    this.setState(prevState => ({
+      ...prevState,
+      style: newStyle,
+    }));
+
+    // Send stylize image request
+    axios
+      .post(
+        (url = 'http://10.0.2.2:8000/stylize'),
+        (data = {
+          imageData: this.state.generatedImageData,
+          style: newStyle,
+        }),
+      )
+      .then(
+        function (response) {
+          console.log(response.data.message);
+
+          // Show toast message on bottom of app
+
+          // Set generated image data
+          // Update the generated image state
+          var styled_image_data = response.data.data;
+          this.setState(prevState => ({
+            ...prevState,
+            displayedImageData: styled_image_data,
+            stylizedImageData: styled_image_data,
+          }));
+          console.log('state is', this.state);
+        }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
+      )
+      .catch(function (error) {
+        console.log('Error generating image: ' + error.message);
+        throw error;
+      });
+
+    // Set the generated image data
   };
 
   handleThickness = sliderValue => {
@@ -100,13 +146,14 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.drawBox}>
+          {/* Main canvas */}
           <SketchCanvas
             ref={ref => (this.canvas = ref)}
             style={{flex: 1}}
             strokeWidth={this.state.thickness}
             strokeColor={this.state.color}
           />
-
+          {/* Thickness slider */}
           <Slider
             style={{width: 200, height: 40}}
             minimumValue={1}
@@ -116,6 +163,7 @@ export default class App extends Component {
             onSlidingComplete={this.handleThickness}
           />
         </View>
+        {/* Color palette buttons */}
         <View
           style={{
             flexDirection: 'row',
@@ -144,13 +192,40 @@ export default class App extends Component {
             {this.state.message}
           </Text>
         </View>
-
+        {/* Style buttons */}
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+          <View style={{flexDirection: 'row'}}>
+            {styleTransferOptions.styles.map(obj => {
+              return (
+                <View style={{margin: 2}}>
+                  <TouchableOpacity
+                    style={[styles.functionButton, {backgroundColor: 'gray'}]}
+                    onPress={() => {
+                      this.sendRequestStyle(obj.name);
+                    }}>
+                    <Text style={{color: 'white'}}>{obj.label}</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+          <Text style={{marginRight: 8, fontSize: 20}}>
+            {this.state.message}
+          </Text>
+        </View>
+        {/* Generate button */}
         <Button title="Generate!" onPress={this.grabPixels.bind(this)} />
+        {/* Displayed image */}
         <View style={styles.generatedImageBox}>
-          {this.state.generatedImageData != null ? (
+          {this.state.displayedImageData != null ? (
             <Image
               style={styles.generatedImage}
-              source={{uri: this.state.generatedImageData}}
+              source={{uri: this.state.displayedImageData}}
             />
           ) : null}
         </View>
@@ -173,8 +248,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: 'lightblue',
     borderWidth: 10,
-    width: device.width * 0.6,
-    height: device.width * 0.6,
+    width: device.width * 0.75,
+    height: device.width * 0.75,
   },
   generatedImageBox: {
     aspectRatio: 1,
@@ -190,5 +265,6 @@ const styles = StyleSheet.create({
   },
   functionButton: {
     padding: 4,
+    borderRadius: 5,
   },
 });
