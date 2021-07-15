@@ -57,13 +57,14 @@ rain_princess = load_style(rain_princess_path)
 candy = load_style(candy_path)
 mosaic = load_style(mosaic_path)
 udnie = load_style(udnie_path)
-# starry_night = load_style(starry_night_path)
+starry_night = load_style(starry_night_path)
 
 style_models = {
     "rain_princess": rain_princess,
     "candy": candy,
     "mosaic": mosaic,
     "udnie": udnie,
+    "starry_night": starry_night
 }
 
 

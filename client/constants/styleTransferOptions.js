@@ -1,10 +1,10 @@
 export default {
   styles: [
-    // {
-    //   name: 'starry_night',
-    //   label: 'Starry Night',
-    //   image_url: '1',
-    // },
+    {
+      name: 'starry_night',
+      label: 'Starry Night',
+      image_url: '1',
+    },
     {
       name: 'rain_princess',
       label: 'Rain Princess',

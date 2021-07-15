@@ -19,6 +19,7 @@ import colorMap from './constants/colorMap.js';
 import styleTransferOptions from './constants/styleTransferOptions.js';
 
 var device = Dimensions.get('window');
+let socket = new WebSocket('ws://10.0.2.2:8080/ws');
 
 export default class App extends Component {
   // React state: store the image data
@@ -31,6 +32,25 @@ export default class App extends Component {
     color: '#384f83', // pen color
     thickness: 10, // stroke thickness
   };
+
+  // Run when component is first rendered
+  componentDidMount() {
+    console.log('Attempting connection');
+
+    // Setup socket handlers
+    socket.onopen = () => {
+      console.log('Successfully connected');
+      socket.send('Hi from client!');
+    };
+
+    socket.onclose = event => {
+      console.log('Socket closed connection', event);
+    };
+
+    socket.onerror = error => {
+      console.log('Socket error', error);
+    };
+  }
 
   // Fetch image data from canvas
   // Then call sendRequest to send the data to backend
@@ -51,6 +71,7 @@ export default class App extends Component {
     });
   };
 
+  // Send request to model server to generate painting
   sendRequest = () => {
     console.log('Sending API request');
     Snackbar.show({
@@ -84,7 +105,6 @@ export default class App extends Component {
             generatedImageData: generated_image,
             displayedImageData: generated_image,
           }));
-          console.log('state is', this.state);
         }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
       )
       .catch(function (error) {
@@ -93,6 +113,7 @@ export default class App extends Component {
       });
   };
 
+  // Send a request to the model server to stylize the generated painting
   sendRequestStyle = newStyle => {
     // Set new style state
     this.setState(prevState => ({
@@ -142,6 +163,17 @@ export default class App extends Component {
     console.log('thickness is now', sliderValue);
   };
 
+  onStrokeChangeHandler = (x, y) => {
+    // console.log(JSON.stringify(this.canvas.getPaths()));
+    var point = {
+      x: x,
+      y: y,
+      color: this.state.color,
+      thickness: this.state.thickness,
+    };
+    console.log(JSON.stringify(point));
+  };
+
   render() {
     return (
       <View style={styles.container}>
@@ -152,6 +184,7 @@ export default class App extends Component {
             style={{flex: 1}}
             strokeWidth={this.state.thickness}
             strokeColor={this.state.color}
+            onStrokeChanged={this.onStrokeChangeHandler}
           />
           {/* Thickness slider */}
           <Slider
