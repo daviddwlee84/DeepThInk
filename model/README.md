@@ -16,9 +16,16 @@ pip install -r requirements.txt
 To start the deployment server, run 
 ```shell
 python app.py
-
+```
 # GauGAN (`all_models/gaugan`)
-The GauGAN model uses the open-source pretrained version by Gene Kogan. Download the "SPADE_pretrained" folder from https://drive.google.com/drive/folders/1VEiKvM1aR9yug3O6kdvRQXA3s2o3_do3?usp=sharing and put it under `all_models/gaugan/`.
+## Setup
+The GauGAN model uses the open-source pretrained version by Gene Kogan. 
+1. Download the "SPADE_pretrained" folder from https://drive.google.com/drive/folders/1VEiKvM1aR9yug3O6kdvRQXA3s2o3_do3?usp=sharing and put it under `all_models/gaugan/`.
+
+2. Clone Justin's forked version of `pytorch/examples` repo: ```cd all_models/fast_neural_style/
+git clone git@github.com:leungjch/examples.git
+```
+
 
 The Flask server relies on `all_models/gaugan/model_utils.py` to perform inference on GauGAN.
 
