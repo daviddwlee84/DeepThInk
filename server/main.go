@@ -49,7 +49,6 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	
 	log.Println("Client successfully connected")
 	reader(ws)
-
 }
 
 

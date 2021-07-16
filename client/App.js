@@ -171,6 +171,8 @@ export default class App extends Component {
       color: this.state.color,
       thickness: this.state.thickness,
     };
+
+    socket.send(JSON.stringify(point));
     console.log(JSON.stringify(point));
   };
 
