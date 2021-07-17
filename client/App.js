@@ -17,9 +17,17 @@ import Snackbar from 'react-native-snackbar';
 import axios from 'axios';
 import colorMap from './constants/colorMap.js';
 import styleTransferOptions from './constants/styleTransferOptions.js';
-
+import messageKinds from './constants/messageKinds.js';
+import {onOpen, onClose, onMessage, onError} from './api/websocketApi.js';
+import {sendRequest, sendRequestStyle} from './api/modelApi.js';
+import {hello, generateStyle} from './styles/styles.js';
 var device = Dimensions.get('window');
+
+// Connect to Go backend
 let socket = new WebSocket('ws://10.0.2.2:8080/ws');
+
+// Create dynamic style based on device width/height
+const styles = StyleSheet.create(generateStyle(device));
 
 export default class App extends Component {
   // React state: store the image data
@@ -33,22 +41,24 @@ export default class App extends Component {
     thickness: 10, // stroke thickness
   };
 
+  constructor(props) {
+    super(props);
+    this.sendRequestHelper = this.sendRequestHelper.bind(this);
+  }
+
   // Run when component is first rendered
   componentDidMount() {
     console.log('Attempting connection');
 
     // Setup socket handlers
     socket.onopen = () => {
-      console.log('Successfully connected');
-      socket.send('Hi from client!');
+      onOpen(socket);
     };
-
     socket.onclose = event => {
-      console.log('Socket closed connection', event);
+      onClose(event);
     };
-
     socket.onerror = error => {
-      console.log('Socket error', error);
+      onError(error);
     };
   }
 
@@ -58,7 +68,6 @@ export default class App extends Component {
     // Use react-native-sketch-canvas api
     this.canvas.getBase64('png', false, true, false, false, (_err, result) => {
       const resultImage = `${result}`;
-
       // Update the state
       this.setState(
         prevState => ({
@@ -66,93 +75,34 @@ export default class App extends Component {
           imageData: resultImage,
         }),
         // Do callback to send to server after the imageData is set
-        this.sendRequest,
+        this.sendRequestHelper,
       );
     });
   };
 
   // Send request to model server to generate painting
-  sendRequest = () => {
-    console.log('Sending API request');
-    Snackbar.show({
-      text: 'Sending API request to server...',
-      duration: Snackbar.LENGTH_SHORT,
+  sendRequestHelper = async () => {
+    sendRequest(this.state.imageData).then(generated_image => {
+      this.setState(prevState => ({
+        ...prevState,
+        generatedImageData: generated_image,
+        displayedImageData: generated_image,
+      }));
     });
-
-    // Send the request to backend
-    axios
-      .post(
-        (url = 'http://10.0.2.2:8000/generate'),
-        (data = {
-          imageData: this.state.imageData,
-        }),
-      )
-      .then(
-        function (response) {
-          console.log(response.data.message);
-
-          // Show toast message on bottom of app
-          Snackbar.show({
-            text: 'Received response!',
-            duration: Snackbar.LENGTH_SHORT,
-          });
-
-          // Set generated image data
-          // Update the generated image state
-          var generated_image = response.data.data;
-          this.setState(prevState => ({
-            ...prevState,
-            generatedImageData: generated_image,
-            displayedImageData: generated_image,
-          }));
-        }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
-      )
-      .catch(function (error) {
-        console.log('Error generating image: ' + error.message);
-        throw error;
-      });
   };
-
   // Send a request to the model server to stylize the generated painting
-  sendRequestStyle = newStyle => {
+  sendRequestStyleHelper = async newStyle => {
     // Set new style state
-    this.setState(prevState => ({
-      ...prevState,
-      style: newStyle,
-    }));
-
-    // Send stylize image request
-    axios
-      .post(
-        (url = 'http://10.0.2.2:8000/stylize'),
-        (data = {
-          imageData: this.state.generatedImageData,
+    sendRequestStyle(this.state.generatedImageData, newStyle).then(
+      styled_image_data => {
+        this.setState(prevState => ({
+          ...prevState,
           style: newStyle,
-        }),
-      )
-      .then(
-        function (response) {
-          console.log(response.data.message);
-
-          // Show toast message on bottom of app
-
-          // Set generated image data
-          // Update the generated image state
-          var styled_image_data = response.data.data;
-          this.setState(prevState => ({
-            ...prevState,
-            displayedImageData: styled_image_data,
-            stylizedImageData: styled_image_data,
-          }));
-          console.log('state is', this.state);
-        }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
-      )
-      .catch(function (error) {
-        console.log('Error generating image: ' + error.message);
-        throw error;
-      });
-
-    // Set the generated image data
+          displayedImageData: styled_image_data,
+          stylizedImageData: styled_image_data,
+        }));
+      },
+    );
   };
 
   handleThickness = sliderValue => {
@@ -165,15 +115,18 @@ export default class App extends Component {
 
   onStrokeChangeHandler = (x, y) => {
     // console.log(JSON.stringify(this.canvas.getPaths()));
-    var point = {
-      x: x,
-      y: y,
-      color: this.state.color,
-      thickness: this.state.thickness,
+    var sendData = {
+      kind: messageKinds.MESSAGE_STROKE,
+      point: {
+        x: x,
+        y: y,
+        color: this.state.color,
+        thickness: this.state.thickness,
+      },
     };
 
-    socket.send(JSON.stringify(point));
-    console.log(JSON.stringify(point));
+    socket.send(JSON.stringify(sendData));
+    console.log(JSON.stringify(sendData));
   };
 
   render() {
@@ -191,8 +144,8 @@ export default class App extends Component {
           {/* Thickness slider */}
           <Slider
             style={{width: 200, height: 40}}
-            minimumValue={1}
-            maximumValue={40}
+            minimumValue={0}
+            maximumValue={device.width / 10}
             minimumTrackTintColor="#000000"
             maximumTrackTintColor="#000000"
             onSlidingComplete={this.handleThickness}
@@ -255,7 +208,7 @@ export default class App extends Component {
                   <TouchableOpacity
                     style={[styles.functionButton, {backgroundColor: 'gray'}]}
                     onPress={() => {
-                      this.sendRequestStyle(obj.name);
+                      this.sendRequestStyleHelper(obj.name);
                     }}>
                     <Text style={{color: 'white'}}>{obj.label}</Text>
                   </TouchableOpacity>
@@ -282,38 +235,3 @@ export default class App extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'skyblue',
-  },
-
-  drawBox: {
-    aspectRatio: 1,
-    backgroundColor: 'white',
-    borderColor: 'lightblue',
-    borderWidth: 10,
-    width: device.width * 0.6,
-    height: device.width * 0.6,
-  },
-  generatedImageBox: {
-    aspectRatio: 1,
-    borderWidth: 10,
-    borderColor: 'lightblue',
-
-    width: device.width * 0.6,
-    height: device.width * 0.6,
-  },
-  generatedImage: {
-    width: device.width * 0.6,
-    height: device.width * 0.6,
-  },
-  functionButton: {
-    padding: 4,
-    borderRadius: 5,
-  },
-});
