@@ -1,7 +1,7 @@
 dill==0.3.4
 numpy==1.20.0
 pillow==8.0.1
-scipy
+scipy==1.7.0
 torch==1.9.0
 torchvision==0.10.0
 Flask==1.1.2

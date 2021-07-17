@@ -297,8 +297,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: 'lightblue',
     borderWidth: 10,
-    width: device.width * 0.75,
-    height: device.width * 0.75,
+    width: device.width * 0.6,
+    height: device.width * 0.6,
   },
   generatedImageBox: {
     aspectRatio: 1,
