@@ -9,13 +9,19 @@ const (
 	KindUserLeft
 	// KindStroke message specifies a stroke drawn by a user
 	KindStroke
-	// KinddClear message is sent when a user clears the screen
+	// KindClear message is sent when a user clears the screen
 	KindClear
+	// KindClientInfo message is sent when user initially connects and sends additional connection info
+	KindClientInfo
+	// KindStrokeStart message is sent when a user starts drawing on their canvas
+	KindStrokeStart
+	// KindStrokeEnd message is sent when a user ends drawing
+	KindStrokeEnd
 )
 
 type Point struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 type User struct {
@@ -59,10 +65,11 @@ func NewUserLeft(userID string) *UserLeft {
 }
 
 type Stroke struct {
-	Kind   int     `json:"kind"`
-	UserID string  `json:"userId"`
-	Points []Point `json:"points"`
-	Finish bool    `json:"finish"`
+	Kind      int     `json:"kind"`
+	UserID    string  `json:"userId"`
+	Point     Point   `json:"point"`
+	Thickness float64 `json:"thickness"`
+	Color     string  `json:"color"`
 }
 
 type Clear struct {

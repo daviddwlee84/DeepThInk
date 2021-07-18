@@ -6,19 +6,26 @@ import (
 )
 
 type Client struct {
-	id       string
-	hub      *Hub
-	socket   *websocket.Conn
-	outbound chan []byte
+	id         string
+	hub        *Hub
+	socket     *websocket.Conn
+	outbound   chan []byte
+	canvasInfo ClientCanvas
+}
+
+type ClientCanvas struct {
+	canvasWidth  float32 `json:"canvasWidth"`
+	canvasHeight float32 `json:"canvasHeight"`
 }
 
 // Constructor for client
 func newClient(hub *Hub, socket *websocket.Conn) *Client {
 	return &Client{
-		id:       uuid.NewV4().String(),
-		hub:      hub,
-		socket:   socket,
-		outbound: make(chan []byte),
+		id:         uuid.NewV4().String(),
+		hub:        hub,
+		socket:     socket,
+		outbound:   make(chan []byte),
+		canvasInfo: ClientCanvas{canvasWidth: 0, canvasHeight: 0},
 	}
 }
 

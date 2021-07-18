@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -104,20 +105,41 @@ func (hub *Hub) onDisconnect(client *Client) {
 
 func (hub *Hub) onMessage(data []byte, client *Client) {
 	kind := gjson.GetBytes(data, "kind").Int()
-	if kind == message.KindStroke {
+	switch kind {
+	case message.KindStroke:
+		data := gjson.GetBytes(data, "data")
 		var msg message.Stroke
-		log.Println("Got stroke")
-		if json.Unmarshal(data, &msg) != nil {
-			return
-		}
+		log.Println("Got stroke", string(data.String()))
+
 		msg.UserID = client.id
+		msg = message.Stroke{
+			Kind:   message.KindStroke,
+			UserID: client.id,
+			Point: message.Point{
+				X: data.Get("point.x").Float(),
+				Y: data.Get("point.y").Float(),
+			},
+			Thickness: data.Get("thickness").Float(),
+			Color:     data.Get("color").String(),
+		}
+		fmt.Printf("%#v\n", msg)
 		hub.broadcast(msg, client)
-	} else if kind == message.KindClear {
+	case message.KindClear:
 		var msg message.Clear
 		if json.Unmarshal(data, &msg) != nil {
 			return
 		}
 		msg.UserID = client.id
 		hub.broadcast(msg, client)
+	case message.KindClientInfo:
+		// Update the client info
+		canvasData := gjson.GetBytes(data, "data")
+		var canvasConfig ClientCanvas = ClientCanvas{
+			canvasWidth:  float32(canvasData.Get("canvasWidth").Float()),
+			canvasHeight: float32(canvasData.Get("canvasHeight").Float()),
+		}
+		client.canvasInfo = canvasConfig
+		log.Println("Got canvas ")
+		fmt.Printf("%#v\n", client)
 	}
 }

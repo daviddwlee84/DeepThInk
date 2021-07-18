@@ -18,7 +18,15 @@ import axios from 'axios';
 import colorMap from './constants/colorMap.js';
 import styleTransferOptions from './constants/styleTransferOptions.js';
 import messageKinds from './constants/messageKinds.js';
-import {onOpen, onClose, onMessage, onError} from './api/websocketApi.js';
+import {
+  onOpen,
+  onClose,
+  onMessage,
+  onError,
+  sendStroke,
+  sendStrokeEnd,
+  sendStrokeStart,
+} from './api/websocketApi.js';
 import {sendRequest, sendRequestStyle} from './api/modelApi.js';
 import {hello, generateStyle} from './styles/styles.js';
 var device = Dimensions.get('window');
@@ -39,6 +47,8 @@ export default class App extends Component {
     style: 'none', // selected style
     color: '#384f83', // pen color
     thickness: 10, // stroke thickness
+    ownStroke: [], // client stroke data
+    collaboratorStroke: [], // collaborator data
   };
 
   constructor(props) {
@@ -52,13 +62,20 @@ export default class App extends Component {
 
     // Setup socket handlers
     socket.onopen = () => {
-      onOpen(socket);
+      onOpen(socket, {
+        canvasWidth: styles.drawBox.width,
+        canvasHeight: styles.drawBox.height,
+      });
     };
     socket.onclose = event => {
       onClose(event);
     };
     socket.onerror = error => {
       onError(error);
+    };
+
+    socket.onmessage = event => {
+      this.onMesageHandler(event);
     };
   }
 
@@ -113,20 +130,61 @@ export default class App extends Component {
     console.log('thickness is now', sliderValue);
   };
 
+  // Send stroke point data
   onStrokeChangeHandler = (x, y) => {
     // console.log(JSON.stringify(this.canvas.getPaths()));
-    var sendData = {
-      kind: messageKinds.MESSAGE_STROKE,
-      point: {
-        x: x,
-        y: y,
-        color: this.state.color,
-        thickness: this.state.thickness,
+    sendStroke(socket, {x: x, y: y}, this.state.color, this.state.thickness);
+  };
+
+  // Send stroke end signal
+  onStrokeEndHandler = () => {
+    sendStrokeEnd(socket);
+  };
+  onStrokeStartHandler = (x, y) => {
+    sendStrokeStart(socket);
+  };
+
+  onMesageHandler = event => {
+    var messages = event.data.split('\n');
+    console.log('MSG array is is', messages);
+
+    for (var i = 0; i < messages.length; i++) {
+      var message = JSON.parse(messages[i]);
+      // console.log('Received message is', message);
+      this.executeMessage(message);
+    }
+  };
+
+  executeMessage = message => {
+    // console.log(this.canvas.getPaths());
+    // console.log(this.canvas._size.width, this.canvas._size.height);
+    switch (message.kind) {
+      case messageKinds.MESSAGE_STROKE:
+        var newPath = this.getPathData(
+          message.point.x,
+          message.point.y,
+          message.thickness,
+          message.color,
+        );
+        this.canvas.addPath(newPath);
+    }
+  };
+
+  getPathData = (x, y, width, color) => {
+    return {
+      drawer: null,
+      size: {
+        width: this.canvas._size.width,
+        height: this.canvas._size.height,
+      },
+      path: {
+        data: [`${x.toString()},${y.toString()}`],
+        // eslint-disable-next-line radix
+        width: width,
+        color: color,
+        id: parseInt(Math.random() * 100000000),
       },
     };
-
-    socket.send(JSON.stringify(sendData));
-    console.log(JSON.stringify(sendData));
   };
 
   render() {
@@ -137,19 +195,14 @@ export default class App extends Component {
           <SketchCanvas
             ref={ref => (this.canvas = ref)}
             style={{flex: 1}}
+            canvasStyle={styles.canvasBox}
             strokeWidth={this.state.thickness}
             strokeColor={this.state.color}
             onStrokeChanged={this.onStrokeChangeHandler}
+            onStrokeStart={this.onStrokeStartHandler}
+            onStrokeEnd={this.onStrokeEndHandler}
           />
           {/* Thickness slider */}
-          <Slider
-            style={{width: 200, height: 40}}
-            minimumValue={0}
-            maximumValue={device.width / 10}
-            minimumTrackTintColor="#000000"
-            maximumTrackTintColor="#000000"
-            onSlidingComplete={this.handleThickness}
-          />
         </View>
         {/* Color palette buttons */}
         <View
@@ -158,6 +211,15 @@ export default class App extends Component {
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
+          <Slider
+            style={{width: 200, height: 40}}
+            minimumValue={0}
+            maximumValue={device.width / 10}
+            minimumTrackTintColor="#000000"
+            maximumTrackTintColor="#000000"
+            onSlidingComplete={this.handleThickness}
+          />
+
           <View style={{flexDirection: 'row'}}>
             {colorMap.colors.map(obj => {
               return (

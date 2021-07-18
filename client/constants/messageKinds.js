@@ -4,6 +4,9 @@ const messageKinds = {
   MESSAGE_USER_LEFT: 3,
   MESSAGE_STROKE: 4,
   MESSAGE_CLEAR: 5,
+  MESSAGE_CLIENT_SEND_INFO: 6,
+  MESSAGE_STROKE_START: 7,
+  MESSAGE_STROKE_END: 8,
 };
 
 export default messageKinds;
