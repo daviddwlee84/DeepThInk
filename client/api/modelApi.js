@@ -19,8 +19,8 @@ export async function sendRequest(imageData) {
     // Get reponse
     .then(
       function (response) {
-        console.log(response.data.message);
-        console.log(response.data.data);
+        // console.log(response.data.message);
+        // console.log(response.data.data);
 
         // Show toast message on bottom of app
         Snackbar.show({

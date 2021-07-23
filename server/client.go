@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
+	"main.com/m/v2/message"
 )
 
 type Client struct {
@@ -11,6 +12,7 @@ type Client struct {
 	socket     *websocket.Conn
 	outbound   chan []byte
 	canvasInfo ClientCanvas
+	strokes    []message.Stroke
 }
 
 type ClientCanvas struct {
@@ -26,6 +28,7 @@ func newClient(hub *Hub, socket *websocket.Conn) *Client {
 		socket:     socket,
 		outbound:   make(chan []byte),
 		canvasInfo: ClientCanvas{canvasWidth: 0, canvasHeight: 0},
+		strokes:    make([]message.Stroke, 0),
 	}
 }
 

@@ -132,13 +132,15 @@ export default class App extends Component {
 
   // Send stroke point data
   onStrokeChangeHandler = (x, y) => {
-    // console.log(JSON.stringify(this.canvas.getPaths()));
+    console.log({x: x, y: y});
+
+    console.log('A stringified is', JSON.stringify(this.canvas.getPaths()));
     sendStroke(socket, {x: x, y: y}, this.state.color, this.state.thickness);
   };
 
   // Send stroke end signal
   onStrokeEndHandler = () => {
-    sendStrokeEnd(socket);
+    sendStrokeEnd(socket, this.state.color, this.state.thickness);
   };
   onStrokeStartHandler = (x, y) => {
     sendStrokeStart(socket);
@@ -146,13 +148,13 @@ export default class App extends Component {
 
   onMesageHandler = event => {
     var messages = event.data.split('\n');
-    console.log('MSG array is is', messages);
 
     for (var i = 0; i < messages.length; i++) {
       var message = JSON.parse(messages[i]);
       // console.log('Received message is', message);
       this.executeMessage(message);
     }
+    // console.log('B stringified is', JSON.stringify(this.canvas.getPaths()));
   };
 
   executeMessage = message => {
@@ -160,6 +162,14 @@ export default class App extends Component {
     // console.log(this.canvas._size.width, this.canvas._size.height);
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE:
+        // Append collaborator stroke
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [
+            ...prevState.collaboratorStroke,
+            {x: message.point.x, y: message.point.y},
+          ],
+        }));
         var newPath = this.getPathData(
           message.point.x,
           message.point.y,
@@ -167,6 +177,24 @@ export default class App extends Component {
           message.color,
         );
         this.canvas.addPath(newPath);
+        break;
+      case messageKinds.MESSAGE_STROKE_END:
+        console.log('RECEIVED END MSG', message);
+
+        var newPath = this.getPathDataArray(
+          this.state.collaboratorStroke,
+          message.thickness,
+          message.color,
+        );
+
+        console.log('RECEIVED END STROKE', newPath);
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [],
+        }));
+        this.canvas.addPath(newPath);
+
+        break;
     }
   };
 
@@ -179,6 +207,27 @@ export default class App extends Component {
       },
       path: {
         data: [`${x.toString()},${y.toString()}`],
+        // eslint-disable-next-line radix
+        width: width,
+        color: color,
+        id: parseInt(Math.random() * 100000000),
+      },
+    };
+  };
+
+  getPathDataArray = (data, width, color) => {
+    parsedArr = [];
+    for (var i = 0; i < data.length; i++) {
+      parsedArr.push(`${data[i].x},${data[i].y}`);
+    }
+    return {
+      drawer: null,
+      size: {
+        width: this.canvas._size.width,
+        height: this.canvas._size.height,
+      },
+      path: {
+        data: parsedArr,
         // eslint-disable-next-line radix
         width: width,
         color: color,

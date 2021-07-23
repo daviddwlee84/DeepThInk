@@ -13,10 +13,14 @@ export function sendStrokeStart(socket, data) {
   console.log('Sent start stroke message');
 }
 
-export function sendStrokeEnd(socket) {
+export function sendStrokeEnd(socket, color, thickness) {
   socket.send(
     JSON.stringify({
       kind: messageKinds.MESSAGE_STROKE_END,
+      data: {
+        color: color,
+        thickness: thickness,
+      },
     }),
   );
   console.log('Sent end stroke message');
@@ -31,7 +35,7 @@ export function sendStroke(socket, point, color, thickness) {
       thickness: thickness,
     },
   };
-  console.log(JSON.stringify(data));
+  // console.log(JSON.stringify(data));
 
   socket.send(JSON.stringify(data));
 }

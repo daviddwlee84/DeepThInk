@@ -64,7 +64,7 @@ func NewUserLeft(userID string) *UserLeft {
 	}
 }
 
-type Stroke struct {
+type StrokePoint struct {
 	Kind      int     `json:"kind"`
 	UserID    string  `json:"userId"`
 	Point     Point   `json:"point"`
@@ -72,7 +72,23 @@ type Stroke struct {
 	Color     string  `json:"color"`
 }
 
+type Stroke struct {
+	strokes []StrokePoint
+}
+
 type Clear struct {
+	Kind   int    `json:"kind"`
+	UserID string `json:"userId"`
+}
+
+type StrokeEnd struct {
+	Kind      int     `json:"kind"`
+	UserID    string  `json:"userId"`
+	Thickness float64 `json:"thickness"`
+	Color     string  `json:"color"`
+}
+
+type StrokeStart struct {
 	Kind   int    `json:"kind"`
 	UserID string `json:"userId"`
 }
