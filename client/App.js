@@ -117,17 +117,26 @@ export default class App extends Component {
   };
   // Send a request to the model server to stylize the generated painting
   sendRequestStyleHelper = async newStyle => {
-    // Set new style state
-    sendRequestStyle(this.state.generatedImageData, newStyle).then(
-      styled_image_data => {
-        this.setState(prevState => ({
-          ...prevState,
+    socket.send(
+      JSON.stringify({
+        kind: messageKinds.MESSAGE_STYLIZE,
+        data: {
+          imageData: this.state.generatedImageData,
           style: newStyle,
-          displayedImageData: styled_image_data,
-          stylizedImageData: styled_image_data,
-        }));
-      },
+        },
+      }),
     );
+    // Set new style state
+    // sendRequestStyle(this.state.generatedImageData, newStyle).then(
+    //   styled_image_data => {
+    //     this.setState(prevState => ({
+    //       ...prevState,
+    //       style: newStyle,
+    //       displayedImageData: styled_image_data,
+    //       stylizedImageData: styled_image_data,
+    //     }));
+    //   },
+    // );
   };
 
   handleThickness = sliderValue => {
@@ -213,8 +222,10 @@ export default class App extends Component {
         break;
       // User received a stylized image broadcasted from another user
       case messageKinds.MESSAGE_STYLIZE:
+        console.log('iamge staylzize', message);
         this.setState(prevState => ({
           ...prevState,
+          style: message.style,
           stylizedImageData: message.imageData,
           displayedImageData: message.imageData,
         }));

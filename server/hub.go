@@ -203,6 +203,41 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		}
 
 		hub.broadcastAll(msg)
+
+	// Generate a stylized image and send it to all clients
+	case message.KindStylize:
+		generate_url := fmt.Sprintf("%s/stylize", MODEL_URL)
+		log.Println("Got stylize")
+
+		// Fetch imagedata and style from payload
+		data := gjson.GetBytes(data, "data")
+		imageData := data.Get("imageData").String()
+		style := data.Get("style").String()
+
+		// Make request to model server
+		postBody, _ := json.Marshal(map[string]string{
+			"imageData": imageData,
+			"style":     style,
+		})
+
+		responseBody := bytes.NewBuffer(postBody)
+		resp, err := http.Post(generate_url, "application/json", responseBody)
+		if err != nil {
+			log.Fatal(err)
+		}
+		body, err := ioutil.ReadAll(resp.Body)
+		fmt.Println("body is", string(body))
+
+		stylizedImageData := gjson.GetBytes(body, "data").String()
+
+		var msg message.Stylize = message.Stylize{
+			Kind:      message.KindStylize,
+			ImageData: stylizedImageData,
+			Style:     style,
+		}
+
+		hub.broadcastAll(msg)
+
 	}
 
 }

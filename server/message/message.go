@@ -105,4 +105,5 @@ type Generate struct {
 type Stylize struct {
 	Kind      int    `json:"kind"`
 	ImageData string `json:"imageData"`
+	Style     string `json:"style"`
 }
