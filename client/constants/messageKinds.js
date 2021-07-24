@@ -7,6 +7,8 @@ const messageKinds = {
   MESSAGE_CLIENT_SEND_INFO: 6,
   MESSAGE_STROKE_START: 7,
   MESSAGE_STROKE_END: 8,
+  MESSAGE_GENERATE: 9,
+  MESSAGE_STYLIZE: 10,
 };
 
 export default messageKinds;

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -177,7 +178,9 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 	case message.KindGenerate:
 		generate_url := fmt.Sprintf("%s/generate", MODEL_URL)
 
+		// Fetch imagedata from payload
 		data := gjson.GetBytes(data, "data")
+
 		imageData := data.Get("imageData").String()
 
 		// Make request to model server
@@ -190,8 +193,16 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		body, err := ioutil.ReadAll(resp.Body)
 
-		hub.broadcastAll(resp)
+		generatedImageData := gjson.GetBytes(body, "data").String()
+
+		var msg message.Generate = message.Generate{
+			Kind:      message.KindGenerate,
+			ImageData: generatedImageData,
+		}
+
+		hub.broadcastAll(msg)
 	}
 
 }

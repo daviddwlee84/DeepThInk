@@ -99,13 +99,21 @@ export default class App extends Component {
 
   // Send request to model server to generate painting
   sendRequestHelper = async () => {
-    sendRequest(this.state.imageData).then(generated_image => {
-      this.setState(prevState => ({
-        ...prevState,
-        generatedImageData: generated_image,
-        displayedImageData: generated_image,
-      }));
-    });
+    socket.send(
+      JSON.stringify({
+        kind: messageKinds.MESSAGE_GENERATE,
+        data: {
+          imageData: this.state.imageData,
+        },
+      }),
+    );
+    // sendRequest(this.state.imageData).then(generated_image => {
+    //   this.setState(prevState => ({
+    //     ...prevState,
+    //     generatedImageData: generated_image,
+    //     displayedImageData: generated_image,
+    //   }));
+    // });
   };
   // Send a request to the model server to stylize the generated painting
   sendRequestStyleHelper = async newStyle => {
@@ -132,9 +140,6 @@ export default class App extends Component {
 
   // Send stroke point data
   onStrokeChangeHandler = (x, y) => {
-    console.log({x: x, y: y});
-
-    console.log('A stringified is', JSON.stringify(this.canvas.getPaths()));
     sendStroke(socket, {x: x, y: y}, this.state.color, this.state.thickness);
   };
 
@@ -170,30 +175,49 @@ export default class App extends Component {
             {x: message.point.x, y: message.point.y},
           ],
         }));
-        var newPath = this.getPathData(
-          message.point.x,
-          message.point.y,
+        var newPath = this.getPathDataArray(
+          this.state.collaboratorStroke,
           message.thickness,
           message.color,
         );
-        // this.canvas.addPath(newPath);
+        // var newPath = this.getPathData(
+        //   message.point.x,
+        //   message.point.y,
+        //   message.thickness,
+        //   message.color,
+        // );
+        this.canvas.addPath(newPath);
         break;
       case messageKinds.MESSAGE_STROKE_END:
-        console.log('RECEIVED END MSG', message);
-
         var newPath = this.getPathDataArray(
           this.state.collaboratorStroke,
           message.thickness,
           message.color,
         );
 
-        console.log('RECEIVED END STROKE', newPath);
         this.setState(prevState => ({
           ...prevState,
           collaboratorStroke: [],
         }));
         this.canvas.addPath(newPath);
 
+        break;
+      // User receives a generated image broadcasted from another user
+      case messageKinds.MESSAGE_GENERATE:
+        console.log('got generate mesage here', message);
+        this.setState(prevState => ({
+          ...prevState,
+          generatedImageData: message.imageData,
+          displayedImageData: message.imageData,
+        }));
+        break;
+      // User received a stylized image broadcasted from another user
+      case messageKinds.MESSAGE_STYLIZE:
+        this.setState(prevState => ({
+          ...prevState,
+          stylizedImageData: message.imageData,
+          displayedImageData: message.imageData,
+        }));
         break;
     }
   };

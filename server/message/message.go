@@ -96,3 +96,13 @@ type StrokeStart struct {
 	Kind   int    `json:"kind"`
 	UserID string `json:"userId"`
 }
+
+type Generate struct {
+	Kind      int    `json:"kind"`
+	ImageData string `json:"imageData"`
+}
+
+type Stylize struct {
+	Kind      int    `json:"kind"`
+	ImageData string `json:"imageData"`
+}

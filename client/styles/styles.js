@@ -1,6 +1,4 @@
-export function hello() {
-  console.log('Hellodd');
-}
+
 export function generateStyle(device) {
   return {
     container: {
