@@ -176,7 +176,7 @@ export default class App extends Component {
           message.thickness,
           message.color,
         );
-        this.canvas.addPath(newPath);
+        // this.canvas.addPath(newPath);
         break;
       case messageKinds.MESSAGE_STROKE_END:
         console.log('RECEIVED END MSG', message);

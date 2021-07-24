@@ -17,6 +17,10 @@ const (
 	KindStrokeStart
 	// KindStrokeEnd message is sent when a user ends drawing
 	KindStrokeEnd
+	// KindGenerate message is sent when a user requests generate from segmentation
+	KindGenerate
+	// KindStylize message is sent when user requests stylize image
+	KindStylize
 )
 
 type Point struct {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -68,6 +69,14 @@ func (hub *Hub) broadcast(message interface{}, ignore *Client) {
 		if c != ignore {
 			c.outbound <- data
 		}
+	}
+}
+
+// Broadcast a message to all clients
+func (hub *Hub) broadcastAll(message interface{}) {
+	data, _ := json.Marshal(message)
+	for _, c := range hub.clients {
+		c.outbound <- data
 	}
 }
 
@@ -163,5 +172,26 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		client.canvasInfo = canvasConfig
 		log.Println("Got canvas ")
 		fmt.Printf("%#v\n", client)
+
+	// Generate the image and send it back to all clients
+	case message.KindGenerate:
+		generate_url := fmt.Sprintf("%s/generate", MODEL_URL)
+
+		data := gjson.GetBytes(data, "data")
+		imageData := data.Get("imageData").String()
+
+		// Make request to model server
+		postBody, _ := json.Marshal(map[string]string{
+			"imageData": imageData,
+		})
+
+		responseBody := bytes.NewBuffer(postBody)
+		resp, err := http.Post(generate_url, "application/json", responseBody)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		hub.broadcastAll(resp)
 	}
+
 }

@@ -8,6 +8,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+// Model server deployment URL
+var MODEL_URL string = "http://localhost:8000"
+
 func main() {
 	hub := newHub()
 	go hub.run()
