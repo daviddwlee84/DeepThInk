@@ -1,4 +1,5 @@
 # hai-art
+For more details, see the `README.md` inside `client/`, `server/` and `model/` directories respectively. 
 
 ## Client
 Frontend drawing app, written in React Native and Javascript. 

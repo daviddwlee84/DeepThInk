@@ -155,7 +155,7 @@ def load_model() -> Tuple[Pix2PixModel, dict]:
     opt.contain_dontcare_label = True if parsed_opt[
         'contain_dontcare_label'] == 'True' else False
     # opt.gpu_ids = parsed_opt['gpu_ids']
-    opt.gpu_ids = [-1]
+    opt.gpu_ids = []
     opt.netG = parsed_opt['netG']
     opt.ngf = int(parsed_opt['ngf'])
     opt.num_upsampling_layers = parsed_opt['num_upsampling_layers']

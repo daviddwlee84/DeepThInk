@@ -36,3 +36,18 @@ The trained models are included in this repo under `all_models/fast_neural_style
 The Flask server relies on `all_models/fast_neural_style/style_utils.py` to perform inference on the style transfer models. 
 
 The files `InferStyleTransfer.ipynb` and `TrainStyleTransfer.ipyn` are Jupyter notebooks for running an training custom style transfer models.
+
+
+# Docker
+To build the Docker image, run 
+```shell
+docker build -t leungjch:hai-art-model:latest .
+```
+To run the Docker image, run
+```shell
+docker run leungjch:hai-art-model:latest
+```
+To push the Docker image to Docker Hub, run
+```
+docker push leungjch:hai-art-model:latest
+```
