@@ -32,7 +32,7 @@ import {hello, generateStyle} from './styles/styles.js';
 var device = Dimensions.get('window');
 
 // Connect to Go backend
-let socket = new WebSocket('ws://10.0.2.2:8080/ws');
+let socket = new WebSocket('ws://35.232.77.41:8080/ws');
 
 // Create dynamic style based on device width/height
 const styles = StyleSheet.create(generateStyle(device));
