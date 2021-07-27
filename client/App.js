@@ -184,18 +184,18 @@ export default class App extends Component {
             {x: message.point.x, y: message.point.y},
           ],
         }));
-        var newPath = this.getPathDataArray(
-          this.state.collaboratorStroke,
-          message.thickness,
-          message.color,
-        );
+        // var newPath = this.getPathDataArray(
+        //   this.state.collaboratorStroke,
+        //   message.thickness,
+        //   message.color,
+        // );
         // var newPath = this.getPathData(
         //   message.point.x,
         //   message.point.y,
         //   message.thickness,
         //   message.color,
         // );
-        this.canvas.addPath(newPath);
+        // this.canvas.addPath(newPath); // uncomment for live drawing
         break;
       case messageKinds.MESSAGE_STROKE_END:
         var newPath = this.getPathDataArray(
