@@ -1,0 +1,17 @@
+com/clientexpo/MainApplication.java
+ com.clientexpo.MainApplication
+ com.clientexpo.MainApplication$1
+com/clientexpo/generated/BasePackageList.java
+ com.clientexpo.generated.BasePackageList
+com/clientexpo/MainActivity.java
+ com.clientexpo.MainActivity
+ com.clientexpo.MainActivity$1
+com/clientexpo/ReactNativeFlipper.java
+ com.clientexpo.ReactNativeFlipper
+ com.clientexpo.ReactNativeFlipper$1
+ com.clientexpo.ReactNativeFlipper$2
+ com.clientexpo.ReactNativeFlipper$2$1
+com/facebook/react/PackageList.java
+ com.facebook.react.PackageList
+com/clientexpo/BuildConfig.java
+ com.clientexpo.BuildConfig
