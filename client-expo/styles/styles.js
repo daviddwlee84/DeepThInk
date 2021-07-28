@@ -15,12 +15,12 @@ export function generateStyle(device) {
       borderColor: 'lightblue',
       borderWidth: 0,
       padding: 10,
-      width: device.width * 0.6,
-      height: device.width * 0.6,
+      width: device.width * 0.75,
+      height: device.width * 0.75,
     },
     canvasBox: {
-      width: device.width * 0.6,
-      height: device.width * 0.6,
+      width: device.width * 0.75,
+      height: device.width * 0.75,
     },
     generatedImageBox: {
       aspectRatio: 1,

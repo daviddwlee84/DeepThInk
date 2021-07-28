@@ -1,4 +1,4 @@
-#Mon Jul 26 21:39:06 EDT 2021
+#Tue Jul 27 20:43:12 EDT 2021
 path.4=classes_1.dex
 path.3=classes_0.dex
 path.2=classes2.dex
@@ -19,6 +19,7 @@ base.8=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-
 base.7=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_12.dex
 base.6=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_11.dex
 base.5=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_10.dex
+renamed.23=classes24.dex
 renamed.22=classes23.dex
 renamed.21=classes22.dex
 renamed.20=classes21.dex
@@ -42,6 +43,7 @@ base.14=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client
 base.19=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_6.dex
 base.18=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_5.dex
 base.20=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_7.dex
+base.23=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_20.dex
 base.22=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_9.dex
 base.21=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_8.dex
 renamed.3=classes4.dex
@@ -66,5 +68,6 @@ base.12=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client
 path.20=classes_7.dex
 base.11=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_16.dex
 base.10=/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/dex/debug/mergeLibDexDebug/classes_15.dex
+path.23=classes_20.dex
 path.21=classes_8.dex
 path.22=classes_9.dex
