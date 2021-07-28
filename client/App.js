@@ -32,7 +32,7 @@ import {hello, generateStyle} from './styles/styles.js';
 var device = Dimensions.get('window');
 
 // Connect to Go backend
-let socket = new WebSocket('ws://10.0.2.2:8080/ws');
+let socket = new WebSocket('ws://localhost:8080/ws');
 
 // Create dynamic style based on device width/height
 // const styles = StyleSheet.create(generateStyle(device));
@@ -381,7 +381,7 @@ export default class App extends Component {
                       displayedImageData: this.state.generatedImageData,
                     }));
                   }}>
-                  <Text style={{color: 'white', fontSize: 20}}>None</Text>
+                  <Text style={{color: 'white', fontSize: 20}}> None </Text>
                 </TouchableOpacity>
               </View>
               {/* Programmatically render all style options */}

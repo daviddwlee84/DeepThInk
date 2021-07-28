@@ -10,7 +10,7 @@ import (
 )
 
 // Model server deployment URL
-var MODEL_URL string = "http://35.232.77.41:8000"
+var MODEL_URL string = "http://localhost:8000"
 
 func main() {
 	fmt.Println("Starting hai-art server...")

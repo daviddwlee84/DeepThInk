@@ -15,13 +15,18 @@ export function generateStyle(device) {
       borderColor: 'blue',
       borderWidth: 2,
       // padding: 10,
-      width: Math.min(device.width * 0.75, device.height * 0.75),
-      height: Math.min(device.width * 0.75, device.height * 0.75),
-
+    },
+    drawBoxInner: {
+      backgroundColor: 'lightblue',
+      borderColor: 'blue',
+      borderWidth: 2,
+      // padding: 10,
+      width: device.width * 0.45,
+      height: device.height * 0.85,
     },
     canvasBox: {
-      width: device.width * 0.75,
-      height: device.width * 0.75,
+      width: device.width * 0.45,
+      height: device.height * 0.85,
     },
     generatedImageBox: {
       aspectRatio: 1,

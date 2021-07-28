@@ -119,25 +119,32 @@ export default class DrawCanvas extends Component {
 		// console.log("handling canvas", canvas)
 
 		const ctx = canvas.getContext('2d');
-		canvas.width = Math.min(device.width * 0.75, device.height * 0.75);
-		canvas.height = Math.min(device.width * 0.75, device.height * 0.75);
+		canvas.width = device.width * 0.45;
+		canvas.height = device.height * 0.85;
 
 		this.canvasRef = canvas;
 		this.canvasRef.current = canvas;
 
+	}
+
+	getBase64 = () => {
+		var canvas = this.canvasRef.current
+		console.log("Getting bsea64");
+		console.log("Getting base64 is", canvas.toDataURL());
+
+		return canvas.toDataURL()
 	}
    
     render() {
       if (Platform.OS === "web") {
 		return (
 		<View
-		style= {styles.drawBox}
+		style= {styles.drawBoxInner}
 		onStartShouldSetResponder={(event) => {return true;}}
 		onMoveShouldSetResponder={(event) => {return true;}}
 		onResponderStart={this.onDrawStart}
 		onResponderMove={this.onDrawMove}
 		onResponderRelease={this.onDrawEnd}
-
 		>
 	
 
