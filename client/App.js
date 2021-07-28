@@ -193,13 +193,24 @@ export default class App extends Component {
             <View style={styles.toolGroup}>
               {/* Thickness slider */}
               <View style={styles.strokeGroup}>
-                <Text style={{color:'#07235c',fontWeight:'bold', fontSize: device.height * 0.023}}>
+                <Text
+                  style={{
+                    color: '#07235c',
+                    fontWeight: 'bold',
+                    fontSize: device.height * 0.023,
+                  }}>
                   Stroke size:
                 </Text>
                 <Slider
-                  style={{width: device.width * 0.15, height: device.height * 0.03, marginBottom: 10}}
+                  style={{
+                    width: device.width * 0.15,
+                    height: device.height * 0.03,
+                    marginBottom: 10,
+                  }}
                   minimumValue={1}
-                  maximumValue={40}
+                  maximumValue={
+                    device.width * device.height * (1 / Math.pow(10, 4))
+                  }
                   minimumTrackTintColor="#000000"
                   maximumTrackTintColor="#000000"
                   onSlidingComplete={this.handleThickness}
@@ -207,14 +218,17 @@ export default class App extends Component {
               </View>
 
               <View style={styles.tempButtons}>
-                <View style={{justifyContent:'flex-end', paddingHorizontal:5}}>
-                  <Button color='#073ead' title="undo!"/>
+                <View
+                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                  <Button color="#073ead" title="undo!" />
                 </View>
-                <View style={{justifyContent:'flex-end', paddingHorizontal:5}}>
-                  <Button color='#073ead' title="redo!"/>
+                <View
+                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                  <Button color="#073ead" title="redo!" />
                 </View>
-                <View style={{justifyContent:'flex-end', paddingHorizontal:5}}>
-                  <Button color='#07235c' title="erase"/>
+                <View
+                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                  <Button color="#07235c" title="erase" />
                 </View>
               </View>
             </View>
@@ -238,7 +252,13 @@ export default class App extends Component {
                       onPress={() => {
                         this.setState({color: obj.color});
                       }}>
-                      <Text style={{color: 'white', fontSize: device.height * 0.025}}>{obj.label}</Text>
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: device.height * 0.025,
+                        }}>
+                        {obj.label}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 );
@@ -278,7 +298,13 @@ export default class App extends Component {
                       onPress={() => {
                         this.sendRequestStyle(obj.name);
                       }}>
-                      <Text style={{color: 'white', fontSize: device.height * 0.024}}>{obj.label}</Text>
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: device.height * 0.024,
+                        }}>
+                        {obj.label}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 );
@@ -289,7 +315,7 @@ export default class App extends Component {
             </Text>
           </View>
         </View>
-        
+
         <View style={styles.genGroup}>
           {/* Displayed image */}
           <View style={styles.generatedImageBox}>
@@ -302,7 +328,11 @@ export default class App extends Component {
           </View>
           {/* Generate button */}
           <View style={styles.genButton}>
-            <Button color="#841584" title="Generate!" onPress={this.grabPixels.bind(this)} />
+            <Button
+              color="#841584"
+              title="Generate!"
+              onPress={this.grabPixels.bind(this)}
+            />
           </View>
         </View>
       </View>
@@ -341,27 +371,27 @@ const styles = StyleSheet.create({
     padding: 4,
     borderRadius: 5,
   },
-  drawGroup:{
+  drawGroup: {
     flexDirection: 'column',
   },
-  genGroup:{
+  genGroup: {
     flexDirection: 'column',
   },
-  genButton:{
+  genButton: {
     height: 60,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  strokeGroup:{
+  strokeGroup: {
     flexDirection: 'column',
     alignItems: 'center',
   },
-  tempButtons:{
-    height:40,
-    width:70,
+  tempButtons: {
+    height: 40,
+    width: 70,
     flexDirection: 'row',
   },
-  toolGroup:{
+  toolGroup: {
     flexDirection: 'row',
   },
 });

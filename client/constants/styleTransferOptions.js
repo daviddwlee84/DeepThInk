@@ -1,6 +1,11 @@
 export default {
   styles: [
     {
+      name: 'kanagawa',
+      label: 'Kanagawa',
+      image_url: '1',
+    },
+    {
       name: 'starry_night',
       label: 'Starry Night',
       image_url: '1',
