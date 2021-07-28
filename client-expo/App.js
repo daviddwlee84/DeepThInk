@@ -1,10 +1,14 @@
 import React, { Component} from 'react';
+import {View, Dimensions, StyleSheet} from "react-native"
+
 import Canvas from 'react-native-canvas';
-import {View, Dimensions} from "react-native"
 import DrawCanvas from './components/DrawCanvas';
 import Slider from '@react-native-community/slider';
+import { generateStyle } from './styles/styles';
 
 var device = Dimensions.get('window');
+
+const styles = StyleSheet.create(generateStyle(device));
 
  export default class App extends Component {
   state = {
@@ -27,8 +31,8 @@ var device = Dimensions.get('window');
 
   render() {
     return (
-      <View>
-      <DrawCanvas thickness={this.state.thickness}/>
+      <View style={styles.container}>
+      <DrawCanvas thickness={this.state.thickness} color={this.state.color}/>
       <Slider
             style={{width: 200, height: 40}}
             minimumValue={0}

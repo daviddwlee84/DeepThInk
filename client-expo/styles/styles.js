@@ -1,3 +1,4 @@
+import { autocrop } from "jimp";
 
 export function generateStyle(device) {
   return {
@@ -10,13 +11,13 @@ export function generateStyle(device) {
     },
 
     drawBox: {
-      aspectRatio: 1,
       backgroundColor: 'lightblue',
-      borderColor: 'lightblue',
-      borderWidth: 0,
-      padding: 10,
-      width: device.width * 0.75,
-      height: device.width * 0.75,
+      borderColor: 'blue',
+      borderWidth: 2,
+      // padding: 10,
+      width: Math.min(device.width * 0.75, device.height * 0.75),
+      height: Math.min(device.width * 0.75, device.height * 0.75),
+
     },
     canvasBox: {
       width: device.width * 0.75,
