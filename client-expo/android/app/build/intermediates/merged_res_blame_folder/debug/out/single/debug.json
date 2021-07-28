@@ -1,0 +1,50 @@
+[
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/drawable_splashscreen_image.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/drawable/splashscreen_image.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/drawable_splashscreen.xml.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/drawable/splashscreen.xml"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/build/intermediates/res/merged/debug/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art/client-expo/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png"
+    }
+]

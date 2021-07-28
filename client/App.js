@@ -17,9 +17,25 @@ import Snackbar from 'react-native-snackbar';
 import axios from 'axios';
 import colorMap from './constants/colorMap.js';
 import styleTransferOptions from './constants/styleTransferOptions.js';
-
+import messageKinds from './constants/messageKinds.js';
+import {
+  onOpen,
+  onClose,
+  onMessage,
+  onError,
+  sendStroke,
+  sendStrokeEnd,
+  sendStrokeStart,
+} from './api/websocketApi.js';
+import {sendRequest, sendRequestStyle} from './api/modelApi.js';
+import {hello, generateStyle} from './styles/styles.js';
 var device = Dimensions.get('window');
+
+// Connect to Go backend
 let socket = new WebSocket('ws://10.0.2.2:8080/ws');
+
+// Create dynamic style based on device width/height
+// const styles = StyleSheet.create(generateStyle(device));
 
 export default class App extends Component {
   // React state: store the image data
@@ -31,7 +47,14 @@ export default class App extends Component {
     style: 'none', // selected style
     color: '#384f83', // pen color
     thickness: 10, // stroke thickness
+    ownStroke: [], // client stroke data
+    collaboratorStroke: [], // collaborator data
   };
+
+  constructor(props) {
+    super(props);
+    this.sendRequestHelper = this.sendRequestHelper.bind(this);
+  }
 
   // Run when component is first rendered
   componentDidMount() {
@@ -39,16 +62,20 @@ export default class App extends Component {
 
     // Setup socket handlers
     socket.onopen = () => {
-      console.log('Successfully connected');
-      socket.send('Hi from client!');
+      onOpen(socket, {
+        canvasWidth: styles.drawBox.width,
+        canvasHeight: styles.drawBox.height,
+      });
     };
-
     socket.onclose = event => {
-      console.log('Socket closed connection', event);
+      onClose(event);
+    };
+    socket.onerror = error => {
+      onError(error);
     };
 
-    socket.onerror = error => {
-      console.log('Socket error', error);
+    socket.onmessage = event => {
+      this.onMesageHandler(event);
     };
   }
 
@@ -58,7 +85,6 @@ export default class App extends Component {
     // Use react-native-sketch-canvas api
     this.canvas.getBase64('png', false, true, false, false, (_err, result) => {
       const resultImage = `${result}`;
-
       // Update the state
       this.setState(
         prevState => ({
@@ -66,93 +92,51 @@ export default class App extends Component {
           imageData: resultImage,
         }),
         // Do callback to send to server after the imageData is set
-        this.sendRequest,
+        this.sendRequestHelper,
       );
     });
   };
 
   // Send request to model server to generate painting
-  sendRequest = () => {
-    console.log('Sending API request');
-    Snackbar.show({
-      text: 'Sending API request to server...',
-      duration: Snackbar.LENGTH_SHORT,
-    });
-
-    // Send the request to backend
-    axios
-      .post(
-        (url = 'http://10.0.2.2:8000/generate'),
-        (data = {
+  sendRequestHelper = async () => {
+    socket.send(
+      JSON.stringify({
+        kind: messageKinds.MESSAGE_GENERATE,
+        data: {
           imageData: this.state.imageData,
-        }),
-      )
-      .then(
-        function (response) {
-          console.log(response.data.message);
-
-          // Show toast message on bottom of app
-          Snackbar.show({
-            text: 'Received response!',
-            duration: Snackbar.LENGTH_SHORT,
-          });
-
-          // Set generated image data
-          // Update the generated image state
-          var generated_image = response.data.data;
-          this.setState(prevState => ({
-            ...prevState,
-            generatedImageData: generated_image,
-            displayedImageData: generated_image,
-          }));
-        }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
-      )
-      .catch(function (error) {
-        console.log('Error generating image: ' + error.message);
-        throw error;
-      });
+        },
+      }),
+    );
+    // sendRequest(this.state.imageData).then(generated_image => {
+    //   this.setState(prevState => ({
+    //     ...prevState,
+    //     generatedImageData: generated_image,
+    //     displayedImageData: generated_image,
+    //   }));
+    // });
   };
-
   // Send a request to the model server to stylize the generated painting
-  sendRequestStyle = newStyle => {
-    // Set new style state
-    this.setState(prevState => ({
-      ...prevState,
-      style: newStyle,
-    }));
-
-    // Send stylize image request
-    axios
-      .post(
-        (url = 'http://10.0.2.2:8000/stylize'),
-        (data = {
+  sendRequestStyleHelper = async newStyle => {
+    socket.send(
+      JSON.stringify({
+        kind: messageKinds.MESSAGE_STYLIZE,
+        data: {
           imageData: this.state.generatedImageData,
           style: newStyle,
-        }),
-      )
-      .then(
-        function (response) {
-          console.log(response.data.message);
-
-          // Show toast message on bottom of app
-
-          // Set generated image data
-          // Update the generated image state
-          var styled_image_data = response.data.data;
-          this.setState(prevState => ({
-            ...prevState,
-            displayedImageData: styled_image_data,
-            stylizedImageData: styled_image_data,
-          }));
-          console.log('state is', this.state);
-        }.bind(this), // JL: Need to bind context to this in order to use setState without error, not sure why
-      )
-      .catch(function (error) {
-        console.log('Error generating image: ' + error.message);
-        throw error;
-      });
-
-    // Set the generated image data
+        },
+      }),
+    );
+    // Set new style state
+    // sendRequestStyle(this.state.generatedImageData, newStyle).then(
+    //   styled_image_data => {
+    //     this.setState(prevState => ({
+    //       ...prevState,
+    //       style: newStyle,
+    //       displayedImageData: styled_image_data,
+    //       stylizedImageData: styled_image_data,
+    //     }));
+    //   },
+    // );
   };
 
   handleThickness = sliderValue => {
@@ -163,17 +147,128 @@ export default class App extends Component {
     console.log('thickness is now', sliderValue);
   };
 
+  // Send stroke point data
   onStrokeChangeHandler = (x, y) => {
-    // console.log(JSON.stringify(this.canvas.getPaths()));
-    var point = {
-      x: x,
-      y: y,
-      color: this.state.color,
-      thickness: this.state.thickness,
-    };
+    sendStroke(socket, {x: x, y: y}, this.state.color, this.state.thickness);
+  };
 
-    socket.send(JSON.stringify(point));
-    console.log(JSON.stringify(point));
+  // Send stroke end signal
+  onStrokeEndHandler = () => {
+    sendStrokeEnd(socket, this.state.color, this.state.thickness);
+  };
+  onStrokeStartHandler = (x, y) => {
+    sendStrokeStart(socket);
+  };
+
+  onMesageHandler = event => {
+    var messages = event.data.split('\n');
+
+    for (var i = 0; i < messages.length; i++) {
+      var message = JSON.parse(messages[i]);
+      // console.log('Received message is', message);
+      this.executeMessage(message);
+    }
+    // console.log('B stringified is', JSON.stringify(this.canvas.getPaths()));
+  };
+
+  executeMessage = message => {
+    // console.log(this.canvas.getPaths());
+    // console.log(this.canvas._size.width, this.canvas._size.height);
+    switch (message.kind) {
+      case messageKinds.MESSAGE_STROKE:
+        // Append collaborator stroke
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [
+            ...prevState.collaboratorStroke,
+            {x: message.point.x, y: message.point.y},
+          ],
+        }));
+        // var newPath = this.getPathDataArray(
+        //   this.state.collaboratorStroke,
+        //   message.thickness,
+        //   message.color,
+        // );
+        // var newPath = this.getPathData(
+        //   message.point.x,
+        //   message.point.y,
+        //   message.thickness,
+        //   message.color,
+        // );
+        // this.canvas.addPath(newPath); // uncomment for live drawing
+        break;
+      case messageKinds.MESSAGE_STROKE_END:
+        var newPath = this.getPathDataArray(
+          this.state.collaboratorStroke,
+          message.thickness,
+          message.color,
+        );
+
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [],
+        }));
+        this.canvas.addPath(newPath);
+
+        break;
+      // User receives a generated image broadcasted from another user
+      case messageKinds.MESSAGE_GENERATE:
+        console.log('got generate mesage here', message);
+        this.setState(prevState => ({
+          ...prevState,
+          generatedImageData: message.imageData,
+          displayedImageData: message.imageData,
+        }));
+        break;
+      // User received a stylized image broadcasted from another user
+      case messageKinds.MESSAGE_STYLIZE:
+        console.log('iamge staylzize', message);
+        this.setState(prevState => ({
+          ...prevState,
+          style: message.style,
+          stylizedImageData: message.imageData,
+          displayedImageData: message.imageData,
+        }));
+        break;
+    }
+  };
+
+  getPathData = (x, y, width, color) => {
+    return {
+      drawer: null,
+      size: {
+        width: this.canvas._size.width,
+        height: this.canvas._size.height,
+      },
+      path: {
+        data: [`${x.toString()},${y.toString()}`],
+        // eslint-disable-next-line radix
+        width: width,
+        color: color,
+        id: parseInt(Math.random() * 100000000),
+      },
+    };
+  };
+
+  getPathDataArray = (data, width, color) => {
+    parsedArr = [];
+    for (var i = 0; i < data.length; i++) {
+      parsedArr.push(`${data[i].x},${data[i].y}`);
+    }
+    return {
+      drawer: null,
+      size: {
+        width: this.canvas._size.width,
+        height: this.canvas._size.height,
+      },
+      path: {
+        data: parsedArr,
+        // eslint-disable-next-line radix
+        width: width,
+        color: color,
+        id: parseInt(Math.random() * 100000000),
+      },
+    };
   };
 
   render() {

@@ -14,8 +14,10 @@
     "@terrylinla/react-native-sketch-canvas": "^0.8.0",
     "axios": "^0.21.1",
     "react": "17.0.1",
+    "react-dom": "^17.0.2",
     "react-native": "0.64.2",
-    "react-native-snackbar": "^2.4.0"
+    "react-native-snackbar": "^2.4.0",
+    "react-native-web": "^0.17.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
