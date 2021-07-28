@@ -56,7 +56,7 @@ export default class DrawCanvas extends Component {
 		var posY = event.nativeEvent.locationY
 
 		// Create stroke move object
-		var p = new Point(posX, posY, this.props.thickness, "start")
+		var p = new Point(posX, posY, this.props.thickness, "end")
 		this.updateCanvas(p)
 
 		this.setState({
@@ -83,7 +83,6 @@ export default class DrawCanvas extends Component {
 				case "start":
 					ctx.moveTo(x, y)
 					ctx.beginPath();
-
 					ctx.lineTo(x, y);
 
 					break;
