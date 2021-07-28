@@ -32,10 +32,10 @@ import {hello, generateStyle} from './styles/styles.js';
 var device = Dimensions.get('window');
 
 // Connect to Go backend
-let socket = new WebSocket('ws://35.232.77.41:8080/ws');
+let socket = new WebSocket('ws://10.0.2.2:8080/ws');
 
 // Create dynamic style based on device width/height
-const styles = StyleSheet.create(generateStyle(device));
+// const styles = StyleSheet.create(generateStyle(device));
 
 export default class App extends Component {
   // React state: store the image data
@@ -274,110 +274,219 @@ export default class App extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <View style={styles.drawBox}>
-          {/* Main canvas */}
-          <SketchCanvas
-            ref={ref => (this.canvas = ref)}
-            style={{flex: 1}}
-            canvasStyle={styles.canvasBox}
-            strokeWidth={this.state.thickness}
-            strokeColor={this.state.color}
-            onStrokeChanged={this.onStrokeChangeHandler}
-            onStrokeStart={this.onStrokeStartHandler}
-            onStrokeEnd={this.onStrokeEndHandler}
-          />
-          {/* Thickness slider */}
-        </View>
-        {/* Color palette buttons */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <Slider
-            style={{width: 200, height: 40}}
-            minimumValue={0}
-            maximumValue={device.width / 10}
-            minimumTrackTintColor="#000000"
-            maximumTrackTintColor="#000000"
-            onSlidingComplete={this.handleThickness}
-          />
-
-          <View style={{flexDirection: 'row'}}>
-            {colorMap.colors.map(obj => {
-              return (
-                <View style={{margin: 2}}>
-                  <TouchableOpacity
-                    style={[
-                      styles.functionButton,
-                      {backgroundColor: obj.color},
-                    ]}
-                    onPress={() => {
-                      this.setState({color: obj.color});
-                    }}>
-                    <Text style={{color: 'white'}}>{obj.label}</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-          </View>
-          <Text style={{marginRight: 8, fontSize: 20}}>
-            {this.state.message}
-          </Text>
-        </View>
-        {/* Style buttons */}
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <View style={{flexDirection: 'row'}}>
-            {/* None style button */}
-            <View style={{margin: 2}}>
-              <TouchableOpacity
-                style={[styles.functionButton, {backgroundColor: 'gray'}]}
-                onPress={() => {
-                  this.setState(prevState => ({
-                    ...prevState,
-                    displayedImageData: this.state.generatedImageData,
-                  }));
-                }}>
-                <Text style={{color: 'white'}}>None</Text>
-              </TouchableOpacity>
-            </View>
-            {/* Programmatically render all style options */}
-            {styleTransferOptions.styles.map(obj => {
-              return (
-                <View style={{margin: 2}}>
-                  <TouchableOpacity
-                    style={[styles.functionButton, {backgroundColor: 'gray'}]}
-                    onPress={() => {
-                      this.sendRequestStyleHelper(obj.name);
-                    }}>
-                    <Text style={{color: 'white'}}>{obj.label}</Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-          </View>
-          <Text style={{marginRight: 8, fontSize: 20}}>
-            {this.state.message}
-          </Text>
-        </View>
-        {/* Generate button */}
-        <Button title="Generate!" onPress={this.grabPixels.bind(this)} />
-        {/* Displayed image */}
-        <View style={styles.generatedImageBox}>
-          {this.state.displayedImageData != null ? (
-            <Image
-              style={styles.generatedImage}
-              source={{uri: this.state.displayedImageData}}
+        <View style={styles.drawGroup}>
+          <View style={styles.drawBox}>
+            {/* Main canvas */}
+            <SketchCanvas
+              ref={ref => (this.canvas = ref)}
+              style={{flex: 1}}
+              strokeWidth={this.state.thickness}
+              strokeColor={this.state.color}
+              onStrokeChanged={this.onStrokeChangeHandler}
             />
-          ) : null}
+
+            <View style={styles.toolGroup}>
+              {/* Thickness slider */}
+              <View style={styles.strokeGroup}>
+                <Text
+                  style={{
+                    color: '#07235c',
+                    fontWeight: 'bold',
+                    fontSize: device.height * 0.023,
+                  }}>
+                  Stroke size:
+                </Text>
+                <Slider
+                  style={{
+                    width: device.width * 0.15,
+                    height: device.height * 0.03,
+                    marginBottom: 10,
+                  }}
+                  minimumValue={1}
+                  maximumValue={
+                    device.width * device.height * (1 / Math.pow(10, 4))
+                  }
+                  minimumTrackTintColor="#000000"
+                  maximumTrackTintColor="#000000"
+                  onSlidingComplete={this.handleThickness}
+                />
+              </View>
+
+              <View style={styles.tempButtons}>
+                <View
+                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                  <Button color="#073ead" title="undo!" />
+                </View>
+                <View
+                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                  <Button color="#073ead" title="redo!" />
+                </View>
+                <View
+                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                  <Button color="#07235c" title="erase" />
+                </View>
+              </View>
+            </View>
+          </View>
+          {/* Color palette buttons */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+              alignItems: 'center',
+            }}>
+            <View style={{flexDirection: 'row'}}>
+              {colorMap.colors.map(obj => {
+                return (
+                  <View style={{margin: 2}}>
+                    <TouchableOpacity
+                      style={[
+                        styles.functionButton,
+                        {backgroundColor: obj.color},
+                      ]}
+                      onPress={() => {
+                        this.setState({color: obj.color});
+                      }}>
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: device.height * 0.025,
+                        }}>
+                        {obj.label}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+            <Text style={{marginRight: 8, fontSize: device.height * 0.025}}>
+              {this.state.message}
+            </Text>
+          </View>
+          {/* Style buttons */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+              alignItems: 'center',
+            }}>
+            <View style={{flexDirection: 'row'}}>
+              {/* None style button */}
+              <View style={{margin: 2}}>
+                <TouchableOpacity
+                  style={[styles.functionButton, {backgroundColor: 'gray'}]}
+                  onPress={() => {
+                    this.setState(prevState => ({
+                      ...prevState,
+                      displayedImageData: this.state.generatedImageData,
+                    }));
+                  }}>
+                  <Text style={{color: 'white', fontSize: 20}}>None</Text>
+                </TouchableOpacity>
+              </View>
+              {/* Programmatically render all style options */}
+              {styleTransferOptions.styles.map(obj => {
+                return (
+                  <View style={{margin: 2}}>
+                    <TouchableOpacity
+                      style={[styles.functionButton, {backgroundColor: 'gray'}]}
+                      onPress={() => {
+                        this.sendRequestStyle(obj.name);
+                      }}>
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: device.height * 0.024,
+                        }}>
+                        {obj.label}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+            <Text style={{marginRight: 8, fontSize: device.height * 0.024}}>
+              {this.state.message}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.genGroup}>
+          {/* Displayed image */}
+          <View style={styles.generatedImageBox}>
+            {this.state.displayedImageData != null ? (
+              <Image
+                style={styles.generatedImage}
+                source={{uri: this.state.displayedImageData}}
+              />
+            ) : null}
+          </View>
+          {/* Generate button */}
+          <View style={styles.genButton}>
+            <Button
+              color="#841584"
+              title="Generate!"
+              onPress={this.grabPixels.bind(this)}
+            />
+          </View>
         </View>
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    backgroundColor: 'skyblue',
+    paddingTop: device.height * 0.02,
+  },
+
+  drawBox: {
+    backgroundColor: 'white',
+    borderColor: 'lightblue',
+    borderWidth: 10,
+    width: device.width * 0.5,
+    height: device.height * 0.85,
+  },
+  generatedImageBox: {
+    borderWidth: 10,
+    borderColor: 'lightblue',
+
+    width: device.width * 0.45,
+    height: device.height * 0.85,
+  },
+  generatedImage: {
+    width: device.width * 0.45,
+    height: device.height * 0.85,
+  },
+  functionButton: {
+    padding: 4,
+    borderRadius: 5,
+  },
+  drawGroup: {
+    flexDirection: 'column',
+  },
+  genGroup: {
+    flexDirection: 'column',
+  },
+  genButton: {
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  strokeGroup: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  tempButtons: {
+    height: 40,
+    width: 70,
+    flexDirection: 'row',
+  },
+  toolGroup: {
+    flexDirection: 'row',
+  },
+});
