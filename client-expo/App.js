@@ -1,52 +1,3 @@
-// import React, { Component} from 'react';
-// import {View, Dimensions, StyleSheet} from "react-native"
-
-// import Canvas from 'react-native-canvas';
-// import DrawCanvas from './components/DrawCanvas';
-// import Slider from '@react-native-community/slider';
-// import { generateStyle } from './styles/styles';
-
-// var device = Dimensions.get('window');
-
-// const styles = StyleSheet.create(generateStyle(device));
-
-//  export default class App extends Component {
-//   state = {
-//     imageData: 'data:image/png;base64,', // raw image data of the segmentation image
-//     generatedImageData: 'data:image/png;base64,', // raw image data of the generated image
-//     stylizedImageData: 'data:image/png;base64,', // raw image data of stylized generated image
-//     displayedImageData: 'data:image/png;base64,', // raw image data of displayed image
-//     style: 'none', // selected style
-//     color: '#384f83', // pen color
-//     thickness: 10, // stroke thickness
-//   };
-
-//   handleThickness = sliderValue => {
-//     this.setState(prevState => ({
-//       ...prevState,
-//       thickness: sliderValue,
-//     }));
-//     console.log('thickness is now', sliderValue);
-//   };
-
-//   render() {
-//     return (
-//       <View style={styles.container}>
-//       <DrawCanvas thickness={this.state.thickness} color={this.state.color}/>
-//       <Slider
-//             style={{width: 200, height: 40}}
-//             minimumValue={0}
-//             maximumValue={device.width / 10}
-//             minimumTrackTintColor="#000000"
-//             maximumTrackTintColor="#000000"
-//             onSlidingComplete={this.handleThickness}
-//           />
-
-//       </View>
-//     )
-//   }
-// }
-
 import React, {Component} from 'react';
 import {
   AppRegistry,
@@ -79,10 +30,15 @@ import {
 } from './api/websocketApi.js';
 import {sendRequest, sendRequestStyle} from './api/modelApi.js';
 import {hello, generateStyle} from './styles/styles.js';
+import Point from './classes/Point';
 var device = Dimensions.get('window');
 
+
 // Connect to Go backend
+// for web
 let socket = new WebSocket('ws://localhost:8080/ws');
+// for android
+// let socket = new WebSocket('ws://10.0.2.2:8080/ws');
 
 // Create dynamic style based on device width/height
 // const styles = StyleSheet.create(generateStyle(device));
@@ -131,18 +87,19 @@ export default class App extends Component {
 
   // Fetch image data from canvas
   // Then call sendRequest to send the data to backend
-  grabPixels = () => {
-    var resultImage = this.refs.drawCanvasRef.getBase64()
-    resultImage = resultImage.split(';base64,')[1];
-    console.log("result image is", resultImage)
-      this.setState(
-        prevState => ({
-          ...prevState,
-          imageData: resultImage,
-        }),
-        // Do callback to send to server after the imageData is set
-        this.sendRequestHelper,
-      );
+  grabPixels = async () => {
+    var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
+      var resultImage = value.split(';base64,')[1];
+      console.log("result image is", resultImage)
+        this.setState(
+          prevState => ({
+            ...prevState,
+            imageData: resultImage,
+          }),
+          // Do callback to send to server after the imageData is set
+          this.sendRequestHelper,
+        );
+    })
     
   };
 
@@ -168,7 +125,6 @@ export default class App extends Component {
         },
       }),
     );
-
   };
 
   handleThickness = sliderValue => {
@@ -179,18 +135,7 @@ export default class App extends Component {
     console.log('thickness is now', sliderValue);
   };
 
-  // Send stroke point data
-  onStrokeChangeHandler = (x, y) => {
-    sendStroke(socket, {x: x, y: y}, this.state.color, this.state.thickness);
-  };
 
-  // Send stroke end signal
-  onStrokeEndHandler = () => {
-    sendStrokeEnd(socket, this.state.color, this.state.thickness);
-  };
-  onStrokeStartHandler = (x, y) => {
-    sendStrokeStart(socket);
-  };
 
   onMesageHandler = event => {
     var messages = event.data.split('\n');
@@ -204,43 +149,28 @@ export default class App extends Component {
   };
 
   executeMessage = message => {
-    // console.log(this.canvas.getPaths());
-    // console.log(this.canvas._size.width, this.canvas._size.height);
     switch (message.kind) {
+      case messageKinds.MESSAGE_STROKE_START:
+        console.log("RECEIVED STROKE STARTT", message)
+        
+      
+        break;
       case messageKinds.MESSAGE_STROKE:
+        // console.log("received collaborator point")
         // Append collaborator stroke
         this.setState(prevState => ({
           ...prevState,
           collaboratorStroke: [
             ...prevState.collaboratorStroke,
-            {x: message.point.x, y: message.point.y},
+            new Point(message.point.x, message.point.y, message.thickness, message.color, "move"),
           ],
         }));
-        // var newPath = this.getPathDataArray(
-        //   this.state.collaboratorStroke,
-        //   message.thickness,
-        //   message.color,
-        // );
-        // var newPath = this.getPathData(
-        //   message.point.x,
-        //   message.point.y,
-        //   message.thickness,
-        //   message.color,
-        // );
-        // this.canvas.addPath(newPath); // uncomment for live drawing
         break;
       case messageKinds.MESSAGE_STROKE_END:
-        var newPath = this.getPathDataArray(
-          this.state.collaboratorStroke,
-          message.thickness,
-          message.color,
-        );
-
         this.setState(prevState => ({
           ...prevState,
           collaboratorStroke: [],
         }));
-        this.canvas.addPath(newPath);
 
         break;
       // User receives a generated image broadcasted from another user
@@ -254,7 +184,7 @@ export default class App extends Component {
         break;
       // User received a stylized image broadcasted from another user
       case messageKinds.MESSAGE_STYLIZE:
-        console.log('iamge staylzize', message);
+        console.log('image stylize', message);
         this.setState(prevState => ({
           ...prevState,
           style: message.style,
@@ -265,43 +195,7 @@ export default class App extends Component {
     }
   };
 
-  getPathData = (x, y, width, color) => {
-    return {
-      drawer: null,
-      size: {
-        width: this.canvas._size.width,
-        height: this.canvas._size.height,
-      },
-      path: {
-        data: [`${x.toString()},${y.toString()}`],
-        // eslint-disable-next-line radix
-        width: width,
-        color: color,
-        id: parseInt(Math.random() * 100000000),
-      },
-    };
-  };
 
-  getPathDataArray = (data, width, color) => {
-    parsedArr = [];
-    for (var i = 0; i < data.length; i++) {
-      parsedArr.push(`${data[i].x},${data[i].y}`);
-    }
-    return {
-      drawer: null,
-      size: {
-        width: this.canvas._size.width,
-        height: this.canvas._size.height,
-      },
-      path: {
-        data: parsedArr,
-        // eslint-disable-next-line radix
-        width: width,
-        color: color,
-        id: parseInt(Math.random() * 100000000),
-      },
-    };
-  };
 
   render() {
     return (
@@ -313,6 +207,8 @@ export default class App extends Component {
               style={{flex: 1}}
               thickness={this.state.thickness}
               color={this.state.color}
+              socket={socket}
+              otherStrokes={this.state.collaboratorStroke}
             />
 
             <View style={styles.toolGroup}>

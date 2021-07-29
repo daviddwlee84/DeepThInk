@@ -3,11 +3,18 @@ import {Text, View, Platform, StyleSheet, Dimensions} from 'react-native';
 import Canvas, {Image as CanvasImage} from 'react-native-canvas';
 import { generateStyle } from '../styles/styles';
 import Point from "../classes/Point";
-
+import {
+	sendStroke,
+	sendStrokeEnd,
+	sendStrokeStart,
+  } from '../api/websocketApi.js';
+  
 var device = Dimensions.get('window');
 
 
 const styles = StyleSheet.create(generateStyle(device));
+
+
 
 export default class DrawCanvas extends Component {
 
@@ -22,7 +29,18 @@ export default class DrawCanvas extends Component {
 		this.color = props.color
 		this.canvasRef = null;
 
-	  }
+	}
+
+	componentDidUpdate(prevProps) {
+		if (prevProps.otherStrokes != this.props.otherStrokes) {
+		  console.log("collaborator", prevProps.otherStrokes, "new:", this.props.otherStrokes)
+			if (this.props.otherStrokes.length > 0) {
+				var newStroke = this.props.otherStrokes[this.props.otherStrokes.length-1]
+				var pt = new Point(newStroke.x, newStroke.y, newStroke.thickness, this.props.color,  "move")
+				this.updateCanvas(pt, "other")		
+			}
+		}
+	}	  
 	
     onDrawMove = (event) => {
 		// console.log(event.nativeEvent)
@@ -30,14 +48,14 @@ export default class DrawCanvas extends Component {
 		var posX = event.nativeEvent.locationX
 		var posY = event.nativeEvent.locationY
 
-		var p = new Point(posX, posY, this.props.thickness, "move")
-		this.updateCanvas(p)
+		var p = new Point(posX, posY, this.props.thickness, this.props.color, "move")
+		this.updateCanvas(p, "self")
 
 		// Create stroke move object
 		this.setState({
 			strokes: this.state.strokes.concat(p)
 		})
-
+		sendStroke(this.props.socket, {x: posX, y: posY}, this.props.color, this.props.thickness)
 		
     }
 
@@ -47,12 +65,14 @@ export default class DrawCanvas extends Component {
 		var posY = event.nativeEvent.locationY
 
 		// Create stroke move object
-		var p = new Point(posX, posY, this.props.thickness, "start")
-		this.updateCanvas(p)
+		var p = new Point(posX, posY, this.props.thickness, this.props.color, "start")
+		this.updateCanvas(p, "self")
 
 		this.setState({
 			strokes: this.state.strokes.concat(p)
 		} )
+		// socket: start stroke
+		sendStrokeStart(this.props.socket);
 
 	}
 
@@ -61,27 +81,39 @@ export default class DrawCanvas extends Component {
 		var posY = event.nativeEvent.locationY
 
 		// Create stroke move object
-		var p = new Point(posX, posY, this.props.thickness, "end")
-		this.updateCanvas(p)
+		var p = new Point(posX, posY, this.props.thickness, this.props.color,  "end")
+		this.updateCanvas(p, "self")
 
 		this.setState({
 			strokes: this.state.strokes.concat(p)
-		} )
+		})
+		// socket: end stroke
+		sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
 	}
 
-	updateCanvas = (point) => {
-	// draw a point
+	updateCanvas = (point, client) => {
+
+		// draw a point
 		// console.log("canvas ref in update is", this.canvasRef)
 		if (!this.canvasRef) {
 			return;
 		}
+		var strokes;
+		if (client == "self") {
+			strokes = this.state.strokes
+		}
+		else {
+			strokes = this.props.otherStrokes
+		}
+		if (!strokes || strokes.length == 0) {
+			return;
+		}
 		var canvas = this.canvasRef.current
-		var len = this.state.strokes.length
+		var len = strokes.length
 		// console.log("canvas is", canvas == null)
 
 		if (canvas && len > 0) {
-			var lastPoint = this.state.strokes[len-1]
-			var secondLastPoint = this.state.strokes[len-2]
+			var lastPoint = strokes[len-1]
 			var {x, y, type, thickness} = point
 			// console.log("thickness is", x, y, type, thickness)
 			var ctx = canvas.getContext("2d");
@@ -105,8 +137,8 @@ export default class DrawCanvas extends Component {
 					break;
 
 			}
-			ctx.fillStyle = this.props.color;
-			ctx.strokeStyle = this.props.color;
+			ctx.fillStyle = point.color;
+			ctx.strokeStyle = point.color;
 			ctx.lineJoin = ctx.lineCap = 'round';
 			ctx.closePath()
 			ctx.stroke();			
@@ -127,13 +159,74 @@ export default class DrawCanvas extends Component {
 
 	}
 
-	getBase64 = () => {
+
+	getPathData = (x, y, width, color) => {
+		return {
+		  drawer: null,
+		  size: {
+			width: this.canvas._size.width,
+			height: this.canvas._size.height,
+		  },
+		  path: {
+			data: [`${x.toString()},${y.toString()}`],
+			// eslint-disable-next-line radix
+			width: width,
+			color: color,
+			id: parseInt(Math.random() * 100000000),
+		  },
+		};
+	  };
+	
+	  getPathDataArray = (data, width, color) => {
+		parsedArr = [];
+		for (var i = 0; i < data.length; i++) {
+		  parsedArr.push(`${data[i].x},${data[i].y}`);
+		}
+		return {
+		  drawer: null,
+		  size: {
+			width: this.canvas._size.width,
+			height: this.canvas._size.height,
+		  },
+		  path: {
+			data: parsedArr,
+			// eslint-disable-next-line radix
+			width: width,
+			color: color,
+			id: parseInt(Math.random() * 100000000),
+		  },
+		};
+	  };
+
+	getBase64 = async () => {
 		var canvas = this.canvasRef.current
 		console.log("Getting bsea64");
 		console.log("Getting base64 is", canvas.toDataURL());
 
-		return canvas.toDataURL()
+		// toDataURL is a string on web, and a promise on android/ios
+		var ret = canvas.toDataURL() 
+
+		// web
+		if (typeof(ret) == "string") {
+			return Promise.resolve(ret)
+		// android/ios
+		} else {
+			return ret;
+		}
 	}
+
+	// Send stroke point data
+	onStrokeChangeHandler = (x, y) => {
+		sendStroke(this.props.socket, {x: x, y: y}, this.props.color, this.props.thickness);
+	};
+
+	// Send stroke end signal
+	onStrokeEndHandler = () => {
+		sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
+	};
+	onStrokeStartHandler = (x, y) => {
+		sendStrokeStart(this.props.socket);
+	};
    
     render() {
       if (Platform.OS === "web") {
@@ -146,35 +239,27 @@ export default class DrawCanvas extends Component {
 		onResponderMove={this.onDrawMove}
 		onResponderRelease={this.onDrawEnd}
 		>
-	
-
         <canvas style={{"borderColor":"black"}} ref={this.handleCanvas}  />
 		</View>
 		)
 	} else {
 		return (
 			<View
-			// onTouchMove={this.onDrawMove}
-			// onTouchStart={this.onDrawStart}
-			// onTouchEnd={this.onDrawEnd}
-			// onMouseDown={this.onDrawStart}
 			onStartShouldSetResponder={(event) => {return true;}}
 			onMoveShouldSetResponder={(event) => {return true;}}
-			style= {styles.drawBox}
-
 			onResponderStart={this.onDrawStart}
 			onResponderMove={this.onDrawMove}
 			onResponderRelease={this.onDrawEnd}
-	
+			style= {styles.drawBox}
 			>
-			<Canvas width={styles.drawBox.width} height={styles.drawBox.height} ref={this.handleCanvas} />
+			<Canvas width={styles.drawBox.width}
+					height={styles.drawBox.height} 
+					ref={this.handleCanvas} 
+					socket={socket}
+			/>
 			</View>
 		)
-	
 	}
-    
     }
-   
-    
   }
 
