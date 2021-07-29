@@ -9,6 +9,7 @@ import {
   Image,
   TouchableOpacity,
   Text,
+  Platform,
 } from 'react-native';
 
 import Slider from '@react-native-community/slider';

@@ -9,6 +9,7 @@ import {
   Image,
   TouchableOpacity,
   Text,
+  Platform
 } from 'react-native';
 
 import DrawCanvas from './components/DrawCanvas';
@@ -36,9 +37,8 @@ var device = Dimensions.get('window');
 
 // Connect to Go backend
 // for web
-let socket = new WebSocket('ws://localhost:8080/ws');
 // for android
-// let socket = new WebSocket('ws://10.0.2.2:8080/ws');
+// let this.state.socket = new WebSocket('ws://10.0.2.2:8080/ws');
 
 // Create dynamic style based on device width/height
 // const styles = StyleSheet.create(generateStyle(device));
@@ -55,6 +55,9 @@ export default class App extends Component {
     thickness: 10, // stroke thickness
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
+    // socket: new WebSocket('ws://localhost:8080/ws')
+    socket:  Platform.OS === "web" ? new WebSocket('ws://localhost:8080/ws') : new WebSocket('ws://10.0.2.2:8080/ws')
+
   };
 
   constructor(props) {
@@ -66,21 +69,21 @@ export default class App extends Component {
   componentDidMount() {
     console.log('Attempting connection');
 
-    // Setup socket handlers
-    socket.onopen = () => {
-      onOpen(socket, {
+    // Setup this.state.socket handlers
+    this.state.socket.onopen = () => {
+      onOpen(this.state.socket, {
         canvasWidth: styles.drawBox.width,
         canvasHeight: styles.drawBox.height,
       });
     };
-    socket.onclose = event => {
+    this.state.socket.onclose = event => {
       onClose(event);
     };
-    socket.onerror = error => {
+    this.state.socket.onerror = error => {
       onError(error);
     };
 
-    socket.onmessage = event => {
+    this.state.socket.onmessage = event => {
       this.onMesageHandler(event);
     };
   }
@@ -105,7 +108,7 @@ export default class App extends Component {
 
   // Send request to model server to generate painting
   sendRequestHelper = async () => {
-    socket.send(
+    this.state.socket.send(
       JSON.stringify({
         kind: messageKinds.MESSAGE_GENERATE,
         data: {
@@ -116,7 +119,7 @@ export default class App extends Component {
   };
   // Send a request to the model server to stylize the generated painting
   sendRequestStyleHelper = async newStyle => {
-    socket.send(
+    this.state.socket.send(
       JSON.stringify({
         kind: messageKinds.MESSAGE_STYLIZE,
         data: {
@@ -215,7 +218,7 @@ export default class App extends Component {
               style={{flex: 1}}
               thickness={this.state.thickness}
               color={this.state.color}
-              socket={socket}
+              socket={this.state.socket}
               otherStrokes={this.state.collaboratorStroke}
             />
 

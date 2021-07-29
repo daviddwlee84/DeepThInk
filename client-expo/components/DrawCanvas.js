@@ -133,7 +133,7 @@ export default class DrawCanvas extends Component {
 
 		if (canvas && len > 0) {
 			var {x, y, type, thickness} = point
-			console.log("lastpoint is", lastPoint, "point is",)
+			// console.log("lastpoint is", lastPoint, "point is",)
 			var ctx = canvas.getContext("2d");
 			ctx.lineWidth = thickness
 
@@ -219,7 +219,6 @@ export default class DrawCanvas extends Component {
 
 	getBase64 = async () => {
 		var canvas = this.canvasRef.current
-		console.log("Getting bsea64");
 		console.log("Getting base64 is", canvas.toDataURL());
 
 		// toDataURL is a string on web, and a promise on android/ios
@@ -274,7 +273,6 @@ export default class DrawCanvas extends Component {
 			<Canvas width={styles.drawBox.width}
 					height={styles.drawBox.height} 
 					ref={this.handleCanvas} 
-					socket={socket}
 			/>
 			</View>
 		)
