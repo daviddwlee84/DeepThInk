@@ -4,11 +4,16 @@ export function myFunc() {
 }
 export function onReceiveStroke(event) {}
 
-export function sendStrokeStart(socket, data) {
+export function sendStrokeStart(socket, point, color, thickness) {
   socket.send(
     JSON.stringify({
       kind: messageKinds.MESSAGE_STROKE_START,
-    }),
+      data: {
+        point: point,
+        color: color,
+        thickness: thickness,
+      },
+      }),
   );
   console.log('Sent start stroke message');
 }

@@ -33,11 +33,10 @@ export default class DrawCanvas extends Component {
 
 	componentDidUpdate(prevProps) {
 		if (prevProps.otherStrokes != this.props.otherStrokes) {
-		  console.log("collaborator", prevProps.otherStrokes, "new:", this.props.otherStrokes)
+		//   console.log("collaborator", prevProps.otherStrokes, "new:", this.props.otherStrokes)
 			if (this.props.otherStrokes.length > 0) {
 				var newStroke = this.props.otherStrokes[this.props.otherStrokes.length-1]
-				var pt = new Point(newStroke.x, newStroke.y, newStroke.thickness, this.props.color,  "move")
-				this.updateCanvas(pt, "other")		
+				this.updateCanvas(newStroke, "other")		
 			}
 		}
 	}	  
@@ -72,7 +71,7 @@ export default class DrawCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		} )
 		// socket: start stroke
-		sendStrokeStart(this.props.socket);
+		sendStrokeStart(this.props.socket, {x: p.x, y: p.y}, p.thickness, p.color);
 
 	}
 
@@ -92,30 +91,49 @@ export default class DrawCanvas extends Component {
 	}
 
 	updateCanvas = (point, client) => {
+		// client: "self" | "other"
+		// point: Point
 
 		// draw a point
-		// console.log("canvas ref in update is", this.canvasRef)
+		console.log("canvas ref in update is", client)
 		if (!this.canvasRef) {
 			return;
 		}
+
 		var strokes;
-		if (client == "self") {
-			strokes = this.state.strokes
+		var lastPoint;
+		// Error checking
+		if (client == "self")
+		{
+			if (!this.state.strokes || this.state.strokes.length < 1)
+			{
+				return;
+			}
+			else {
+				strokes = this.state.strokes
+				lastPoint = strokes[strokes.length-1]	
+			}
+		} else
+		{
+			if (!this.props.otherStrokes || this.props.otherStrokes.length < 3)
+			{
+				return;
+			} else {
+				strokes = this.props.otherStrokes
+				lastPoint = strokes[strokes.length-2]	
+			}
 		}
-		else {
-			strokes = this.props.otherStrokes
-		}
-		if (!strokes || strokes.length == 0) {
-			return;
-		}
+		
+
+
+
 		var canvas = this.canvasRef.current
 		var len = strokes.length
 		// console.log("canvas is", canvas == null)
 
 		if (canvas && len > 0) {
-			var lastPoint = strokes[len-1]
 			var {x, y, type, thickness} = point
-			// console.log("thickness is", x, y, type, thickness)
+			console.log("lastpoint is", lastPoint, "point is",)
 			var ctx = canvas.getContext("2d");
 			ctx.lineWidth = thickness
 
@@ -132,6 +150,7 @@ export default class DrawCanvas extends Component {
 					ctx.beginPath();
 
 					ctx.moveTo(lastPoint.x, lastPoint.y)
+
 					ctx.globalCompositeOperation = 'source-over';
 					ctx.lineTo(x, y);
 					break;

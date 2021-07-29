@@ -152,11 +152,19 @@ export default class App extends Component {
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE_START:
         console.log("RECEIVED STROKE STARTT", message)
-        
+        // Append collaborator stroke
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [
+            ...prevState.collaboratorStroke,
+            new Point(message.point.x, message.point.y, message.thickness, message.color, "start"),
+          ],
+        }));
       
         break;
       case messageKinds.MESSAGE_STROKE:
-        // console.log("received collaborator point")
+        
+        // console.log("received collaborator point", message)
         // Append collaborator stroke
         this.setState(prevState => ({
           ...prevState,

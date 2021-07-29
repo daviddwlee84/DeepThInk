@@ -93,8 +93,11 @@ type StrokeEnd struct {
 }
 
 type StrokeStart struct {
-	Kind   int    `json:"kind"`
-	UserID string `json:"userId"`
+	Kind      int     `json:"kind"`
+	UserID    string  `json:"userId"`
+	Point     Point   `json:"point"`
+	Thickness float64 `json:"thickness"`
+	Color     string  `json:"color"`
 }
 
 type Generate struct {

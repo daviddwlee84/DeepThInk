@@ -115,12 +115,21 @@ func (hub *Hub) onDisconnect(client *Client) {
 
 func (hub *Hub) onMessage(data []byte, client *Client) {
 	kind := gjson.GetBytes(data, "kind").Int()
+
 	switch kind {
 	case message.KindStrokeStart:
+		data := gjson.GetBytes(data, "data")
+
 		log.Println("Send start message")
 		var msg message.StrokeStart = message.StrokeStart{
 			Kind:   message.KindStrokeStart,
 			UserID: client.id,
+			Point: message.Point{
+				X: data.Get("point.x").Float(),
+				Y: data.Get("point.y").Float(),
+			},
+			Thickness: data.Get("thickness").Float(),
+			Color:     data.Get("color").String(),
 		}
 		hub.broadcast(msg, client)
 
