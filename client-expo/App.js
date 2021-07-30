@@ -490,6 +490,7 @@ const styles = StyleSheet.create({
     height: 40,
     width: 70,
     flexDirection: 'row',
+    paddingTop: device.height*0.05,
   },
   tempIcons: {
     alignItems: 'center',
