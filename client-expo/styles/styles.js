@@ -17,12 +17,12 @@ export function generateStyle(device) {
       // padding: 10,
     },
     drawBoxInner: {
-      backgroundColor: 'lightblue',
-      borderColor: 'blue',
-      borderWidth: 2,
+      backgroundColor: '#fffff5',
+      borderColor: 'lightblue',
+      borderWidth: 5,
       // padding: 10,
-      width: device.width * 0.45,
-      height: device.height * 0.85,
+      width: device.width * 0.48,
+      height: device.height * 0.795,
     },
     canvasBox: {
       width: device.width * 0.45,

@@ -426,7 +426,7 @@ export default class App extends Component {
                   color: 'white',
                   alignItems: 'center',
                   justifyContent: 'venter',
-                  fontSize: device.height * 0.035,
+                  fontSize: device.height * 0.04,
                 }}>
                 {"Generate!"}
               </Text>
@@ -446,21 +446,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'skyblue',
     paddingTop: device.height * 0.02,
   },
-
-  drawBox: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderColor: 'lightblue',
-    borderWidth: 10,
-    width: device.width * 0.5,
-    height: device.height * 0.85,
-  },
   generatedImageBox: {
     borderWidth: 10,
     borderColor: 'lightblue',
 
-    width: device.width * 0.45,
-    height: device.height * 0.85,
+    width: device.width * 0.48,
+    height: device.height * 0.795,
   },
   generatedImage: {
     width: device.width * 0.45,
