@@ -426,7 +426,7 @@ export default class App extends Component {
                   color: 'white',
                   alignItems: 'center',
                   justifyContent: 'venter',
-                  fontSize: device.height * 0.04,
+                  fontSize: device.height * 0.035,
                 }}>
                 {"Generate!"}
               </Text>
@@ -450,8 +450,8 @@ const styles = StyleSheet.create({
     borderWidth: 10,
     borderColor: 'lightblue',
 
-    width: device.width * 0.48,
-    height: device.height * 0.795,
+    width: device.width * 0.45,
+    height: device.height * 0.85,
   },
   generatedImage: {
     width: device.width * 0.45,

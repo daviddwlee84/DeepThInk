@@ -19,10 +19,10 @@ export function generateStyle(device) {
     drawBoxInner: {
       backgroundColor: '#fffff5',
       borderColor: 'lightblue',
-      borderWidth: 5,
+      borderWidth: 1,
       // padding: 10,
-      width: device.width * 0.48,
-      height: device.height * 0.795,
+      width: device.width * 0.45,
+      height: device.height * 0.85,
     },
     canvasBox: {
       width: device.width * 0.45,
