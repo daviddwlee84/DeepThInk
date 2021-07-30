@@ -357,12 +357,26 @@ export default class App extends Component {
               {this.state.message}
             </Text>
           </View>
+        </View>
+
+        <View style={styles.genGroup}>
+          {/* Displayed image */}
+          <View style={styles.generatedImageBox}>
+            {this.state.displayedImageData != null ? (
+              <Image
+                style={styles.generatedImage}
+                source={{uri: this.state.displayedImageData}}
+              />
+            ) : null}
+          </View>
+          
           {/* Style buttons */}
           <View
             style={{
               flexDirection: 'row',
-              justifyContent: 'space-around',
+              justifyContent: 'center',
               alignItems: 'center',
+              paddingTop: device.height * 0.008,
             }}>
             <View style={{flexDirection: 'row'}}>
               {/* None style button */}
@@ -403,18 +417,7 @@ export default class App extends Component {
               {this.state.message}
             </Text>
           </View>
-        </View>
 
-        <View style={styles.genGroup}>
-          {/* Displayed image */}
-          <View style={styles.generatedImageBox}>
-            {this.state.displayedImageData != null ? (
-              <Image
-                style={styles.generatedImage}
-                source={{uri: this.state.displayedImageData}}
-              />
-            ) : null}
-          </View>
           {/* Generate button */}
           <View style={styles.genButton}>
             <TouchableOpacity
@@ -469,7 +472,7 @@ const styles = StyleSheet.create({
   },
   genButton: {
     borderRadius: 5,
-    paddingTop: 10,
+    paddingTop: device.height * 0.005,
     justifyContent: 'center',
     alignItems: 'center',
   },
