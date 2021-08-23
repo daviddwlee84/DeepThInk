@@ -1,3 +1,4 @@
+# Model and data
 SPADE_weights/
 datasets/
 __pycache__/
@@ -5,3 +6,7 @@ __pycache__/
 node_modules
 .idea
 executionHistory.bin
+# Expo files
+.expo
+__generated__
+web-build

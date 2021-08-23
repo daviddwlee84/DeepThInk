@@ -1,7 +1,0 @@
-{
-  "display": "standalone",
-  "lang": "en",
-  "name": "client-expo",
-  "short_name": "client-expo",
-  "start_url": "/?utm_source=web_app_manifest"
-}
