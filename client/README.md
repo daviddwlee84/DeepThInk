@@ -1,21 +1,14 @@
 # Client
 
 ## Installation
-
+Make sure you have `expo` installed.
 
 Install packages:
 ```
-npm install
+expo install
 ```
 
 Start the listener:
 ```
-npm start
-```
-
-Install the app
-```
-react-native run-android
-# or
-react-native run-ios
+expo web
 ```
