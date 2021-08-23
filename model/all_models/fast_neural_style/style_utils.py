@@ -27,8 +27,8 @@ from PIL import Image
 import base64
 import io
 
-# device = torch.device("cuda")
-device = torch.device("cpu")
+device = torch.device("cuda")
+# device = torch.device("cpu")
 
 # Loads pre-trained weights
 rain_princess_path = f'{dir}/saved_models/rain_princess.pth'

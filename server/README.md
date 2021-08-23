@@ -1,3 +1,8 @@
+# Running locally
+To run the server locally, run 
+```shell
+go build -o server && ./server
+```
 # Docker
 To build the Docker image, run 
 ```shell
