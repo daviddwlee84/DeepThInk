@@ -9,7 +9,7 @@ import {
   Image,
   TouchableOpacity,
   Text,
-  Platform
+  Platform,
 } from 'react-native';
 
 import DrawCanvas from './components/DrawCanvas';
@@ -36,7 +36,6 @@ var device = Dimensions.get('window');
 const CANVASWIDTH = Math.min(device.width * 0.75, device.height * 0.75);
 const CANVASHEIGHT = Math.min(device.width * 0.75, device.height * 0.75);
 
-
 // Connect to Go backend
 // for web
 // for android
@@ -58,10 +57,12 @@ export default class App extends Component {
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
     // socket: new WebSocket('ws://localhost:8080/ws')
-    socket:  Platform.OS === "web" ? new WebSocket('ws://localhost:8080/ws') : new WebSocket('ws://10.0.2.2:8080/ws'),
+    socket:
+      Platform.OS === 'web'
+        ? new WebSocket('ws://localhost:8080/ws')
+        : new WebSocket('ws://10.0.2.2:8080/ws'),
     canvasWidth: CANVASWIDTH,
-    canvasHeight: CANVASHEIGHT
-
+    canvasHeight: CANVASHEIGHT,
   };
 
   constructor(props) {
@@ -75,7 +76,11 @@ export default class App extends Component {
 
     // Setup this.state.socket handlers
     this.state.socket.onopen = () => {
-      console.log('CANVAS DIMS ARE', this.state.canvasWidth, this.state.canvasHeight );
+      console.log(
+        'CANVAS DIMS ARE',
+        this.state.canvasWidth,
+        this.state.canvasHeight,
+      );
 
       onOpen(this.state.socket, {
         canvasWidth: this.state.canvasWidth,
@@ -97,19 +102,18 @@ export default class App extends Component {
   // Fetch image data from canvas
   // Then call sendRequest to send the data to backend
   grabPixels = async () => {
-    var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
+    var getImage = this.refs.drawCanvasRef.getBase64().then(value => {
       var resultImage = value.split(';base64,')[1];
-      console.log("result image is", resultImage)
-        this.setState(
-          prevState => ({
-            ...prevState,
-            imageData: resultImage,
-          }),
-          // Do callback to send to server after the imageData is set
-          this.sendRequestHelper,
-        );
-    })
-    
+      console.log('result image is', resultImage);
+      this.setState(
+        prevState => ({
+          ...prevState,
+          imageData: resultImage,
+        }),
+        // Do callback to send to server after the imageData is set
+        this.sendRequestHelper,
+      );
+    });
   };
 
   // Send request to model server to generate painting
@@ -144,8 +148,6 @@ export default class App extends Component {
     console.log('thickness is now', sliderValue);
   };
 
-
-
   onMesageHandler = event => {
     var messages = event.data.split('\n');
 
@@ -157,11 +159,10 @@ export default class App extends Component {
     // console.log('B stringified is', JSON.stringify(this.canvas.getPaths()));
   };
 
-
   executeMessage = message => {
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE_START:
-        console.log("RECEIVED STROKE STARTT", message)
+        console.log('RECEIVED STROKE STARTT', message);
         // Append collaborator stroke
         this.setState(prevState => ({
           ...prevState,
@@ -171,14 +172,14 @@ export default class App extends Component {
               message.point.x * CANVASWIDTH,
               message.point.y * CANVASHEIGHT,
               message.thickness,
-              message.color, 
-              "start"),
+              message.color,
+              'start',
+            ),
           ],
         }));
-      
+
         break;
       case messageKinds.MESSAGE_STROKE:
-        
         // console.log("received collaborator point", message)
         // Append collaborator stroke
         this.setState(prevState => ({
@@ -190,7 +191,8 @@ export default class App extends Component {
               message.point.y * CANVASHEIGHT,
               message.thickness,
               message.color,
-              "move"),
+              'move',
+            ),
           ],
         }));
         break;
@@ -223,66 +225,61 @@ export default class App extends Component {
     }
   };
 
-
-
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.drawGroup}>
-            {/* Main canvas */}
-            <DrawCanvas
-              ref="drawCanvasRef"
-              style={{flex: 1}}
-              thickness={this.state.thickness}
-              color={this.state.color}
-              socket={this.state.socket}
-              otherStrokes={this.state.collaboratorStroke}
-              width={CANVASWIDTH}
-              height={CANVASHEIGHT}
-            />
+          {/* Main canvas */}
+          <DrawCanvas
+            ref="drawCanvasRef"
+            style={{flex: 1}}
+            thickness={this.state.thickness}
+            color={this.state.color}
+            socket={this.state.socket}
+            otherStrokes={this.state.collaboratorStroke}
+            width={CANVASWIDTH}
+            height={CANVASHEIGHT}
+          />
 
-            <View style={styles.toolGroup}>
-              {/* Thickness slider */}
-              <View style={styles.strokeGroup}>
-                <Text
-                  style={{
-                    color: '#07235c',
-                    fontWeight: 'bold',
-                    fontSize: device.height * 0.023,
-                  }}>
-                  Stroke size:
-                </Text>
-                <Slider
-                  style={{
-                    width: device.width * 0.15,
-                    height: device.height * 0.03,
-                    marginBottom: 10,
-                  }}
-                  minimumValue={1}
-                  maximumValue={
-                    device.width * device.height * (1 / Math.pow(10, 4))
-                  }
-                  minimumTrackTintColor="#000000"
-                  maximumTrackTintColor="#000000"
-                  onSlidingComplete={this.handleThickness}
-                />
+          <View style={styles.toolGroup}>
+            {/* Thickness slider */}
+            <View style={styles.strokeGroup}>
+              <Text
+                style={{
+                  color: '#07235c',
+                  fontWeight: 'bold',
+                  fontSize: device.height * 0.023,
+                }}>
+                Stroke size:
+              </Text>
+              <Slider
+                style={{
+                  width: device.width * 0.15,
+                  height: device.height * 0.03,
+                  marginBottom: 10,
+                }}
+                minimumValue={1}
+                maximumValue={
+                  device.width * device.height * (1 / Math.pow(10, 4))
+                }
+                minimumTrackTintColor="#000000"
+                maximumTrackTintColor="#000000"
+                onSlidingComplete={this.handleThickness}
+              />
+            </View>
+
+            <View style={styles.tempButtons}>
+              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                <Button color="#073ead" title="undo!" />
               </View>
-
-              <View style={styles.tempButtons}>
-                <View
-                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
-                  <Button color="#073ead" title="undo!" />
-                </View>
-                <View
-                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
-                  <Button color="#073ead" title="redo!" />
-                </View>
-                <View
-                  style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
-                  <Button color="#07235c" title="erase" />
-                </View>
+              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                <Button color="#073ead" title="redo!" />
+              </View>
+              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                <Button color="#07235c" title="erase" />
               </View>
             </View>
+          </View>
           {/* Color palette buttons */}
           <View
             style={{
@@ -400,7 +397,7 @@ const styles = StyleSheet.create({
   },
 
   drawBox: {
-    backgroundColor: 'white',
+    backgroundColor: '#759edf',
     borderColor: 'lightblue',
     borderWidth: 10,
     width: CANVASHEIGHT,

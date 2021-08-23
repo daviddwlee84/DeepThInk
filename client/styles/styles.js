@@ -11,13 +11,12 @@ export function generateStyle(device) {
     },
 
     drawBox: {
-      backgroundColor: 'lightblue',
       borderColor: 'blue',
       borderWidth: 2,
       // padding: 10,
     },
     drawBoxInner: {
-      backgroundColor: 'lightblue',
+      backgroundColor: '#759edf',
       borderColor: 'blue',
       borderWidth: 2,
       // padding: 10,
