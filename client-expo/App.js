@@ -56,7 +56,9 @@ export default class App extends Component {
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
     // socket: new WebSocket('ws://localhost:8080/ws')
-    socket:  Platform.OS === "web" ? new WebSocket('ws://localhost:8080/ws') : new WebSocket('ws://10.0.2.2:8080/ws')
+    socket:  Platform.OS === "web" ? new WebSocket('ws://localhost:8080/ws') : new WebSocket('ws://10.0.2.2:8080/ws'),
+    canvasWidth: Math.min(device.width * 0.5, device.height * 0.85),
+    canvasHeight: Math.min(device.width * 0.5, device.height * 0.85)
 
   };
 
@@ -71,9 +73,11 @@ export default class App extends Component {
 
     // Setup this.state.socket handlers
     this.state.socket.onopen = () => {
+      console.log('CANVAS DIMS ARE', this.state.canvasWidth, this.state.canvasHeight );
+
       onOpen(this.state.socket, {
-        canvasWidth: styles.drawBox.width,
-        canvasHeight: styles.drawBox.height,
+        canvasWidth: this.state.canvasWidth,
+        canvasHeight: this.state.canvasHeight,
       });
     };
     this.state.socket.onclose = event => {
@@ -220,6 +224,8 @@ export default class App extends Component {
               color={this.state.color}
               socket={this.state.socket}
               otherStrokes={this.state.collaboratorStroke}
+              width={Math.min(device.width * 0.5, device.height * 0.85)}
+              height={Math.min(device.width * 0.5, device.height * 0.85)}
             />
 
             <View style={styles.toolGroup}>
@@ -384,19 +390,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: 'lightblue',
     borderWidth: 10,
-    width: device.width * 0.5,
-    height: device.height * 0.85,
+    width: Math.min(device.width * 0.5, device.height * 0.85),
+    height: Math.min(device.width * 0.5, device.height * 0.85),
   },
   generatedImageBox: {
     borderWidth: 10,
     borderColor: 'lightblue',
-
-    width: device.width * 0.45,
-    height: device.height * 0.85,
+    width: Math.min(device.width * 0.5, device.height * 0.85),
+    height: Math.min(device.width * 0.5, device.height * 0.85),
   },
   generatedImage: {
-    width: device.width * 0.45,
-    height: device.height * 0.85,
+    width: Math.min(device.width * 0.5, device.height * 0.85),
+    height: Math.min(device.width * 0.5, device.height * 0.85),
   },
   functionButton: {
     padding: 4,

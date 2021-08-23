@@ -170,8 +170,8 @@ export default class DrawCanvas extends Component {
 		// console.log("handling canvas", canvas)
 
 		const ctx = canvas.getContext('2d');
-		canvas.width = device.width * 0.45;
-		canvas.height = device.height * 0.85;
+		canvas.width = this.props.width;
+		canvas.height = this.props.height;
 
 		this.canvasRef = canvas;
 		this.canvasRef.current = canvas;
