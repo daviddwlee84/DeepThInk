@@ -33,8 +33,8 @@ import {sendRequest, sendRequestStyle} from './api/modelApi.js';
 import {hello, generateStyle} from './styles/styles.js';
 import Point from './classes/Point';
 var device = Dimensions.get('window');
-const CANVASWIDTH = Math.min(device.width * 0.5, device.height * 0.85);
-const CANVASHEIGHT = Math.min(device.width * 0.5, device.height * 0.85);
+const CANVASWIDTH = Math.min(device.width * 0.75, device.height * 0.75);
+const CANVASHEIGHT = Math.min(device.width * 0.75, device.height * 0.75);
 
 
 // Connect to Go backend
@@ -59,8 +59,8 @@ export default class App extends Component {
     collaboratorStroke: [], // collaborator data
     // socket: new WebSocket('ws://localhost:8080/ws')
     socket:  Platform.OS === "web" ? new WebSocket('ws://localhost:8080/ws') : new WebSocket('ws://10.0.2.2:8080/ws'),
-    canvasWidth: Math.min(device.width * 0.5, device.height * 0.85),
-    canvasHeight: Math.min(device.width * 0.5, device.height * 0.85)
+    canvasWidth: CANVASWIDTH,
+    canvasHeight: CANVASHEIGHT
 
   };
 
@@ -237,8 +237,8 @@ export default class App extends Component {
               color={this.state.color}
               socket={this.state.socket}
               otherStrokes={this.state.collaboratorStroke}
-              width={Math.min(device.width * 0.5, device.height * 0.85)}
-              height={Math.min(device.width * 0.5, device.height * 0.85)}
+              width={CANVASWIDTH}
+              height={CANVASHEIGHT}
             />
 
             <View style={styles.toolGroup}>
@@ -403,18 +403,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderColor: 'lightblue',
     borderWidth: 10,
-    width: Math.min(device.width * 0.5, device.height * 0.85),
-    height: Math.min(device.width * 0.5, device.height * 0.85),
+    width: CANVASHEIGHT,
+    height: CANVASHEIGHT,
   },
   generatedImageBox: {
     borderWidth: 10,
     borderColor: 'lightblue',
-    width: Math.min(device.width * 0.5, device.height * 0.85),
-    height: Math.min(device.width * 0.5, device.height * 0.85),
+    backgroundColor: 'lightblue',
+    width: CANVASWIDTH,
+    height: CANVASHEIGHT,
   },
   generatedImage: {
-    width: Math.min(device.width * 0.5, device.height * 0.85),
-    height: Math.min(device.width * 0.5, device.height * 0.85),
+    width: CANVASWIDTH,
+    height: CANVASHEIGHT,
   },
   functionButton: {
     padding: 4,
