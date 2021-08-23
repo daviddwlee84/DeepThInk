@@ -407,9 +407,9 @@ const styles = StyleSheet.create({
     height: CANVASHEIGHT,
   },
   generatedImageBox: {
-    borderWidth: 10,
-    borderColor: 'lightblue',
+    borderWidth: 2,
     backgroundColor: 'lightblue',
+    borderColor: 'blue',
     width: CANVASWIDTH,
     height: CANVASHEIGHT,
   },

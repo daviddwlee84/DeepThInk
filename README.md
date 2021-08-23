@@ -1,4 +1,6 @@
 # hai-art
+![](screenshots/screenshot1.png)
+
 For more details, see the `README.md` inside `client/`, `server/` and `model/` directories respectively. 
 
 ## Client
