@@ -28,6 +28,8 @@ export default class DrawCanvas extends Component {
 		this.thickness = props.thickness
 		this.color = props.color
 		this.canvasRef = null;
+		this.width = props.width;
+		this.height = props.height;
 
 	}
 
@@ -54,7 +56,7 @@ export default class DrawCanvas extends Component {
 		this.setState({
 			strokes: this.state.strokes.concat(p)
 		})
-		sendStroke(this.props.socket, {x: posX, y: posY}, this.props.color, this.props.thickness)
+		sendStroke(this.props.socket, {x: posX/this.width, y: posY/this.height}, this.props.color, this.props.thickness)
 		
     }
 

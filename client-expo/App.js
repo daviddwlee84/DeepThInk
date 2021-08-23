@@ -33,6 +33,8 @@ import {sendRequest, sendRequestStyle} from './api/modelApi.js';
 import {hello, generateStyle} from './styles/styles.js';
 import Point from './classes/Point';
 var device = Dimensions.get('window');
+const CANVASWIDTH = Math.min(device.width * 0.5, device.height * 0.85);
+const CANVASHEIGHT = Math.min(device.width * 0.5, device.height * 0.85);
 
 
 // Connect to Go backend
@@ -155,6 +157,7 @@ export default class App extends Component {
     // console.log('B stringified is', JSON.stringify(this.canvas.getPaths()));
   };
 
+
   executeMessage = message => {
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE_START:
@@ -164,7 +167,12 @@ export default class App extends Component {
           ...prevState,
           collaboratorStroke: [
             ...prevState.collaboratorStroke,
-            new Point(message.point.x, message.point.y, message.thickness, message.color, "start"),
+            new Point(
+              message.point.x * CANVASWIDTH,
+              message.point.y * CANVASHEIGHT,
+              message.thickness,
+              message.color, 
+              "start"),
           ],
         }));
       
@@ -177,7 +185,12 @@ export default class App extends Component {
           ...prevState,
           collaboratorStroke: [
             ...prevState.collaboratorStroke,
-            new Point(message.point.x, message.point.y, message.thickness, message.color, "move"),
+            new Point(
+              message.point.x * CANVASWIDTH,
+              message.point.y * CANVASHEIGHT,
+              message.thickness,
+              message.color,
+              "move"),
           ],
         }));
         break;
