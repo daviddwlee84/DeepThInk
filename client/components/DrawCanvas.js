@@ -30,6 +30,7 @@ export default class DrawCanvas extends Component {
 		this.canvasRef = null;
 		this.width = props.width;
 		this.height = props.height;
+		this.canvasOpacity = props.canvasOpacity;
 
 	}
 
@@ -252,14 +253,14 @@ export default class DrawCanvas extends Component {
       if (Platform.OS === "web") {
 		return (
 		<View
-		style= {styles.drawBoxInner}
+		style= {[styles.drawBoxInner, {opacity: this.props.opacity}]}
 		onStartShouldSetResponder={(event) => {return true;}}
 		onMoveShouldSetResponder={(event) => {return true;}}
 		onResponderStart={this.onDrawStart}
 		onResponderMove={this.onDrawMove}
 		onResponderRelease={this.onDrawEnd}
 		>
-        <canvas style={{"borderColor":"black"}} ref={this.handleCanvas}  />
+        <canvas style={{borderColor:"black"}} ref={this.handleCanvas}  />
 		</View>
 		)
 	} else {

@@ -56,6 +56,8 @@ export default class App extends Component {
     thickness: 10, // stroke thickness
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
+    opacity: 0, // Toggle between the drawing canvas and generated image. 
+                   // 1 = show drawing canvas, 0 = show image
     // socket: new WebSocket('ws://localhost:8080/ws')
     socket:
       Platform.OS === 'web'
@@ -229,17 +231,29 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.drawGroup}>
+          {/* Displayed image */}
+            <View style={styles.generatedImageBox}>
+            {this.state.displayedImageData != null ? (
+              <Image
+                style={styles.generatedImage}
+                source={{uri: this.state.displayedImageData}}
+              />
+            ) : null}
+            </View>
           {/* Main canvas */}
+          {/* Conditionally render the main canvas if toggleDraw == true */}
           <DrawCanvas
             ref="drawCanvasRef"
-            style={{flex: 1}}
+            style={{flex: 1, background: 'transparent'}}
             thickness={this.state.thickness}
             color={this.state.color}
             socket={this.state.socket}
             otherStrokes={this.state.collaboratorStroke}
             width={CANVASWIDTH}
             height={CANVASHEIGHT}
+            opacity={this.state.opacity}
           />
+
 
           <View style={styles.toolGroup}>
             {/* Thickness slider */}
@@ -254,7 +268,7 @@ export default class App extends Component {
               </Text>
               <Slider
                 style={{
-                  width: device.width * 0.15,
+                  width: device.width * 0.10,
                   height: device.height * 0.03,
                   marginBottom: 10,
                 }}
@@ -275,8 +289,31 @@ export default class App extends Component {
               <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
                 <Button color="#073ead" title="redo!" />
               </View>
-              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+              {/* <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
                 <Button color="#07235c" title="erase" />
+              </View> */}
+              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                <Button color="#07235c" title="clear" />
+              </View>
+              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+
+                <Button color="#07235c" title="canvas" onPress={() => {
+                  console.log("Toggling draw canvas to ", this.state.opacity)
+                  this.setState(prevState => ({
+                    ...prevState,
+                    opacity: (prevState.opacity*2 +  1)%3 / 2,
+                  }));
+
+                }} />
+                
+              </View>
+              {/* Generate button */}
+              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+                <Button
+                  color="#841584"
+                  title="Generate!"
+                  onPress={this.grabPixels.bind(this)}
+                />
               </View>
             </View>
           </View>
@@ -363,25 +400,6 @@ export default class App extends Component {
           </View>
         </View>
 
-        <View style={styles.genGroup}>
-          {/* Displayed image */}
-          <View style={styles.generatedImageBox}>
-            {this.state.displayedImageData != null ? (
-              <Image
-                style={styles.generatedImage}
-                source={{uri: this.state.displayedImageData}}
-              />
-            ) : null}
-          </View>
-          {/* Generate button */}
-          <View style={styles.genButton}>
-            <Button
-              color="#841584"
-              title="Generate!"
-              onPress={this.grabPixels.bind(this)}
-            />
-          </View>
-        </View>
       </View>
     );
   }
@@ -409,6 +427,7 @@ const styles = StyleSheet.create({
     borderColor: 'blue',
     width: CANVASWIDTH,
     height: CANVASHEIGHT,
+    position: 'absolute'
   },
   generatedImage: {
     width: CANVASWIDTH,
@@ -420,6 +439,7 @@ const styles = StyleSheet.create({
   },
   drawGroup: {
     flexDirection: 'column',
+    display: 'flex'
   },
   genGroup: {
     flexDirection: 'column',
