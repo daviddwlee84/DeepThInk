@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
@@ -29,12 +29,14 @@ import {
   sendStrokeEnd,
   sendStrokeStart,
 } from './api/websocketApi.js';
-import {sendRequest, sendRequestStyle} from './api/modelApi.js';
-import {hello, generateStyle} from './styles/styles.js';
+import { sendRequest, sendRequestStyle } from './api/modelApi.js';
+import { hello, generateStyle } from './styles/styles.js';
 import Point from './classes/Point';
+import { startClock } from 'react-native-reanimated';
+import { ScrollView } from 'react-native-gesture-handler';
 var device = Dimensions.get('window');
-const CANVASWIDTH = Math.min(device.width * 0.75, device.height * 0.75);
-const CANVASHEIGHT = Math.min(device.width * 0.75, device.height * 0.75);
+const CANVASWIDTH = Math.min(device.width * 0.85, device.height * 0.85);
+const CANVASHEIGHT = Math.min(device.width * 0.85, device.height * 0.85);
 
 // Connect to Go backend
 // for web
@@ -56,8 +58,8 @@ export default class App extends Component {
     thickness: 10, // stroke thickness
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
-    opacity: 0, // Toggle between the drawing canvas and generated image. 
-                   // 1 = show drawing canvas, 0 = show image
+    opacity: 1, // Toggle between the drawing canvas and generated image. 
+    // 1 = show drawing canvas, 0 = show image
     // socket: new WebSocket('ws://localhost:8080/ws')
     socket:
       Platform.OS === 'web'
@@ -230,29 +232,47 @@ export default class App extends Component {
   render() {
     return (
       <View style={styles.container}>
+        {/* Da Brush~ */}
+        <View>
+          <TouchableOpacity onPress={() => Linking.openURL("https://www.youtube.com/")}>
+            <Image style={styles.brushes} source={require('./resources/AIBrush.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL("https://www.youtube.com/")}>
+            <Image style={styles.brushes} source={require('./resources/styleBrush.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL("https://www.youtube.com/")}>
+            <Image style={styles.brushes} source={require('./resources/userBrush.png')} />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.drawGroup}>
+
           {/* Displayed image */}
-            <View style={styles.generatedImageBox}>
+          <View style={styles.generatedImageBox}>
             {this.state.displayedImageData != null ? (
               <Image
                 style={styles.generatedImage}
-                source={{uri: this.state.displayedImageData}}
+                source={{ uri: this.state.displayedImageData }}
               />
             ) : null}
-            </View>
+          </View>
           {/* Main canvas */}
           {/* Conditionally render the main canvas if toggleDraw == true */}
-          <DrawCanvas
-            ref="drawCanvasRef"
-            style={{flex: 1, background: 'transparent'}}
-            thickness={this.state.thickness}
-            color={this.state.color}
-            socket={this.state.socket}
-            otherStrokes={this.state.collaboratorStroke}
-            width={CANVASWIDTH}
-            height={CANVASHEIGHT}
-            opacity={this.state.opacity}
-          />
+
+          <View style={styles.shadowBox}>
+
+            <DrawCanvas
+              ref="drawCanvasRef"
+              style={{ flex: 1, background: 'transparent' }}
+              thickness={this.state.thickness}
+              color={this.state.color}
+              socket={this.state.socket}
+              otherStrokes={this.state.collaboratorStroke}
+              width={CANVASWIDTH}
+              height={CANVASHEIGHT}
+              opacity={this.state.opacity}
+            />
+          </View>
 
 
           <View style={styles.toolGroup}>
@@ -283,32 +303,32 @@ export default class App extends Component {
             </View>
 
             <View style={styles.tempButtons}>
-              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
                 <Button color="#073ead" title="undo!" />
               </View>
-              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
                 <Button color="#073ead" title="redo!" />
               </View>
               {/* <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
                 <Button color="#07235c" title="erase" />
               </View> */}
-              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
                 <Button color="#07235c" title="clear" />
               </View>
-              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
 
                 <Button color="#07235c" title="canvas" onPress={() => {
                   console.log("Toggling draw canvas to ", this.state.opacity)
                   this.setState(prevState => ({
                     ...prevState,
-                    opacity: (prevState.opacity*2 +  1)%3 / 2,
+                    opacity: (prevState.opacity * 2 + 1) % 3 / 2,
                   }));
 
                 }} />
-                
+
               </View>
               {/* Generate button */}
-              <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
+              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
                 <Button
                   color="#841584"
                   title="Generate!"
@@ -317,25 +337,32 @@ export default class App extends Component {
               </View>
             </View>
           </View>
+        </View>
+
+
+        <View style={{ flexDirection: 'row', }}>
           {/* Color palette buttons */}
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              alignItems: 'center',
+              flexDirection: 'column',
             }}>
-            <View style={{flexDirection: 'row'}}>
+
+            <ScrollView style={{ height: device.height * 0.7 }}>
+              {/* <View style={{ flexDirection: 'column' }}> */}
               {colorMap.colors.map(obj => {
                 return (
-                  <View style={{margin: 2}}>
+                  <View style={{ margin: 2 }}>
                     <TouchableOpacity
                       style={[
                         styles.functionButton,
-                        {backgroundColor: obj.color},
+                        { backgroundColor: obj.color,},
+                        
                       ]}
                       onPress={() => {
-                        this.setState({color: obj.color});
+                        this.setState({ color: obj.color });
                       }}>
+
+                      <Image style={styles.brushes} source={obj.logo} />
                       <Text
                         style={{
                           color: 'white',
@@ -347,41 +374,46 @@ export default class App extends Component {
                   </View>
                 );
               })}
-            </View>
-            <Text style={{marginRight: 8, fontSize: device.height * 0.025}}>
+            </ScrollView>
+            {/* </View> */}
+            {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.025 }}>
               {this.state.message}
-            </Text>
+            </Text> */}
           </View>
+
           {/* Style buttons */}
           <View
             style={{
-              flexDirection: 'row',
+              flexDirection: 'column',
               justifyContent: 'space-around',
               alignItems: 'center',
             }}>
-            <View style={{flexDirection: 'row'}}>
-              {/* None style button */}
-              <View style={{margin: 2}}>
+            {/* <View style={{ flexDirection: 'row' }}> */}
+            {/* None style button */}
+            <ScrollView style={{ height: device.height * 0.7 }}>
+              <View style={{ margin: 2 }}>
                 <TouchableOpacity
-                  style={[styles.functionButton, {backgroundColor: 'gray'}]}
+                  style={[styles.functionButton, { backgroundColor: 'gray' }]}
                   onPress={() => {
                     this.setState(prevState => ({
                       ...prevState,
                       displayedImageData: this.state.generatedImageData,
                     }));
                   }}>
-                  <Text style={{color: 'white', fontSize: 20}}> None </Text>
+                  <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
                 </TouchableOpacity>
               </View>
               {/* Programmatically render all style options */}
               {styleTransferOptions.styles.map(obj => {
                 return (
-                  <View style={{margin: 2}}>
+                  <View style={{ margin: 2 }}>
                     <TouchableOpacity
-                      style={[styles.functionButton, {backgroundColor: 'gray'}]}
+                      style={[styles.functionButton, { backgroundColor: 'gray' }]}
                       onPress={() => {
                         this.sendRequestStyleHelper(obj.name);
                       }}>
+
+                      <Image style={styles.brushes} source={obj.image_url} />
                       <Text
                         style={{
                           color: 'white',
@@ -393,10 +425,11 @@ export default class App extends Component {
                   </View>
                 );
               })}
-            </View>
-            <Text style={{marginRight: 8, fontSize: device.height * 0.024}}>
+            </ScrollView>
+            {/* </View> */}
+            {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
               {this.state.message}
-            </Text>
+            </Text> */}
           </View>
         </View>
 
@@ -409,22 +442,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    backgroundColor: 'skyblue',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
     paddingTop: device.height * 0.02,
   },
 
-  drawBox: {
-    backgroundColor: '#759edf',
-    borderColor: 'lightblue',
-    borderWidth: 10,
-    width: CANVASHEIGHT,
-    height: CANVASHEIGHT,
-  },
+  //   drawBox: {
+  //     backgroundColor: '#759edf',
+  //     borderColor: 'lightblue',
+  //     borderWidth: 10,
+  //     width: CANVASHEIGHT,
+  //     height: CANVASHEIGHT,
+  //   },
   generatedImageBox: {
-    borderWidth: 2,
+    borderWidth: 8,
     backgroundColor: 'lightblue',
-    borderColor: 'blue',
+    borderColor: '#fffef5',
     width: CANVASWIDTH,
     height: CANVASHEIGHT,
     position: 'absolute'
@@ -433,22 +466,29 @@ const styles = StyleSheet.create({
     width: CANVASWIDTH,
     height: CANVASHEIGHT,
   },
+  shadowBox: {
+    shadowColor: 'grey',
+    shadowRadius: 20,
+    width: CANVASWIDTH,
+    height: CANVASHEIGHT,
+  },
   functionButton: {
     padding: 4,
     borderRadius: 5,
   },
+
   drawGroup: {
     flexDirection: 'column',
     display: 'flex'
   },
-  genGroup: {
-    flexDirection: 'column',
-  },
-  genButton: {
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  //   genGroup: {
+  //     flexDirection: 'column',
+  //   },
+  //   genButton: {
+  //     height: 60,
+  //     alignItems: 'center',
+  //     justifyContent: 'center',
+  //   },
   strokeGroup: {
     flexDirection: 'column',
     alignItems: 'center',
@@ -460,5 +500,13 @@ const styles = StyleSheet.create({
   },
   toolGroup: {
     flexDirection: 'row',
+  },
+
+  brushes: {
+    justifyContent: 'start',
+    margin: 0,
+    height: 100,
+    width: 166,
+    padding: 0,
   },
 });
