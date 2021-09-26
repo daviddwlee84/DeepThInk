@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import DrawCanvas from './components/DrawCanvas';
+import UserCanvas from './components/UserCanvas';
 
 import Slider from '@react-native-community/slider';
 // import Snackbar from 'react-native-snackbar';
@@ -47,6 +48,13 @@ const CANVASHEIGHT = Math.min(device.width * 0.85, device.height * 0.85);
 // const styles = StyleSheet.create(generateStyle(device));
 
 export default class App extends Component {
+
+  brushTypes = {
+    AI: "ai",
+    STYLE: "style",
+    USER: "user",
+  }
+
   // React state: store the image data
   state = {
     imageData: 'data:image/png;base64,', // raw image data of the segmentation image
@@ -261,7 +269,19 @@ export default class App extends Component {
 
           <View style={styles.shadowBox}>
 
-            <DrawCanvas
+            <UserCanvas
+              ref="userCanvasRef"
+              style={{ flex: 1, background: 'transparent' }}
+
+              thickness={this.state.thickness}
+              color={this.state.color}
+              socket={this.state.socket}
+              otherStrokes={this.state.collaboratorStroke}
+              width={CANVASWIDTH}
+              height={CANVASHEIGHT}
+              opacity={this.state.opacity}
+              />
+            {/* <DrawCanvas
               ref="drawCanvasRef"
               style={{ flex: 1, background: 'transparent' }}
               thickness={this.state.thickness}
@@ -271,7 +291,7 @@ export default class App extends Component {
               width={CANVASWIDTH}
               height={CANVASHEIGHT}
               opacity={this.state.opacity}
-            />
+            /> */}
           </View>
 
 
