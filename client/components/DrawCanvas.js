@@ -260,7 +260,7 @@ export default class DrawCanvas extends Component {
 		onResponderMove={this.onDrawMove}
 		onResponderRelease={this.onDrawEnd}
 		>
-        <canvas style={{borderColor:"black"}} ref={this.handleCanvas}  />
+        <canvas ref={this.handleCanvas}  />
 		</View>
 		)
 	} else {

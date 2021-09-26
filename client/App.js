@@ -245,7 +245,7 @@ export default class App extends Component {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.drawGroup}>
+        <View id="drawGroup" style={styles.drawGroup}>
 
           {/* Displayed image */}
           <View style={styles.generatedImageBox}>
@@ -463,8 +463,8 @@ const styles = StyleSheet.create({
     position: 'absolute'
   },
   generatedImage: {
-    width: CANVASWIDTH,
-    height: CANVASHEIGHT,
+    width: "100%",
+    height: "100%",
   },
   shadowBox: {
     shadowColor: 'grey',
