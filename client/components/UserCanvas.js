@@ -36,8 +36,11 @@ export default class DrawCanvas extends Component {
 		return `rgb(${r}, ${g}, ${b})`;
 	  }
 
-	getRandomArbitrary = (min, max) => {
+	myRand = (min, max) => {
 		return Math.random() * (max - min) + min;
+	}
+	myRand2 = (val, range) => {
+		return this.myRand(val-range*val, val+range*val)
 	}
 
 	constructor(props) {
@@ -68,21 +71,21 @@ export default class DrawCanvas extends Component {
 		var posX = event.nativeEvent.locationX
 		var posY = event.nativeEvent.locationY
 
-		var q = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.3), "move")
-		q.offset = -this.props.thickness*0.6
-		this.updateCanvas(q, "self")
-
-		var p = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.2), "move")
-		q.offset = -this.props.thickness*0.4
+		var p = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.8), "move")
 		this.updateCanvas(p, "self")
 
-		var q = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.2), "move")
+		var q = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.9), "move")
+		q.offset = this.props.thickness*0.5
+		this.updateCanvas(q, "self")
+
+		var q = new Point(posX, posY, this.props.thickness*0.4, this.hexToRGB(this.props.color,0.9), "move")
+		q.offset = -this.props.thickness*0.4
+		this.updateCanvas(q, "self")
+
+		var q = new Point(posX, posY, this.props.thickness*0.4, this.hexToRGB(this.props.color,0.95), "move")
 		q.offset = this.props.thickness*0.4
 		this.updateCanvas(q, "self")
 
-		var q = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.3), "move")
-		q.offset = this.props.thickness*0.6
-		this.updateCanvas(q, "self")
 
 		// var r = new Point(posX, posY+this.props.thickness*0.8, this.props.thickness, this.hexToRGB(this.props.color,0.4), "move")
 		// this.updateCanvas(r, "self")

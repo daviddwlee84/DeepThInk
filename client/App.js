@@ -269,9 +269,10 @@ export default class App extends Component {
 
           <View style={styles.shadowBox}>
 
-            <UserCanvas
+            {/* USER BRUSH [WIP] */}
+            {/* <UserCanvas
               ref="userCanvasRef"
-              style={{ flex: 1, background: 'transparent' }}
+              style={{ position: "absolute", flex: 1, background: 'transparent' }}
 
               thickness={this.state.thickness}
               color={this.state.color}
@@ -280,8 +281,8 @@ export default class App extends Component {
               width={CANVASWIDTH}
               height={CANVASHEIGHT}
               opacity={this.state.opacity}
-              />
-            {/* <DrawCanvas
+              /> */}
+            <DrawCanvas
               ref="drawCanvasRef"
               style={{ flex: 1, background: 'transparent' }}
               thickness={this.state.thickness}
@@ -291,7 +292,7 @@ export default class App extends Component {
               width={CANVASWIDTH}
               height={CANVASHEIGHT}
               opacity={this.state.opacity}
-            /> */}
+            />
           </View>
 
 
