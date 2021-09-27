@@ -16,7 +16,7 @@ const styles = StyleSheet.create(generateStyle(device));
 
 
 
-export default class DrawCanvas extends Component {
+export default class UserCanvas extends Component {
 
 
 	state = {

@@ -75,6 +75,7 @@ export default class App extends Component {
         : new WebSocket('ws://10.0.2.2:8080/ws'),
     canvasWidth: CANVASWIDTH,
     canvasHeight: CANVASHEIGHT,
+    currentBrush: this.brushTypes.AI
   };
 
   constructor(props) {
@@ -242,13 +243,25 @@ export default class App extends Component {
       <View style={styles.container}>
         {/* Da Brush~ */}
         <View>
-          <TouchableOpacity onPress={() => Linking.openURL("https://www.youtube.com/")}>
+          <TouchableOpacity onPress={() => this.setState(
+                                            prevState => ({
+                                              ...prevState,
+                                              currentBrush: this.brushTypes.AI,
+                                            }))}>
             <Image style={styles.brushes} source={require('./resources/AIBrush.png')} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => Linking.openURL("https://www.youtube.com/")}>
+          <TouchableOpacity onPress={() => this.setState(
+                                            prevState => ({
+                                              ...prevState,
+                                              currentBrush: this.brushTypes.STYLE,
+                                            }))}>
             <Image style={styles.brushes} source={require('./resources/styleBrush.png')} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => Linking.openURL("https://www.youtube.com/")}>
+          <TouchableOpacity onPress={() => this.setState(
+                                            prevState => ({
+                                              ...prevState,
+                                              currentBrush: this.brushTypes.USER,
+                                            }))}>
             <Image style={styles.brushes} source={require('./resources/userBrush.png')} />
           </TouchableOpacity>
         </View>
@@ -360,10 +373,13 @@ export default class App extends Component {
           </View>
         </View>
 
-
+        
         <View style={{ flexDirection: 'row', }}>
           {/* Color palette buttons */}
-          <View
+          
+          {
+            this.state.currentBrush == this.brushTypes.AI &&
+            <View
             style={{
               flexDirection: 'column',
             }}>
@@ -402,56 +418,63 @@ export default class App extends Component {
             </Text> */}
           </View>
 
-          {/* Style buttons */}
-          <View
-            style={{
-              flexDirection: 'column',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-            }}>
-            {/* <View style={{ flexDirection: 'row' }}> */}
-            {/* None style button */}
-            <ScrollView style={{ height: device.height * 0.7 }}>
-              <View style={{ margin: 2 }}>
-                <TouchableOpacity
-                  style={[styles.functionButton, { backgroundColor: 'gray' }]}
-                  onPress={() => {
-                    this.setState(prevState => ({
-                      ...prevState,
-                      displayedImageData: this.state.generatedImageData,
-                    }));
-                  }}>
-                  <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
-                </TouchableOpacity>
-              </View>
-              {/* Programmatically render all style options */}
-              {styleTransferOptions.styles.map(obj => {
-                return (
-                  <View style={{ margin: 2 }}>
-                    <TouchableOpacity
-                      style={[styles.functionButton, { backgroundColor: 'gray' }]}
-                      onPress={() => {
-                        this.sendRequestStyleHelper(obj.name);
-                      }}>
+          }
 
-                      <Image style={styles.brushes} source={obj.image_url} />
-                      <Text
-                        style={{
-                          color: 'white',
-                          fontSize: device.height * 0.024,
-                        }}>
-                        {obj.label}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
-            </ScrollView>
-            {/* </View> */}
-            {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
-              {this.state.message}
-            </Text> */}
+          {/* Style buttons */}
+
+          { this.state.currentBrush == this.brushTypes.STYLE &&
+
+          <View
+          style={{
+            flexDirection: 'column',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+          }}>
+          {/* <View style={{ flexDirection: 'row' }}> */}
+          {/* None style button */}
+          <ScrollView style={{ height: device.height * 0.7 }}>
+            <View style={{ margin: 2 }}>
+              <TouchableOpacity
+                style={[styles.functionButton, { backgroundColor: 'gray' }]}
+                onPress={() => {
+                  this.setState(prevState => ({
+                    ...prevState,
+                    displayedImageData: this.state.generatedImageData,
+                  }));
+                }}>
+                <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
+              </TouchableOpacity>
+            </View>
+            {/* Programmatically render all style options */}
+            {styleTransferOptions.styles.map(obj => {
+              return (
+                <View style={{ margin: 2 }}>
+                  <TouchableOpacity
+                    style={[styles.functionButton, { backgroundColor: 'gray' }]}
+                    onPress={() => {
+                      this.sendRequestStyleHelper(obj.name);
+                    }}>
+
+                    <Image style={styles.brushes} source={obj.image_url} />
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: device.height * 0.024,
+                      }}>
+                      {obj.label}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </ScrollView>
+          {/* </View> */}
+          {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
+            {this.state.message}
+          </Text> */}
           </View>
+
+          }
         </View>
 
       </View>
