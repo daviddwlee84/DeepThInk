@@ -3,6 +3,7 @@ import {Text, View, Platform, StyleSheet, Dimensions} from 'react-native';
 import Canvas, {Image as CanvasImage} from 'react-native-canvas';
 import { generateStyle } from '../styles/styles';
 import Point from "../classes/Point";
+import { Asset } from 'expo-asset';
 import {
 	sendStroke,
 	sendStrokeEnd,
@@ -13,7 +14,6 @@ var device = Dimensions.get('window');
 
 
 const styles = StyleSheet.create(generateStyle(device));
-
 
 
 export default class UserCanvas extends Component {
@@ -74,17 +74,17 @@ export default class UserCanvas extends Component {
 		var p = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.8), "move")
 		this.updateCanvas(p, "self")
 
-		var q = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.9), "move")
-		q.offset = this.props.thickness*0.5
-		this.updateCanvas(q, "self")
+		// var q = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.9), "move")
+		// q.offset = this.props.thickness*0.5
+		// this.updateCanvas(q, "self")
 
-		var q = new Point(posX, posY, this.props.thickness*0.4, this.hexToRGB(this.props.color,0.9), "move")
-		q.offset = -this.props.thickness*0.4
-		this.updateCanvas(q, "self")
+		// var q = new Point(posX, posY, this.props.thickness*0.4, this.hexToRGB(this.props.color,0.9), "move")
+		// q.offset = -this.props.thickness*0.4
+		// this.updateCanvas(q, "self")
 
-		var q = new Point(posX, posY, this.props.thickness*0.4, this.hexToRGB(this.props.color,0.95), "move")
-		q.offset = this.props.thickness*0.4
-		this.updateCanvas(q, "self")
+		// var q = new Point(posX, posY, this.props.thickness*0.4, this.hexToRGB(this.props.color,0.95), "move")
+		// q.offset = this.props.thickness*0.4
+		// this.updateCanvas(q, "self")
 
 
 		// var r = new Point(posX, posY+this.props.thickness*0.8, this.props.thickness, this.hexToRGB(this.props.color,0.4), "move")
@@ -203,7 +203,33 @@ export default class UserCanvas extends Component {
 			ctx.strokeStyle = point.color;
 			ctx.lineJoin = ctx.lineCap = 'butt';
 			ctx.closePath()
-			ctx.stroke();			
+			// ctx.stroke();			
+ 
+		// ONLY WORKS ON WEB
+		ctx.globalAlpha = 0.5
+		var c = React.createElement(Canvas)
+
+		const image = new Image(canvas);
+		const asset = Asset.fromModule(require('../resources/brush.png'));
+		image.src = asset.uri ;
+		console.log('image is loaded');
+
+		ctx.drawImage(image, x-offset-thickness/2, y-offset-thickness/2, thickness, thickness);
+		ctx.globalCompositeOperation = "source-in";
+
+		// ctx.globalCompositeOperation = "source-over";
+
+		ctx.fillRect(x-offset-thickness/2, y-offset-thickness/2, thickness, thickness);
+		ctx.fillStyle = "#09f";
+
+
+		ctx.globalCompositeOperation = "destination-over";
+
+		// ctx.globalCompositeOperation = "source-in";
+
+
+		ctx.globalAlpha = 1
+
 
 		}
 
@@ -216,8 +242,15 @@ export default class UserCanvas extends Component {
 		canvas.width = this.props.width;
 		canvas.height = this.props.height;
 
+
+
 		this.canvasRef = canvas;
 		this.canvasRef.current = canvas;
+
+	  
+
+
+
 
 	}
 

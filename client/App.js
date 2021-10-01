@@ -11,9 +11,10 @@ import {
   Text,
   Platform,
 } from 'react-native';
-
+import ColorPalette from 'react-native-color-palette'
 import DrawCanvas from './components/DrawCanvas';
 import UserCanvas from './components/UserCanvas';
+import { FontAwesome5 } from '@expo/vector-icons'; 
 
 import Slider from '@react-native-community/slider';
 // import Snackbar from 'react-native-snackbar';
@@ -35,6 +36,8 @@ import { hello, generateStyle } from './styles/styles.js';
 import Point from './classes/Point';
 import { startClock } from 'react-native-reanimated';
 import { ScrollView } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
+
 var device = Dimensions.get('window');
 const CANVASWIDTH = Math.min(device.width * 0.85, device.height * 0.85);
 const CANVASHEIGHT = Math.min(device.width * 0.85, device.height * 0.85);
@@ -63,6 +66,7 @@ export default class App extends Component {
     displayedImageData: 'data:image/png;base64,', // raw image data of displayed image
     style: 'none', // selected style
     color: '#384f83', // pen color
+    userBrushColor: "#000000",
     thickness: 10, // stroke thickness
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
@@ -283,18 +287,18 @@ export default class App extends Component {
           <View style={styles.shadowBox}>
 
             {/* USER BRUSH [WIP] */}
-            {/* <UserCanvas
+            <UserCanvas
               ref="userCanvasRef"
               style={{ position: "absolute", flex: 1, background: 'transparent' }}
 
               thickness={this.state.thickness}
-              color={this.state.color}
+              color={this.state.userBrushColor}
               socket={this.state.socket}
               otherStrokes={this.state.collaboratorStroke}
               width={CANVASWIDTH}
               height={CANVASHEIGHT}
               opacity={this.state.opacity}
-              /> */}
+              />
             <DrawCanvas
               ref="drawCanvasRef"
               style={{ flex: 1, background: 'transparent' }}
@@ -308,7 +312,6 @@ export default class App extends Component {
             />
           </View>
 
-
           <View style={styles.toolGroup}>
             {/* Thickness slider */}
             <View style={styles.strokeGroup}>
@@ -320,6 +323,19 @@ export default class App extends Component {
                 }}>
                 Stroke size:
               </Text>
+                      <ColorPalette
+                onChange={color => {this.setState(prevState => ({
+                  ...prevState,
+                  userBrushColor: color,
+                }))}}
+                value={this.state.userBrushColor}
+                colors={['#C0392B', '#E74C3C', '#9B59B6', '#8E44AD', '#2980B9']}
+                title=""
+                icon={
+                  <FontAwesome5 name={'circle'} size={5} color={'white'} />
+                // React-Native-Vector-Icons Example
+              }
+            />
               <Slider
                 style={{
                   width: device.width * 0.10,
