@@ -199,11 +199,11 @@ export default class UserCanvas extends Component {
 					break;
 
 			}
-			ctx.fillStyle = this.props.color;
-			ctx.strokeStyle = point.color;
-			ctx.lineJoin = ctx.lineCap = 'butt';
-			ctx.closePath()
-			ctx.stroke();
+			// ctx.fillStyle = this.props.color;
+			// ctx.strokeStyle = point.color;
+			// ctx.lineJoin = ctx.lineCap = 'butt';
+			// ctx.closePath()
+			// ctx.stroke();
 
 
 			// SPLOTCH BRUSH
