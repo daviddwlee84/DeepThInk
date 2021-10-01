@@ -199,36 +199,40 @@ export default class UserCanvas extends Component {
 					break;
 
 			}
-			ctx.fillStyle = point.color;
+			ctx.fillStyle = this.props.color;
 			ctx.strokeStyle = point.color;
 			ctx.lineJoin = ctx.lineCap = 'butt';
 			ctx.closePath()
+			ctx.stroke();
+
+
+			// SPLOTCH BRUSH
+			if (Math.random() < 0.99) {
 			// ctx.stroke();			
- 
-		// ONLY WORKS ON WEB
-		ctx.globalAlpha = 0.5
-		var c = React.createElement(Canvas)
+			ctx.beginPath()
+			ctx.arc(x-offset, y-offset, Math.random()*thickness, false, Math.PI * 2, false);
+			ctx.fillStyle = this.hexToRGB(this.props.color,Math.random());
 
-		const image = new Image(canvas);
-		const asset = Asset.fromModule(require('../resources/brush.png'));
-		image.src = asset.uri ;
-		console.log('image is loaded');
+			ctx.fill();
 
-		ctx.drawImage(image, x-offset-thickness/2, y-offset-thickness/2, thickness, thickness);
-		ctx.globalCompositeOperation = "source-in";
+			}
+				// // IMAGE BRUSH
+				// ctx.globalAlpha = 0.5
+				// var c = React.createElement(Canvas)
+		
+				// const image = new Image(canvas);
+				// // Load brush
+				// const asset = Asset.fromModule(require(`../resources/brush.png`));
+				// image.src = asset.uri ;
+				
+				// console.log('image is loaded');
+		
+				// ctx.drawImage(image, x-offset-thickness/2, y-offset-thickness/2, thickness, thickness);
+		
+				// ctx.globalAlpha = 1
+		
 
-		// ctx.globalCompositeOperation = "source-over";
 
-		ctx.fillRect(x-offset-thickness/2, y-offset-thickness/2, thickness, thickness);
-		ctx.fillStyle = "#09f";
-
-
-		ctx.globalCompositeOperation = "destination-over";
-
-		// ctx.globalCompositeOperation = "source-in";
-
-
-		ctx.globalAlpha = 1
 
 
 		}

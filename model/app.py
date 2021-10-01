@@ -2,6 +2,7 @@
 Flask server for running deployed gauGAN model
 """
 
+from numpy import imag
 from all_models.gaugan.model_utils import (processByte64, load_model,
                                            run_inference)
 from all_models.fast_neural_style.style_utils import stylizeImage
@@ -10,6 +11,8 @@ from flask_cors import CORS
 import json
 import uuid
 import base64
+from PIL import Image
+import io
 
 app = Flask(__name__)
 CORS(app)
@@ -92,6 +95,34 @@ def stylize():
 
     styled_image_str = stylizeImage(image_data_strip_header, style)
     return {"message": "Successfully got image", "data": styled_image_str}
+
+# Color fill an image
+@app.route('/colorize', methods=['POST'])
+def colorize():
+    # Fetch image data
+    data = request.get_json()
+    print("request data is", data)
+    image_data = data.get("imageData")
+    # Remove the javascript file type header
+    base64_decoded = base64.b64decode(image_data)
+
+    img = Image.open(io.BytesIO(base64_decoded))
+
+    width = img.size[0] 
+    height = img.size[1] 
+    for i in range(0,width):# process all pixels
+        for j in range(0,height):
+            data = img.getpixel((i,j))
+            #print(data) #(255, 255, 255)
+            if (data[0]==255 and data[1]==255 and data[2]==255):
+                img.putpixel((i,j),(44, 44, 44))
+    img.show()
+    buffered = io.BytesIO()
+    img.save(buffered, format="JPEG")
+    img_str = base64.b64encode(buffered.getvalue())
+
+
+    return {"message":"Success", "data": img_str}
 
 
 if __name__ == "__main__":

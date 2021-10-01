@@ -327,7 +327,9 @@ export default class App extends Component {
                 onChange={color => {this.setState(prevState => ({
                   ...prevState,
                   userBrushColor: color,
-                }))}}
+                }));
+                console.log("colir is", color)
+              }}
                 value={this.state.userBrushColor}
                 colors={['#C0392B', '#E74C3C', '#9B59B6', '#8E44AD', '#2980B9']}
                 title=""
