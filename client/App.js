@@ -290,23 +290,9 @@ export default class App extends Component {
 
           <View style={styles.shadowBox}>
 
-            {/* USER BRUSH */}
-            <UserCanvas
-              ref="userCanvasRef"
-              style={{ position: "absolute", flex: 1, background: 'transparent' }}
-              brushType ={this.state.currentBrush}
-              userBrushType={this.state.userBrushType}
-              thickness={this.state.thickness}
-              color={this.state.userBrushColor}
-              socket={this.state.socket}
-              otherStrokes={this.state.collaboratorStroke}
-              width={CANVASWIDTH}
-              height={CANVASHEIGHT}
-              opacity={this.state.opacity}
-              />
-            <DrawCanvas
+          <DrawCanvas
               ref="drawCanvasRef"
-              style={{ flex: 1, background: 'transparent' }}
+              style={{ backgroundColor:"black",  position: "absolute", background: 'transparent' }}
               brushType ={this.state.currentBrush}
 
               thickness={this.state.thickness}
@@ -317,6 +303,22 @@ export default class App extends Component {
               height={CANVASHEIGHT}
               opacity={this.state.opacity}
             />
+
+            {/* USER BRUSH */}
+            <UserCanvas
+              ref="userCanvasRef"
+              style={{ position: "absolute", background: 'transparent' }}
+              brushType ={this.state.currentBrush}
+              userBrushType={this.state.userBrushType}
+              thickness={this.state.thickness}
+              color={this.state.userBrushColor}
+              socket={this.state.socket}
+              otherStrokes={this.state.collaboratorStroke}
+              width={CANVASWIDTH}
+              height={CANVASHEIGHT}
+              opacity={this.state.opacity}
+              />
+
           </View>
 
           <View style={styles.toolGroup}>
@@ -604,6 +606,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     width: CANVASWIDTH,
     height: CANVASHEIGHT,
+    position: 'relative'
   },
   functionButton: {
     padding: 4,

@@ -301,7 +301,16 @@ export default class UserCanvas extends Component {
 				const image = new Image(canvas);
 				image.src = this.state.imageBrush
 				console.log('image is loaded');
+
+				ctx.save();
+
+				ctx.translate((x - offset - thickness / 2)+thickness/2, (y - offset - thickness / 2)+thickness/2);
+				var angle = Math.atan2(y-lastPoint.y, x-lastPoint.x) * 180 / Math.PI;
+				ctx.rotate(angle*Math.PI/180.0);
+				ctx.translate(-(x - offset - thickness / 2)-thickness/2, -(y - offset - thickness / 2)-thickness/2);
 				ctx.drawImage(image, x - offset - thickness / 2, y - offset - thickness / 2, thickness, thickness);
+				ctx.restore();
+
 				ctx.globalAlpha = 1
 
 			}
