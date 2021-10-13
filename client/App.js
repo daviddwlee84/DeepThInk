@@ -20,7 +20,10 @@ import Slider from '@react-native-community/slider';
 // import Snackbar from 'react-native-snackbar';
 import axios from 'axios';
 import colorMap from './constants/colorMap.js';
+import brushTypes from './constants/brushTypes.js';
+import userBrushes from './constants/userBrushes.js';
 import styleTransferOptions from './constants/styleTransferOptions.js';
+import userBrushesOptions from './constants/userBrushesOptions.js';
 import messageKinds from './constants/messageKinds.js';
 import {
   onOpen,
@@ -52,11 +55,8 @@ const CANVASHEIGHT = Math.min(device.width * 0.85, device.height * 0.85);
 
 export default class App extends Component {
 
-  brushTypes = {
-    AI: "ai",
-    STYLE: "style",
-    USER: "user",
-  }
+
+
 
   // React state: store the image data
   state = {
@@ -66,11 +66,14 @@ export default class App extends Component {
     displayedImageData: 'data:image/png;base64,', // raw image data of displayed image
     style: 'none', // selected style
     color: '#384f83', // pen color
-    userBrushColor: "#000000",
+    userBrushColor: "#00FF00",
+    userBrushBase64: "data:image/png;base64,", // user brush 
+    userBrushType: userBrushes.PENCIL,
     thickness: 10, // stroke thickness
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
     opacity: 1, // Toggle between the drawing canvas and generated image. 
+
     // 1 = show drawing canvas, 0 = show image
     // socket: new WebSocket('ws://localhost:8080/ws')
     socket:
@@ -79,7 +82,7 @@ export default class App extends Component {
         : new WebSocket('ws://10.0.2.2:8080/ws'),
     canvasWidth: CANVASWIDTH,
     canvasHeight: CANVASHEIGHT,
-    currentBrush: this.brushTypes.AI
+    currentBrush: brushTypes.AI
   };
 
   constructor(props) {
@@ -242,6 +245,7 @@ export default class App extends Component {
     }
   };
 
+
   render() {
     return (
       <View style={styles.container}>
@@ -250,21 +254,21 @@ export default class App extends Component {
           <TouchableOpacity onPress={() => this.setState(
                                             prevState => ({
                                               ...prevState,
-                                              currentBrush: this.brushTypes.AI,
+                                              currentBrush: brushTypes.AI,
                                             }))}>
             <Image style={styles.brushes} source={require('./resources/AIBrush.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => this.setState(
                                             prevState => ({
                                               ...prevState,
-                                              currentBrush: this.brushTypes.STYLE,
+                                              currentBrush: brushTypes.STYLE,
                                             }))}>
             <Image style={styles.brushes} source={require('./resources/styleBrush.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => this.setState(
                                             prevState => ({
                                               ...prevState,
-                                              currentBrush: this.brushTypes.USER,
+                                              currentBrush: brushTypes.USER,
                                             }))}>
             <Image style={styles.brushes} source={require('./resources/userBrush.png')} />
           </TouchableOpacity>
@@ -286,11 +290,12 @@ export default class App extends Component {
 
           <View style={styles.shadowBox}>
 
-            {/* USER BRUSH [WIP] */}
+            {/* USER BRUSH */}
             <UserCanvas
               ref="userCanvasRef"
               style={{ position: "absolute", flex: 1, background: 'transparent' }}
-
+              brushType ={this.state.currentBrush}
+              userBrushType={this.state.userBrushType}
               thickness={this.state.thickness}
               color={this.state.userBrushColor}
               socket={this.state.socket}
@@ -302,6 +307,8 @@ export default class App extends Component {
             <DrawCanvas
               ref="drawCanvasRef"
               style={{ flex: 1, background: 'transparent' }}
+              brushType ={this.state.currentBrush}
+
               thickness={this.state.thickness}
               color={this.state.color}
               socket={this.state.socket}
@@ -331,7 +338,7 @@ export default class App extends Component {
                 console.log("colir is", color)
               }}
                 value={this.state.userBrushColor}
-                colors={['#C0392B', '#E74C3C', '#9B59B6', '#8E44AD', '#2980B9']}
+                colors={['#00FF00', '#C0392B', '#E74C3C', '#9B59B6', '#8E44AD', '#2980B9']}
                 title=""
                 icon={
                   <FontAwesome5 name={'circle'} size={5} color={'white'} />
@@ -355,12 +362,12 @@ export default class App extends Component {
             </View>
 
             <View style={styles.tempButtons}>
-              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
+              {/* <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
                 <Button color="#073ead" title="undo!" />
-              </View>
-              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
+              </View> */}
+              {/* <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
                 <Button color="#073ead" title="redo!" />
-              </View>
+              </View> */}
               {/* <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
                 <Button color="#07235c" title="erase" />
               </View> */}
@@ -396,7 +403,7 @@ export default class App extends Component {
           {/* Color palette buttons */}
           
           {
-            this.state.currentBrush == this.brushTypes.AI &&
+            this.state.currentBrush == brushTypes.AI &&
             <View
             style={{
               flexDirection: 'column',
@@ -440,7 +447,7 @@ export default class App extends Component {
 
           {/* Style buttons */}
 
-          { this.state.currentBrush == this.brushTypes.STYLE &&
+          { this.state.currentBrush == brushTypes.STYLE &&
 
           <View
           style={{
@@ -495,7 +502,71 @@ export default class App extends Component {
           }
         </View>
 
+
+        {/* User Brush buttons */}
+          
+        {
+            this.state.currentBrush == brushTypes.USER &&
+            <View
+            style={{
+              flexDirection: 'column',
+              justifyContent: 'space-around',
+              alignItems: 'center',
+            }}>
+            {/* <View style={{ flexDirection: 'row' }}> */}
+            {/* None style button */}
+            <ScrollView style={{ height: device.height * 0.7 }}>
+              <View style={{ margin: 2 }}>
+                <TouchableOpacity
+                  style={[styles.functionButton, { backgroundColor: 'gray' }]}
+                  onPress={() => {
+                    this.setState(prevState => ({
+                      ...prevState,
+                      displayedImageData: this.state.generatedImageData,
+                    }));
+                  }}>
+                  <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
+                </TouchableOpacity>
+              </View>
+              {/* Programmatically render all style options */}
+              {userBrushesOptions.userBrushes.map(obj => {
+                return (
+                  <View style={{ margin: 2 }}>
+                    <TouchableOpacity
+                      style={[styles.functionButton, { backgroundColor: 'gray' }]}
+                      onPress={() => {
+                        console.log("SETTING TO ", obj.name)
+                        this.setState(prevState => ({
+                         ...prevState,
+                         userBrushType: obj.name 
+                        }))
+                      }}>
+  
+                      <Image style={styles.brushes} source={obj.image_url} />
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontSize: device.height * 0.024,
+                        }}>
+                        {obj.label}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </ScrollView>
+            {/* </View> */}
+            {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
+              {this.state.message}
+            </Text> */}
+            </View>
+  
+          }
+
+
       </View>
+
+      
     );
   }
 }

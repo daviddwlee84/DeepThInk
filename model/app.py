@@ -1,17 +1,18 @@
 """
 Flask server for running deployed gauGAN model
 """
-
+import numpy as np
 from numpy import imag
 from all_models.gaugan.model_utils import (processByte64, load_model,
                                            run_inference)
 from all_models.fast_neural_style.style_utils import stylizeImage
+from brushes import getBrush
 from flask import Flask, request
 from flask_cors import CORS
 import json
 import uuid
 import base64
-from PIL import Image
+from PIL import Image, ImageDraw, ImageColor
 import io
 
 app = Flask(__name__)
@@ -19,6 +20,8 @@ CORS(app)
 
 # Load the model
 model, opt = load_model()
+
+
 
 
 @app.route('/')
@@ -95,6 +98,21 @@ def stylize():
 
     styled_image_str = stylizeImage(image_data_strip_header, style)
     return {"message": "Successfully got image", "data": styled_image_str}
+
+@app.route("/makeBrush", methods=['POST'])
+def makeBrush():
+    # Fetch image data
+    data = request.get_json()
+    print("request data is", data)
+
+    brushColorRGB = data['color']
+    brushType = data['brushType']
+
+    b_base64 = getBrush(brushType, brushColorRGB)
+    print("img is", b_base64)
+    
+    return {"message": "Success", "data": {"imageData": "data:image/png;base64," + b_base64}}
+
 
 # Color fill an image
 @app.route('/colorize', methods=['POST'])

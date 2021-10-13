@@ -8,6 +8,7 @@ import {
 	sendStrokeEnd,
 	sendStrokeStart,
   } from '../api/websocketApi.js';
+import brushTypes from "../constants/brushTypes.js"
   
 var device = Dimensions.get('window');
 
@@ -45,6 +46,9 @@ export default class DrawCanvas extends Component {
 	}	  
 	
     onDrawMove = (event) => {
+		if (this.props.brushType !== brushTypes.AI) {
+			return
+		}
 		// console.log(event.nativeEvent)
         // console.log("hello");
 		var posX = event.nativeEvent.locationX
@@ -62,6 +66,9 @@ export default class DrawCanvas extends Component {
     }
 
 	onDrawStart = (event) => {
+		if (this.props.brushType !== brushTypes.AI) {
+			return
+		}
 		// console.log("Got start event:", event)
 		var posX = event.nativeEvent.locationX
 		var posY = event.nativeEvent.locationY
@@ -79,6 +86,9 @@ export default class DrawCanvas extends Component {
 	}
 
 	onDrawEnd = (event) => {
+		if (this.props.brushType !== brushTypes.AI) {
+			return
+		}
 		var posX = event.nativeEvent.locationX
 		var posY = event.nativeEvent.locationY
 
