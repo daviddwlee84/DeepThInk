@@ -307,6 +307,7 @@ export default class App extends Component {
             {/* USER BRUSH */}
             <UserCanvas
               ref="userCanvasRef"
+              setClickClear={click => this.clearChild = click}
               style={{ position: "absolute", background: 'transparent' }}
               brushType ={this.state.currentBrush}
               userBrushType={this.state.userBrushType}
@@ -374,7 +375,9 @@ export default class App extends Component {
                 <Button color="#07235c" title="erase" />
               </View> */}
               <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
-                <Button color="#07235c" title="clear" />
+                <Button color="#07235c" title="clear" 
+                onPress={() => this.clearChild()}
+                />
               </View>
               <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
 

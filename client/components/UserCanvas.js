@@ -59,8 +59,12 @@ export default class UserCanvas extends Component {
 			strokes: [],
 			imageBrush: 'data:image/png;base64,', // raw image data of the image brush
 		}
-
+		this.clearCanvas = this.clearCanvas.bind(this);
 	}
+
+	componentDidMount() {
+		this.props.setClickClear(this.clearCanvas);
+	 }
 
 	componentDidUpdate(prevProps) {
 		let currentComponent = this;
@@ -193,6 +197,12 @@ export default class UserCanvas extends Component {
 		// sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
 	}
 
+	clearCanvas = () => {
+		var canvas = this.canvasRef.current
+		var ctx = canvas.getContext("2d");
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	}
+
 	updateCanvas = (point, client) => {
 		// client: "self" | "other"
 		// point: Point
@@ -278,7 +288,7 @@ export default class UserCanvas extends Component {
 
 
 
-			// // SPLOTCH BRUSH
+			// SPLOTCH BRUSH
 			else if (this.props.userBrushType == userBrushes.SPLOTCH) {
 				if (Math.random() < 0.99) {
 					// ctx.stroke();			
@@ -334,9 +344,6 @@ export default class UserCanvas extends Component {
 
 		this.canvasRef = canvas;
 		this.canvasRef.current = canvas;
-
-
-
 
 
 
