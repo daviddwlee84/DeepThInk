@@ -334,6 +334,9 @@ export default class UserCanvas extends Component {
 	}
 
 	handleCanvas = (canvas) => {
+		if (canvas === null) {
+			return 
+		}
 		// console.log("handling canvas", canvas)
 
 		const ctx = canvas.getContext('2d');

@@ -181,6 +181,9 @@ export default class DrawCanvas extends Component {
 
 	handleCanvas = (canvas) => {
 		// console.log("handling canvas", canvas)
+		if (canvas === null) {
+			return 
+		}
 
 		const ctx = canvas.getContext('2d');
 		canvas.width = this.props.width;
@@ -263,14 +266,14 @@ export default class DrawCanvas extends Component {
       if (Platform.OS === "web") {
 		return (
 		<View
-		style= {[styles.drawBoxInner, {opacity: this.props.opacity}]}
-		onStartShouldSetResponder={(event) => {return true;}}
-		onMoveShouldSetResponder={(event) => {return true;}}
-		onResponderStart={this.onDrawStart}
-		onResponderMove={this.onDrawMove}
-		onResponderRelease={this.onDrawEnd}
+			style= {[styles.drawBoxInner, {opacity: this.props.opacity}]}
+			onStartShouldSetResponder={(event) => {return true;}}
+			onMoveShouldSetResponder={(event) => {return true;}}
+			onResponderStart={this.onDrawStart}
+			onResponderMove={this.onDrawMove}
+			onResponderRelease={this.onDrawEnd}
 		>
-        <canvas ref={this.handleCanvas}  />
+        <canvas ref={this.handleCanvas} style={{position:"absolute", left: 0, top: 0}} />
 		</View>
 		)
 	} else {

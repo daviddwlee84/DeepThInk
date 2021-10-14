@@ -275,6 +275,25 @@ export default class App extends Component {
         </View>
 
         <View id="drawGroup" style={styles.drawGroup}>
+        <View style={styles.shadowBox}>
+
+
+        <DrawCanvas
+            ref="drawCanvasRef"
+            style={{ backgroundColor:"black",  position: "absolute", background: 'transparent' }}
+            brushType ={this.state.currentBrush}
+            thickness={this.state.thickness}
+            color={this.state.color}
+            socket={this.state.socket}
+            otherStrokes={this.state.collaboratorStroke}
+            width={CANVASWIDTH}
+            height={CANVASHEIGHT}
+            opacity={1}
+          />
+        </View>
+        </View>
+
+        <View id="drawGroup" style={styles.drawGroup}>
 
           {/* Displayed image */}
           <View style={styles.generatedImageBox}>
@@ -290,21 +309,10 @@ export default class App extends Component {
 
           <View style={styles.shadowBox}>
 
-          <DrawCanvas
-              ref="drawCanvasRef"
-              style={{ backgroundColor:"black",  position: "absolute", background: 'transparent' }}
-              brushType ={this.state.currentBrush}
 
-              thickness={this.state.thickness}
-              color={this.state.color}
-              socket={this.state.socket}
-              otherStrokes={this.state.collaboratorStroke}
-              width={CANVASWIDTH}
-              height={CANVASHEIGHT}
-              opacity={this.state.opacity}
-            />
 
             {/* USER BRUSH */}
+            
             <UserCanvas
               ref="userCanvasRef"
               setClickClear={click => this.clearChild = click}
