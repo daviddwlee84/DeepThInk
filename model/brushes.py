@@ -17,7 +17,9 @@ def loadBrushImage(path):
 
 brushPaths = {
     "image_brush": f"{path_to_brushes}/brush.png",
-    "image_charcoal": f"{path_to_brushes}/charcoal_texture.png"
+    "image_charcoal": f"{path_to_brushes}/charcoal_texture.png",
+    "image_chalk": f"{path_to_brushes}/chalk.png",
+    "image_ballpoint": f"{path_to_brushes}/ballpoint.png",
 }
 
 

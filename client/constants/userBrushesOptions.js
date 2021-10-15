@@ -1,6 +1,11 @@
 export default {
   userBrushes: [
     {
+      name: 'eraser',
+      label: 'Eraser',
+      image_url: require('../resources/kanagawa.jpg'),
+    },
+    {
       name: 'pencil',
       label: 'Pencil',
       image_url: require('../resources/kanagawa.jpg'),
@@ -24,6 +29,16 @@ export default {
       name: 'image_charcoal',
       label: 'Charcoal',
       image_url: require('../resources/mosaic.jpg'),
-      }
+    },
+    {
+      name: 'image_ballpoint',
+      label: 'Ballpoint',
+      image_url: require('../resources/candy.jpg'),
+    },
+    {
+      name: 'image_chalk',
+      label: 'Chalk',
+      image_url: require('../resources/candy.jpg'),
+    },
     ],
 };

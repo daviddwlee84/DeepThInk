@@ -286,6 +286,17 @@ export default class UserCanvas extends Component {
 				ctx.stroke();
 			}
 
+			else if (this.props.userBrushType == userBrushes.ERASER) {
+				ctx.globalCompositeOperation = "destination-out";  
+				ctx.lineJoin = ctx.lineCap = 'round';
+
+				ctx.strokeStyle = "rgba(255,255,255,1)";
+				ctx.closePath()
+				ctx.stroke();
+				ctx.globalCompositeOperation = "source-over"; // reset to default  
+
+			}
+
 
 
 			// SPLOTCH BRUSH

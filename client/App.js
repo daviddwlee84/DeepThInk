@@ -11,10 +11,9 @@ import {
   Text,
   Platform,
 } from 'react-native';
-import ColorPalette from 'react-native-color-palette'
 import DrawCanvas from './components/DrawCanvas';
 import UserCanvas from './components/UserCanvas';
-import { FontAwesome5 } from '@expo/vector-icons'; 
+import { FontAwesome5 } from '@expo/vector-icons';
 
 import Slider from '@react-native-community/slider';
 // import Snackbar from 'react-native-snackbar';
@@ -40,6 +39,7 @@ import Point from './classes/Point';
 import { startClock } from 'react-native-reanimated';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
+import ColorPicker from 'react-native-wheel-color-picker';
 
 var device = Dimensions.get('window');
 const CANVASWIDTH = Math.min(device.width * 0.85, device.height * 0.85);
@@ -252,45 +252,68 @@ export default class App extends Component {
         {/* Da Brush~ */}
         <View>
           <TouchableOpacity onPress={() => this.setState(
-                                            prevState => ({
-                                              ...prevState,
-                                              currentBrush: brushTypes.AI,
-                                            }))}>
+            prevState => ({
+              ...prevState,
+              currentBrush: brushTypes.AI,
+            }))}>
             <Image style={styles.brushes} source={require('./resources/AIBrush.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => this.setState(
-                                            prevState => ({
-                                              ...prevState,
-                                              currentBrush: brushTypes.STYLE,
-                                            }))}>
+            prevState => ({
+              ...prevState,
+              currentBrush: brushTypes.STYLE,
+            }))}>
             <Image style={styles.brushes} source={require('./resources/styleBrush.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => this.setState(
-                                            prevState => ({
-                                              ...prevState,
-                                              currentBrush: brushTypes.USER,
-                                            }))}>
+            prevState => ({
+              ...prevState,
+              currentBrush: brushTypes.USER,
+            }))}>
             <Image style={styles.brushes} source={require('./resources/userBrush.png')} />
           </TouchableOpacity>
+
+          <View
+          style={{padding:10}}
+          >
+            <Text
+              style={{fontSize: 18, padding: 5}}
+            >Size</Text>
+            <Slider
+              style={{
+                width: device.width * 0.10,
+                height: device.height * 0.03,
+                marginBottom: 10,
+              }}
+              minimumValue={1}
+              maximumValue={
+                device.width * device.height * (1 / Math.pow(10, 4))
+              }
+              minimumTrackTintColor="#000000"
+              maximumTrackTintColor="#000000"
+              onSlidingComplete={this.handleThickness}
+            />
+
+          </View>
         </View>
 
         <View id="drawGroup" style={styles.drawGroup}>
-        <View style={styles.shadowBox}>
+          <View style={styles.shadowBox}>
 
 
-        <DrawCanvas
-            ref="drawCanvasRef"
-            style={{ backgroundColor:"black",  position: "absolute", background: 'transparent' }}
-            brushType ={this.state.currentBrush}
-            thickness={this.state.thickness}
-            color={this.state.color}
-            socket={this.state.socket}
-            otherStrokes={this.state.collaboratorStroke}
-            width={CANVASWIDTH}
-            height={CANVASHEIGHT}
-            opacity={1}
-          />
-        </View>
+            <DrawCanvas
+              ref="drawCanvasRef"
+              style={{ backgroundColor: "black", position: "absolute", background: 'transparent' }}
+              brushType={this.state.currentBrush}
+              thickness={this.state.thickness}
+              color={this.state.color}
+              socket={this.state.socket}
+              otherStrokes={this.state.collaboratorStroke}
+              width={CANVASWIDTH}
+              height={CANVASHEIGHT}
+              opacity={1}
+            />
+          </View>
         </View>
 
         <View id="drawGroup" style={styles.drawGroup}>
@@ -312,12 +335,12 @@ export default class App extends Component {
 
 
             {/* USER BRUSH */}
-            
+
             <UserCanvas
               ref="userCanvasRef"
               setClickClear={click => this.clearChild = click}
               style={{ position: "absolute", background: 'transparent' }}
-              brushType ={this.state.currentBrush}
+              brushType={this.state.currentBrush}
               userBrushType={this.state.userBrushType}
               thickness={this.state.thickness}
               color={this.state.userBrushColor}
@@ -326,51 +349,11 @@ export default class App extends Component {
               width={CANVASWIDTH}
               height={CANVASHEIGHT}
               opacity={this.state.opacity}
-              />
+            />
 
           </View>
 
           <View style={styles.toolGroup}>
-            {/* Thickness slider */}
-            <View style={styles.strokeGroup}>
-              <Text
-                style={{
-                  color: '#07235c',
-                  fontWeight: 'bold',
-                  fontSize: device.height * 0.023,
-                }}>
-                Stroke size:
-              </Text>
-                      <ColorPalette
-                onChange={color => {this.setState(prevState => ({
-                  ...prevState,
-                  userBrushColor: color,
-                }));
-                console.log("colir is", color)
-              }}
-                value={this.state.userBrushColor}
-                colors={['#00FF00', '#C0392B', '#E74C3C', '#9B59B6', '#8E44AD', '#2980B9']}
-                title=""
-                icon={
-                  <FontAwesome5 name={'circle'} size={5} color={'white'} />
-                // React-Native-Vector-Icons Example
-              }
-            />
-              <Slider
-                style={{
-                  width: device.width * 0.10,
-                  height: device.height * 0.03,
-                  marginBottom: 10,
-                }}
-                minimumValue={1}
-                maximumValue={
-                  device.width * device.height * (1 / Math.pow(10, 4))
-                }
-                minimumTrackTintColor="#000000"
-                maximumTrackTintColor="#000000"
-                onSlidingComplete={this.handleThickness}
-              />
-            </View>
 
             <View style={styles.tempButtons}>
               {/* <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
@@ -383,24 +366,25 @@ export default class App extends Component {
                 <Button color="#07235c" title="erase" />
               </View> */}
               <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
-                <Button color="#07235c" title="clear" 
-                onPress={() => this.clearChild()}
+                <Button color="#07235c" title="clear"
+                  onPress={() => this.clearChild()}
                 />
               </View>
-              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
+              <View style={{ justifyContent: 'flex-end' }}>
 
-                <Button color="#07235c" title="canvas" onPress={() => {
+                {/* Deprecated change canvas opacity button */}
+                {/* <Button color="#07235c" title="canvas" onPress={() => {
                   console.log("Toggling draw canvas to ", this.state.opacity)
                   this.setState(prevState => ({
                     ...prevState,
                     opacity: (prevState.opacity * 2 + 1) % 3 / 2,
                   }));
 
-                }} />
+                }} /> */}
 
               </View>
               {/* Generate button */}
-              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
+              <View style={{ justifyContent: 'flex-end' }}>
                 <Button
                   color="#841584"
                   title="Generate!"
@@ -411,124 +395,108 @@ export default class App extends Component {
           </View>
         </View>
 
-        
+
         <View style={{ flexDirection: 'row', }}>
           {/* Color palette buttons */}
-          
-          {
-            this.state.currentBrush == brushTypes.AI &&
-            <View
-            style={{
-              flexDirection: 'column',
-            }}>
 
-            <ScrollView style={{ height: device.height * 0.7 }}>
-              {/* <View style={{ flexDirection: 'column' }}> */}
-              {colorMap.colors.map(obj => {
-                return (
-                  <View style={{ margin: 2 }}>
-                    <TouchableOpacity
-                      style={[
-                        styles.functionButton,
-                        { backgroundColor: obj.color,},
-                        
-                      ]}
-                      onPress={() => {
-                        this.setState({ color: obj.color });
-                      }}>
+          {this.state.currentBrush == brushTypes.AI &&
+            <View style={styles.brushesContainer}>
+              <ScrollView>
+                {/* <View style={{ flexDirection: 'column' }}> */}
+                {colorMap.colors.map(obj => {
+                  return (
+                    <View style={{ margin: 2 }}>
+                      <TouchableOpacity
+                        style={[
+                          styles.functionButton,
+                          { backgroundColor: obj.color, },
 
-                      <Image style={styles.brushes} source={obj.logo} />
-                      <Text
-                        style={{
-                          color: 'white',
-                          fontSize: device.height * 0.025,
+                        ]}
+                        onPress={() => {
+                          this.setState({ color: obj.color });
                         }}>
-                        {obj.label}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
-            </ScrollView>
-            {/* </View> */}
-            {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.025 }}>
+
+                        <Image style={styles.brushes} source={obj.logo} />
+                        <Text
+                          style={{
+                            color: 'white',
+                            fontSize: device.height * 0.025,
+                          }}>
+                          {obj.label}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+              {/* </View> */}
+              {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.025 }}>
               {this.state.message}
             </Text> */}
-          </View>
+            </View>
 
           }
 
           {/* Style buttons */}
 
-          { this.state.currentBrush == brushTypes.STYLE &&
+          {this.state.currentBrush == brushTypes.STYLE &&
 
-          <View
-          style={{
-            flexDirection: 'column',
-            justifyContent: 'space-around',
-            alignItems: 'center',
-          }}>
-          {/* <View style={{ flexDirection: 'row' }}> */}
-          {/* None style button */}
-          <ScrollView style={{ height: device.height * 0.7 }}>
-            <View style={{ margin: 2 }}>
-              <TouchableOpacity
-                style={[styles.functionButton, { backgroundColor: 'gray' }]}
-                onPress={() => {
-                  this.setState(prevState => ({
-                    ...prevState,
-                    displayedImageData: this.state.generatedImageData,
-                  }));
-                }}>
-                <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
-              </TouchableOpacity>
-            </View>
-            {/* Programmatically render all style options */}
-            {styleTransferOptions.styles.map(obj => {
-              return (
+            <View style={styles.brushesContainer}>
+              {/* <View style={{ flexDirection: 'row' }}> */}
+              {/* None style button */}
+              <ScrollView>
                 <View style={{ margin: 2 }}>
                   <TouchableOpacity
                     style={[styles.functionButton, { backgroundColor: 'gray' }]}
                     onPress={() => {
-                      this.sendRequestStyleHelper(obj.name);
+                      this.setState(prevState => ({
+                        ...prevState,
+                        displayedImageData: this.state.generatedImageData,
+                      }));
                     }}>
-
-                    <Image style={styles.brushes} source={obj.image_url} />
-                    <Text
-                      style={{
-                        color: 'white',
-                        fontSize: device.height * 0.024,
-                      }}>
-                      {obj.label}
-                    </Text>
+                    <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
                   </TouchableOpacity>
                 </View>
-              );
-            })}
-          </ScrollView>
-          {/* </View> */}
-          {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
-            {this.state.message}
-          </Text> */}
-          </View>
+                {/* Programmatically render all style options */}
+                {styleTransferOptions.styles.map(obj => {
+                  return (
+                    <View style={{ margin: 2 }}>
+                      <TouchableOpacity
+                        style={[styles.functionButton, { backgroundColor: 'gray' }]}
+                        onPress={() => {
+                          this.sendRequestStyleHelper(obj.name);
+                        }}>
+
+                        <Image style={styles.brushes} source={obj.image_url} />
+                        <Text
+                          style={{
+                            color: 'white',
+                            fontSize: device.height * 0.024,
+                          }}>
+                          {obj.label}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+              {/* </View> */}
+              {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
+              {this.state.message}
+            </Text> */}
+            </View>
 
           }
         </View>
 
 
         {/* User Brush buttons */}
-          
-        {
-            this.state.currentBrush == brushTypes.USER &&
-            <View
-            style={{
-              flexDirection: 'column',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-            }}>
+
+        {this.state.currentBrush == brushTypes.USER &&
+          <View style={styles.brushesContainer}>
             {/* <View style={{ flexDirection: 'row' }}> */}
             {/* None style button */}
-            <ScrollView style={{ height: device.height * 0.7 }}>
+            <ScrollView>
               <View style={{ margin: 2 }}>
                 <TouchableOpacity
                   style={[styles.functionButton, { backgroundColor: 'gray' }]}
@@ -550,12 +518,12 @@ export default class App extends Component {
                       onPress={() => {
                         console.log("SETTING TO ", obj.name)
                         this.setState(prevState => ({
-                         ...prevState,
-                         userBrushType: obj.name 
+                          ...prevState,
+                          userBrushType: obj.name
                         }))
                       }}>
-  
-                      <Image style={styles.brushes} source={obj.image_url} />
+
+                      {/* <Image style={styles.brushes} source={obj.image_url} /> */}
                       <Text
                         style={{
                           color: 'white',
@@ -572,14 +540,48 @@ export default class App extends Component {
             {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
               {this.state.message}
             </Text> */}
+
+
+            <View
+            // style={{borderWidth:1, borderColor: "#000000", borderStyle:"solid"}}
+            >
+              <ColorPicker
+                ref={r => { this.picker = r }}
+                // color={this.state.currentColor}
+                // swatchesOnly={this.state.swatchesOnly}
+                // onColorChange={this.onColorChange}
+                onColorChangeComplete={(color) => {
+                  this.setState(prevState => ({
+                    ...prevState,
+                    userBrushColor: color,
+                  }));
+                  console.log("colir is", color)
+                }}
+                thumbSize={40}
+                sliderSize={40}
+                noSnap={true}
+                row={false}
+              // swatchesLast={this.state.swatchesLast}
+              // swatches={this.state.swatchesEnabled}
+              // discrete={this.state.disc}
+              />
+              {/* <Button onPress={() => this.picker.revert()} /> */}
+
             </View>
-  
-          }
+            <View
+              style={{ padding: 10 }}
+            >
+
+
+            </View>
+          </View>
+
+        }
 
 
       </View>
 
-      
+
     );
   }
 }
@@ -647,8 +649,9 @@ const styles = StyleSheet.create({
   },
   toolGroup: {
     flexDirection: 'row',
-  },
+    justifyContent: 'space-around',
 
+  },
   brushes: {
     justifyContent: 'start',
     margin: 0,
@@ -656,4 +659,11 @@ const styles = StyleSheet.create({
     width: 166,
     padding: 0,
   },
+  brushesContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    height: device.height * 0.85
+  },
+
 });
