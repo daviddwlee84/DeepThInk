@@ -13,7 +13,6 @@ import brushTypes from "../constants/brushTypes.js"
 import userBrushes from "../constants/userBrushes.js"
 var device = Dimensions.get('window');
 
-
 const styles = StyleSheet.create(generateStyle(device));
 
 
@@ -70,8 +69,8 @@ export default class UserCanvas extends Component {
 		let currentComponent = this;
 		// If user changed the brush type to image brush changed color, request a new brush image
 		if (this.props.brushType === brushTypes.USER && 
-			(this.props.userBrushType === userBrushes.IMAGE_BRUSH &&
-			prevProps.userBrushType !== userBrushes.IMAGE_BRUSH) ||
+			(this.props.userBrushType.includes("image") &&
+			prevProps.userBrushType !== this.props.userBrushType) ||
 			prevProps.color !== this.props.color) {
 				console.log("FETCHING NOW")
 
@@ -312,9 +311,7 @@ export default class UserCanvas extends Component {
 				}
 			}
 
-			else if (this.props.userBrushType === userBrushes.IMAGE_BRUSH ||
-				this.props.userBrushType === userBrushes.IMAGE_CHARCOAL
-				) {
+			else if (this.props.userBrushType.includes("image")) {
 				// IMAGE BRUSH
 				ctx.globalAlpha = 0.5
 				var c = React.createElement(Canvas)
@@ -446,7 +443,7 @@ export default class UserCanvas extends Component {
 					onResponderMove={this.onDrawMove}
 					onResponderRelease={this.onDrawEnd}
 				>
-					<canvas ref={this.handleCanvas} />
+					<canvas ref={this.handleCanvas} id="mycanvas" />
 				</View>
 			)
 		} else {
@@ -462,6 +459,7 @@ export default class UserCanvas extends Component {
 					<Canvas width={styles.drawBox.width}
 						height={styles.drawBox.height}
 						ref={this.handleCanvas}
+						id="mycanvas"
 					/>
 				</View>
 			)

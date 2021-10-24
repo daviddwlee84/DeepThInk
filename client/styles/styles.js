@@ -24,8 +24,8 @@ export function generateStyle(device) {
       borderWidth: 8,
       position:"absolute", left: 0, top: 0,
       // padding: 10,
-      width: Math.min(device.width * 0.85, device.height * 0.85),
-      height: Math.min(device.width * 0.85, device.height * 0.85),
+      width: Math.min(device.width * 0.75, device.height * 0.75),
+      height: Math.min(device.width * 0.75, device.height * 0.75),
     },
     // canvasBox: {
     //   width: Math.min(device.width * 0.75, device.height * 0.75),
