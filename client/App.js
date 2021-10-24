@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  ActivityIndicator,
   AppRegistry,
   StyleSheet,
   View,
@@ -41,6 +42,19 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import ColorPicker from 'react-native-wheel-color-picker';
 import Spinner from 'react-native-loading-spinner-overlay';
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator,
+} from 'react-native-indicators';
+
+
 
 var device = Dimensions.get('window');
 const CANVASWIDTH = Math.min(device.width * 0.75, device.height * 0.75);
@@ -79,13 +93,13 @@ export default class App extends Component {
     // socket: new WebSocket('ws://localhost:8080/ws')
     socket:
       Platform.OS === 'web'
-        ? new WebSocket('ws://localhost:8080/ws')
-        : new WebSocket('ws://10.0.2.2:8080/ws'),
+        ? new WebSocket('ws://34.135.207.147:8080/ws')
+        : new WebSocket('ws://34.135.207.147:8080/ws'),
     canvasWidth: CANVASWIDTH,
     canvasHeight: CANVASHEIGHT,
     currentBrush: brushTypes.AI,
 
-    fetchingStatus: false
+    isLoading: true //for loading spinner
   };
 
   constructor(props) {
@@ -121,16 +135,23 @@ export default class App extends Component {
       this.onMesageHandler(event);
     };
 
-    setInterval(() => {
-      this.setState({
-        fetchingStatus: !this.state.fetchingStatus
-      });
-    }, 3000);
+    this.setState(
+      prevState => ({
+        ...prevState,
+        isLoading: false,
+      }))
+
   }
 
   // Fetch image data from canvas
   // Then call sendRequest to send the data to backend
   grabPixels = async () => {
+
+    this.setState(
+      prevState => ({
+        ...prevState,
+        isLoading: true,
+      }))
     var getImage = this.refs.drawCanvasRef.getBase64().then(value => {
       var resultImage = value.split(';base64,')[1];
       console.log('result image is', resultImage);
@@ -147,6 +168,12 @@ export default class App extends Component {
 
   // Send request to model server to generate painting
   sendRequestHelper = async () => {
+    this.setState(
+      prevState => ({
+        ...prevState,
+        isLoading: true,
+      }))
+
     this.state.socket.send(
       JSON.stringify({
         kind: messageKinds.MESSAGE_GENERATE,
@@ -158,6 +185,12 @@ export default class App extends Component {
   };
   // Send a request to the model server to stylize the generated painting
   sendRequestStyleHelper = async newStyle => {
+    this.setState(
+      prevState => ({
+        ...prevState,
+        isLoading: true,
+      }))
+    
     this.state.socket.send(
       JSON.stringify({
         kind: messageKinds.MESSAGE_STYLIZE,
@@ -240,6 +273,13 @@ export default class App extends Component {
           generatedImageData: message.imageData,
           displayedImageData: message.imageData,
         }));
+
+        this.setState(
+          prevState => ({
+            ...prevState,
+            isLoading: false,
+          }))
+
         break;
       // User received a stylized image broadcasted from another user
       case messageKinds.MESSAGE_STYLIZE:
@@ -250,6 +290,14 @@ export default class App extends Component {
           stylizedImageData: message.imageData,
           displayedImageData: message.imageData,
         }));
+
+
+        this.setState(
+          prevState => ({
+            ...prevState,
+            isLoading: false,
+          }))
+        
         break;
     }
   };
@@ -592,12 +640,11 @@ export default class App extends Component {
         }
 
         {/* Spinner is recommended to be at the root level */}
-        <View style={{position:'absolute', paddingLeft: 100,}}>
-          <Spinner
-            visible={this.state.fetchingStatus}
-            textContent={'Loading...'}
-            textStyle={styles.spinnerTextStyle}
-            color={"black"}
+        <View style={styles.spinnerContainer}>
+          <ActivityIndicator
+            animating={this.state.isLoading}
+            size={"large"}
+            style={{transform: [{ scale: 3 }]          }}
           />
         </View>
 
@@ -696,7 +743,16 @@ const styles = StyleSheet.create({
     
   },
   spinnerTextStyle: {
-    
+    color: 'transparent'
+  },
+  spinnerContainer: {
+    position: 'absolute',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    left: device.width / 2,
+    top: device.height / 2.5,
   },
 
 });

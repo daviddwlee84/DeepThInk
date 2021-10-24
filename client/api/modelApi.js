@@ -11,7 +11,7 @@ export async function sendRequest(imageData) {
   // Send the request to backend
   const res = await axios
     .post(
-      (url = 'http://localhost:8000/generate'),
+      (url = 'http://34.135.207.147:8000/generate'),
       (data = {
         imageData: imageData,
       }),
@@ -44,7 +44,7 @@ export async function sendRequestStyle(imageData, style) {
   // Send stylize image request
   var res = await axios
     .post(
-      (url = 'http://localhost:8000/stylize'),
+      (url = 'http://34.135.207.147:8000/stylize'),
       (data = {
         imageData: imageData,
         style: style,

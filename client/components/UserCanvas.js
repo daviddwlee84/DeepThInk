@@ -74,7 +74,7 @@ export default class UserCanvas extends Component {
 			prevProps.color !== this.props.color) {
 				console.log("FETCHING NOW")
 
-				fetch("http://localhost:8000/makeBrush",
+				fetch("http://34.135.207.147:8000/makeBrush",
 					{
 						headers: {
 							'Accept': 'application/json',
