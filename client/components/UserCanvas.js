@@ -3,6 +3,7 @@ import { Text, View, Platform, StyleSheet, Dimensions } from 'react-native';
 import Canvas, { Image as CanvasImage } from 'react-native-canvas';
 import { generateStyle } from '../styles/styles';
 import Point from "../classes/Point";
+import backendConstants from "../constants/backendUrl"
 import { Asset } from 'expo-asset';
 import {
 	sendStroke,
@@ -74,7 +75,7 @@ export default class UserCanvas extends Component {
 			prevProps.color !== this.props.color) {
 				console.log("FETCHING NOW")
 
-				fetch("http://34.135.207.147:8000/makeBrush",
+				fetch(`http://${backendConstants.BACKEND_URL}:8000/makeBrush`,
 					{
 						headers: {
 							'Accept': 'application/json',

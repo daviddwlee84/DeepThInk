@@ -53,7 +53,7 @@ import {
   UIActivityIndicator,
   WaveIndicator,
 } from 'react-native-indicators';
-
+import backendConstants from './constants/backendUrl';
 
 
 var device = Dimensions.get('window');
@@ -93,8 +93,8 @@ export default class App extends Component {
     // socket: new WebSocket('ws://localhost:8080/ws')
     socket:
       Platform.OS === 'web'
-        ? new WebSocket('ws://34.135.207.147:8080/ws')
-        : new WebSocket('ws://34.135.207.147:8080/ws'),
+        ? new WebSocket(`ws://${backendConstants.BACKEND_URL}:8080/ws`)
+        : new WebSocket(`ws://${backendConstants.BACKEND_URL}:8080/ws`),
     canvasWidth: CANVASWIDTH,
     canvasHeight: CANVASHEIGHT,
     currentBrush: brushTypes.AI,
