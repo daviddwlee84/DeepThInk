@@ -45,7 +45,7 @@ docker build -t leungjch/hai-art-model:latest .
 ```
 To run the Docker image, run
 ```shell
-docker run leungjch/hai-art-model:latest
+docker run -p 8000:8000 leungjch/hai-art-model:latest
 ```
 To push the Docker image to Docker Hub, run
 ```

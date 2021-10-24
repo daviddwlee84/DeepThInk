@@ -85,7 +85,7 @@ export default class App extends Component {
     canvasHeight: CANVASHEIGHT,
     currentBrush: brushTypes.AI,
 
-    spinner: false
+    fetchingStatus: false
   };
 
   constructor(props) {
@@ -123,7 +123,7 @@ export default class App extends Component {
 
     setInterval(() => {
       this.setState({
-        spinner: !this.state.spinner
+        fetchingStatus: !this.state.fetchingStatus
       });
     }, 3000);
   }
@@ -288,16 +288,6 @@ export default class App extends Component {
 
     return (
       <View style={styles.container}>
-        {/* Spinner is recommended to be at the root level */}
-        <View style={{position:'absolute', paddingLeft: 10,}}>
-          <Spinner
-            visible={true}
-            textContent={'Loading...'}
-            textStyle={styles.spinnerTextStyle}
-          />
-        </View>
-
-        
 
         {/* Da Brush~ */}
         <View>
@@ -601,6 +591,15 @@ export default class App extends Component {
 
         }
 
+        {/* Spinner is recommended to be at the root level */}
+        <View style={{position:'absolute', paddingLeft: 100,}}>
+          <Spinner
+            visible={this.state.fetchingStatus}
+            textContent={'Loading...'}
+            textStyle={styles.spinnerTextStyle}
+            color={"black"}
+          />
+        </View>
 
       </View>
 
