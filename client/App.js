@@ -644,6 +644,7 @@ export default class App extends Component {
           <ActivityIndicator
             animating={this.state.isLoading}
             size={"large"}
+            color={"#545454"}
             style={{transform: [{ scale: 3 }]          }}
           />
         </View>
