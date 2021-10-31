@@ -528,6 +528,7 @@ export default class App extends Component {
                         displayedImageData: this.state.generatedImageData,
                       }));
                     }}>
+                        <Image style={styles.brushes} source={require('./resources/none_style.png')} />
                     <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
                   </TouchableOpacity>
                 </View>

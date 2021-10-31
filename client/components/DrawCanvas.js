@@ -192,6 +192,15 @@ export default class DrawCanvas extends Component {
 		this.canvasRef = canvas;
 		this.canvasRef.current = canvas;
 
+		// Fill upper half of the canvas with sky
+		ctx.fillStyle = "#efefef";
+		ctx.fillRect(0, 0, canvas.width, canvas.height/2);
+		
+		// Fill bottom half of canvas with sea
+		ctx.fillStyle = "#384f83";
+		ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height/2);
+
+
 	}
 
 
