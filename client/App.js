@@ -57,8 +57,8 @@ import backendConstants from './constants/backendUrl';
 
 
 var device = Dimensions.get('window');
-const CANVASWIDTH = Math.min(device.width * 0.75, device.height * 0.75);
-const CANVASHEIGHT = Math.min(device.width * 0.75, device.height * 0.75);
+const CANVASWIDTH = device.width * 0.33;
+const CANVASHEIGHT = device.width * 0.33;
 
 // Connect to Go backend
 // for web
@@ -84,6 +84,7 @@ export default class App extends Component {
     userBrushColor: "#00FF00",
     userBrushBase64: "data:image/png;base64,", // user brush 
     userBrushType: userBrushes.PENCIL,
+    styleBrushType: 'None',
     thickness: 10, // stroke thickness
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
@@ -190,7 +191,7 @@ export default class App extends Component {
         ...prevState,
         isLoading: true,
       }))
-    
+
     this.state.socket.send(
       JSON.stringify({
         kind: messageKinds.MESSAGE_STYLIZE,
@@ -297,41 +298,48 @@ export default class App extends Component {
             ...prevState,
             isLoading: false,
           }))
-        
+
         break;
     }
   };
 
-  
+
 
 
   render() {
-    let brushSlider =           
-    <View style={{padding:10}}>
-      <Text
-        style={{fontSize: 18, padding: 5}}
-      >Size</Text>
-      <Slider
-        style={{
-          width: device.width * 0.10,
-          height: device.height * 0.03,
-          marginBottom: 10,
-        }}
-        value={this.state.thickness}
-        minimumValue={1}
-        maximumValue={
-          CANVASWIDTH / 4
-        }
-        minimumTrackTintColor="#000000"
-        maximumTrackTintColor="#000000"
-        onValueChange={this.handleThickness}
-      />
-              <Ionicons style={{margin:"auto"}} name="ellipse" color={this.state.currentBrush == brushTypes.USER ? this.state.userBrushColor : this.state.color} size={this.state.thickness}></Ionicons>
+    let brushSlider =
+      <View style={{ flexDirection: "column", padding: 5 }}>
+        <View>
+        <Text
+          style={{ textAlign:"center", fontSize: 18, padding: 2 }}
+        >Size
+        </Text>
+        </View>
+
+        <Slider
+          style={{
+            width: 120,
+            margin: 'auto',
+            height: device.height * 0.03,
+          }}
+          value={this.state.thickness}
+          minimumValue={1}
+          maximumValue={
+            CANVASWIDTH / 4
+          }
+          minimumTrackTintColor="#000000"
+          maximumTrackTintColor="#000000"
+          onValueChange={this.handleThickness}
+        />
+        <View style={{ height: device.height * 0.20, marginBottom: "1em" }}>
+          <Ionicons style={{ margin: "auto" }} name="ellipse" color={this.state.currentBrush == brushTypes.USER ? this.state.userBrushColor : this.state.color} size={this.state.thickness}></Ionicons>
+
+        </View>
 
 
-    </View>;
+      </View>;
 
-    
+
 
 
     return (
@@ -343,30 +351,30 @@ export default class App extends Component {
             prevState => ({
               ...prevState,
               currentBrush: brushTypes.AI,
-            }))}>
-            <Image style={styles.brushes} source={require('./resources/AIBrush.png')} />
+            }))} >
+            <Image style={[styles.brushes, { opacity: this.state.currentBrush == brushTypes.AI ? 1 : 0.72 }]}
+              source={require('./resources/AIBrush.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => this.setState(
             prevState => ({
               ...prevState,
               currentBrush: brushTypes.STYLE,
             }))}>
-            <Image style={styles.brushes} source={require('./resources/styleBrush.png')} />
+            <Image style={[styles.brushes, { opacity: this.state.currentBrush == brushTypes.STYLE ? 1 : 0.72 }]}
+              source={require('./resources/styleBrush.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => this.setState(
             prevState => ({
               ...prevState,
               currentBrush: brushTypes.USER,
             }))}>
-            <Image style={styles.brushes} source={require('./resources/userBrush.png')} />
+            <Image style={[styles.brushes, { opacity: this.state.currentBrush == brushTypes.USER ? 1 : 0.72 }]}
+              source={require('./resources/userBrush.png')} />
           </TouchableOpacity>
-
         </View>
 
         <View id="drawGroup" style={styles.drawGroup}>
           <View style={styles.shadowBox}>
-
-
             <DrawCanvas
               ref="drawCanvasRef"
               setClickClear={click => this.clearChildAIBrush = click}
@@ -380,31 +388,6 @@ export default class App extends Component {
               height={CANVASHEIGHT}
               opacity={1}
             />
-          </View>
-          <View style={styles.toolGroup}>
-
-            {
-              this.state.currentBrush == brushTypes.AI &&
-              <View style={styles.tempButtons}>
-              <View style={{  padding: 5 }}>
-                <Button color="#07235c" title="clear"
-                  onPress={() => this.clearChildAIBrush()}
-                />
-              </View>
-              <View style={{ justifyContent: 'flex-end' }}>
-
-              </View>
-              {/* Generate button */}
-              <View style={{ justifyContent: 'flex-end', padding: 5 }}>
-                <Button
-                  color="#841584"
-                  title="Generate"
-                  onPress={this.grabPixels.bind(this)}
-                />
-              </View>
-            </View>
-
-            }
           </View>
         </View>
 
@@ -424,11 +407,8 @@ export default class App extends Component {
           {/* Conditionally render the main canvas if toggleDraw == true */}
 
           <View style={styles.shadowBox}>
-
-
-
+            
             {/* USER BRUSH */}
-
             <UserCanvas
               ref="userCanvasRef"
               setClickClear={click => this.clearChildUserBrush = click}
@@ -444,66 +424,42 @@ export default class App extends Component {
               opacity={this.state.opacity}
               id="myCanvas"
             />
-
           </View>
-              
-          <View style={styles.toolGroup}>
 
-            {
-              this.state.currentBrush == brushTypes.USER &&
-              <View style={styles.tempButtons}>
-              <View style={{  padding: 5 }}>
-                <Button color="#07235c" title="clear"
-                  onPress={() => this.clearChildUserBrush()}
-                />
-              </View>
-              <View style={{ justifyContent: 'flex-end' }}>
-
-                {/* Deprecated change canvas opacity button */}
-                {/* <Button color="#07235c" title="canvas" onPress={() => {
-                  console.log("Toggling draw canvas to ", this.state.opacity)
-                  this.setState(prevState => ({
-                    ...prevState,
-                    opacity: (prevState.opacity * 2 + 1) % 3 / 2,
-                  }));
-
-                }} /> */}
-
-              </View>
-
-            </View>
-
-            }
-          </View>
         </View>
 
 
         <View style={{ flexDirection: 'row', }}>
-          {/* AI brush palette buttons */}
 
-          {this.state.currentBrush == brushTypes.AI &&
+          {/* AI brush palette buttons */}
+          {(this.state.currentBrush == brushTypes.AI) &&
             <View style={styles.brushesContainer}>
+
               <ScrollView>
-                {/* <View style={{ flexDirection: 'column' }}> */}
                 {colorMap.colors.map(obj => {
                   return (
-                    <View style={{ margin: 2 }}>
+                    <View style={{ margin: 0 }}>
                       <TouchableOpacity
-                        style={[
-                          styles.functionButton,
-                          { backgroundColor: obj.color, },
-
-                        ]}
+                        style={{
+                          padding: 4,
+                          borderTopLeftRadius: this.state.color == obj.color ? 0 : 5,
+                          borderBottomLeftRadius: this.state.color == obj.color ? 0 : 5,
+                          borderTopRightRadius: 5,
+                          borderBottomRightRadius: 5,
+                          backgroundColor: obj.color,
+                          borderLeftWidth: this.state.color == obj.color ? 10 : 0,
+                          borderColor: obj.color == '#efefef' ? 'grey' : '#8a8a8a',
+                        }}
                         onPress={() => {
                           this.setState({ color: obj.color });
                         }}>
 
-                        <Image 
-                        draggable={false}
-                        style={styles.brushes} source={obj.logo} />
+                        <Image
+                          draggable={false}
+                          style={styles.brushes} source={obj.logo} />
                         <Text
                           style={{
-                            color: 'white',
+                            color: obj.color == '#efefef' ? '#3d3d3d' : 'white',
                             fontSize: device.height * 0.025,
                           }}>
                           {obj.label}
@@ -513,12 +469,29 @@ export default class App extends Component {
                   );
                 })}
               </ScrollView>
-              {/* </View> */}
-              {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.025 }}>
-              {this.state.message}
-            </Text> */}
-            {/* Render the slider and the brush legend */}
-            {brushSlider}
+
+              {/* Render the slider and the brush legend */}
+
+
+
+
+              {brushSlider}
+
+              <View style={{width:"100%", marginBottom: "0.2em"}}>
+                <Button
+                  mode="contained"
+                  style={{padding: 10}}
+                  onPress={this.grabPixels.bind(this)}
+                  color="#88508c"
+                  title="generate"
+                />
+                </View>
+
+              <View style={{ width: "100%", height:80}}>
+                <Button style={{ marginTop: 10, height: "80"}} color="#5e748a" title="clear"
+                    onPress={() => this.clearChildAIBrush()}
+                />
+              </View>
 
             </View>
 
@@ -529,19 +502,19 @@ export default class App extends Component {
           {this.state.currentBrush == brushTypes.STYLE &&
 
             <View style={styles.brushesContainer}>
-              {/* <View style={{ flexDirection: 'row' }}> */}
               {/* None style button */}
               <ScrollView>
                 <View style={{ margin: 2 }}>
                   <TouchableOpacity
-                    style={[styles.functionButton, { backgroundColor: 'gray' }]}
+                    style={[styles.functionButton, { backgroundColor: this.state.styleBrushType == 'None' ? '#3d3d3d' : 'grey' }]}
                     onPress={() => {
                       this.setState(prevState => ({
                         ...prevState,
                         displayedImageData: this.state.generatedImageData,
+                        styleBrushType: 'None',
                       }));
                     }}>
-                        <Image style={styles.brushes} source={require('./resources/none_style.png')} />
+                    <Image style={styles.brushes} source={require('./resources/none_style.png')} />
                     <Text style={{ color: 'white', fontSize: 20 }}> None </Text>
                   </TouchableOpacity>
                 </View>
@@ -550,9 +523,12 @@ export default class App extends Component {
                   return (
                     <View style={{ margin: 2 }}>
                       <TouchableOpacity
-                        style={[styles.functionButton, { backgroundColor: 'gray' }]}
+                        style={[styles.functionButton, { backgroundColor: this.state.styleBrushType == obj.name ? '#3d3d3d' : 'grey' }]}
                         onPress={() => {
                           this.sendRequestStyleHelper(obj.name);
+                          this.setState(prevState => ({
+                            styleBrushType: obj.name,
+                          }))
                         }}>
 
                         <Image style={styles.brushes} source={obj.image_url} />
@@ -568,10 +544,6 @@ export default class App extends Component {
                   );
                 })}
               </ScrollView>
-              {/* </View> */}
-              {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
-              {this.state.message}
-            </Text> */}
             </View>
 
           }
@@ -582,29 +554,26 @@ export default class App extends Component {
 
         {this.state.currentBrush == brushTypes.USER &&
           <View style={styles.brushesContainer}>
-
-            <View style={{height: device.height * 0.4}}>
+            <View style={{ height: device.height * 0.4 }}>
               <ScrollView>
                 {/* Programmatically render all options */}
                 {userBrushesOptions.userBrushes.map(obj => {
                   return (
-                    <View style={{margin: 2,}}>
+                    <View style={{ margin: 2, }}>
                       <TouchableOpacity
-                        
-                        style={[styles.functionButton, { backgroundColor: 'white' }]}
+
+                        style={[styles.functionButton, { backgroundColor: this.state.userBrushType == obj.name ? '#999999' : 'white' }]}
                         onPress={() => {
-                          console.log("SETTING TO ", obj.name)
                           this.setState(prevState => ({
                             ...prevState,
-                            userBrushType: obj.name
+                            userBrushType: obj.name,
                           }))
-                          this.setState({backgroundColor: 'red'});
                         }}>
 
                         <Image style={styles.userBrushes} source={obj.image_url} />
                         <Text
                           style={{
-                            color: 'grey',
+                            color: this.state.userBrushType == obj.name ? 'white' : 'grey',
                             fontSize: device.height * 0.024,
                           }}>
                           {obj.label}
@@ -615,17 +584,11 @@ export default class App extends Component {
                 })}
               </ScrollView>
             </View>
-            {/* <Text style={{ marginRight: 8, fontSize: device.height * 0.024 }}>
-              {this.state.message}
-            </Text> */}
+
 
             {/* Render the slider and the brush legend */}
-            {brushSlider}
-
-
             <View
-              style={{heigth: device.height * 0.1,}}
-            >
+              style={{ heigth: device.height * 0.1, }}>
               <ColorPicker
                 ref={r => { this.picker = r }}
                 // color={this.state.currentColor}
@@ -647,12 +610,17 @@ export default class App extends Component {
               // swatches={this.state.swatchesEnabled}
               // discrete={this.state.disc}
               />
-              {/* <Button onPress={() => this.picker.revert()} /> */}
 
             </View>
+            {brushSlider}
 
+            <View style={[{ width: "100%", padding: 10}]}>
+
+              <Button color="#717591" title="clear strokes"
+                onPress={() => this.clearChildUserBrush()}
+              />
+            </View>
           </View>
-
         }
 
         {/* Spinner is recommended to be at the root level */}
@@ -661,13 +629,10 @@ export default class App extends Component {
             animating={this.state.isLoading}
             size={"large"}
             color={"#545454"}
-            style={{transform: [{ scale: 3 }]          }}
+            style={{ transform: [{ scale: 3 }] }}
           />
         </View>
-
       </View>
-
-
     );
   }
 }
@@ -680,14 +645,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingTop: device.height * 0.02,
   },
-
-  //   drawBox: {
-  //     backgroundColor: '#759edf',
-  //     borderColor: 'lightblue',
-  //     borderWidth: 10,
-  //     width: CANVASHEIGHT,
-  //     height: CANVASHEIGHT,
-  //   },
   generatedImageBox: {
     userDrag: 'none',
     userSelect: 'none',
@@ -717,44 +674,35 @@ const styles = StyleSheet.create({
   },
 
   drawGroup: {
-    flexDirection: 'column',
-    display: 'flex',
- 
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+
   },
-  //   genGroup: {
-  //     flexDirection: 'column',
-  //   },
-  //   genButton: {
-  //     height: 60,
-  //     alignItems: 'center',
-  //     justifyContent: 'center',
-  //   },
   strokeGroup: {
     flexDirection: 'column',
     alignItems: 'center',
   },
-  tempButtons: {
-    flexDirection: 'row',
-  },
   toolGroup: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-
   },
   brushes: {
-    justifyContent: 'start',
     margin: 0,
     height: 100,
-    width: 166,
+    width: 180,
     padding: 0,
     userDrag: 'none',
-    userSelect: 'none'
+    userSelect: 'none',
   },
   brushesContainer: {
     flexDirection: 'column',
     justifyContent: 'space-around',
     alignItems: 'center',
-    height: device.height * 0.85
+    height: device.height * 0.95,
+    borderLeftColor: "#C8C8C8",
+    backgroundColor: "#f2f2eb",
+    borderLeftWidth: 3,
   },
   userBrushes: {
     justifyContent: 'start',
@@ -762,9 +710,8 @@ const styles = StyleSheet.create({
     height: 80,
     width: 200,
     paddingTop: 0,
-    
+
   },
-  
   spinnerTextStyle: {
     color: 'transparent'
   },

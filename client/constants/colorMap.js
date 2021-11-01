@@ -3,25 +3,26 @@ export default {
     {
       color: '#384f83',
       id: 154,
-      label: 'sea',
+      label: 'Sea',
       logo: require('../resources/seaLogo.png'),
     },
     {
       color: '#efefef',
       id: 105,
-      label: 'cloud',
+      label: 'Cloud',
       logo: require('../resources/cloudLogo.png'),
+      labelColor: "#d3d3d3"
     },
     {
       color: '#2c1e16',
       id: 110,
-      label: 'dirt',
+      label: 'Dirt',
       logo: require('../resources/dirtLogo.png'),
     },
     {
       color: '#5d6e32',
       id: 96,
-      label: 'bush',
+      label: 'Bush',
       logo: require('../resources/bushLogo.png'),
     },
     // {
@@ -34,7 +35,7 @@ export default {
     {
       color: '#3c3b4b',
       id: 134,
-      label: 'mountain',
+      label: 'Mountain',
       logo: require('../resources/mountainLogo.png'),
     },
     // {
@@ -46,13 +47,13 @@ export default {
     {
       color: '#759edf',
       id: 156,
-      label: 'sky',
+      label: 'Sky',
       logo: require('../resources/skyLogo.png'),
     },
     {
       color: '#352613',
       id: 168,
-      label: 'tree',
+      label: 'Tree',
       logo: require('../resources/treeLogo.png'),
     },
     // {
@@ -70,7 +71,7 @@ export default {
     {
       color: '#776c2d',
       id: 126,
-      label: 'hill',
+      label: 'Hill',
       logo: require('../resources/hillLogo.png'),
     },
     // {
@@ -82,7 +83,7 @@ export default {
     {
       color: '#32604d',
       id: 147,
-      label: 'river',
+      label: 'River',
       logo: require('../resources/riverLogo.png'),
     },
     // {

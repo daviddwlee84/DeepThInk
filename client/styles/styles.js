@@ -16,8 +16,8 @@ export function generateStyle(device) {
       borderWidth: 8,
       position:"absolute", left: 0, top: 0,
       // padding: 10,
-      width: Math.min(device.width * 0.75, device.height * 0.75),
-      height: Math.min(device.width * 0.75, device.height * 0.75),
+      width: device.width * 0.33,
+      height: device.width * 0.33,
       userDrag: 'none',
       userSelect: 'none'
     },
