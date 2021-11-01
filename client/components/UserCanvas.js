@@ -66,6 +66,7 @@ export default class UserCanvas extends Component {
 		this.props.setClickClear(this.clearCanvas);
 	 }
 
+
 	componentDidUpdate(prevProps) {
 		let currentComponent = this;
 		// If user changed the brush type to image brush changed color, request a new brush image
@@ -444,7 +445,9 @@ export default class UserCanvas extends Component {
 					onResponderMove={this.onDrawMove}
 					onResponderRelease={this.onDrawEnd}
 				>
-					<canvas ref={this.handleCanvas} id="mycanvas" />
+					<canvas 
+					draggable={false}
+					ref={this.handleCanvas} id="mycanvas" />
 				</View>
 			)
 		} else {
@@ -461,6 +464,7 @@ export default class UserCanvas extends Component {
 						height={styles.drawBox.height}
 						ref={this.handleCanvas}
 						id="mycanvas"
+						draggable={false}
 					/>
 				</View>
 			)

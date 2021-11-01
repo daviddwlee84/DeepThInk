@@ -32,6 +32,7 @@ export default class DrawCanvas extends Component {
 		this.width = props.width;
 		this.height = props.height;
 		this.canvasOpacity = props.canvasOpacity;
+		this.clearCanvas = this.clearCanvas.bind(this);
 
 	}
 
@@ -179,6 +180,24 @@ export default class DrawCanvas extends Component {
 
 	}
 
+	componentDidMount() {
+		this.props.setClickClear(this.clearCanvas);
+	 }
+	 clearCanvas = () => {
+		var canvas = this.canvasRef.current
+		var ctx = canvas.getContext("2d");
+
+		// Fill upper half of the canvas with sky
+		ctx.fillStyle = "#efefef";
+		ctx.fillRect(0, 0, canvas.width, 3*canvas.height/4);
+		
+		// Fill bottom half of canvas with sea
+		ctx.fillStyle = "#384f83";
+		ctx.fillRect(0, 3*canvas.height/4, canvas.width, canvas.height/4);
+	}
+
+
+
 	handleCanvas = (canvas) => {
 		// console.log("handling canvas", canvas)
 		if (canvas === null) {
@@ -192,13 +211,8 @@ export default class DrawCanvas extends Component {
 		this.canvasRef = canvas;
 		this.canvasRef.current = canvas;
 
-		// Fill upper half of the canvas with sky
-		ctx.fillStyle = "#efefef";
-		ctx.fillRect(0, 0, canvas.width, canvas.height/2);
-		
-		// Fill bottom half of canvas with sea
-		ctx.fillStyle = "#384f83";
-		ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height/2);
+		this.clearCanvas();
+
 
 
 	}
@@ -282,7 +296,10 @@ export default class DrawCanvas extends Component {
 			onResponderMove={this.onDrawMove}
 			onResponderRelease={this.onDrawEnd}
 		>
-        <canvas ref={this.handleCanvas} style={{position:"absolute", left: 0, top: 0}} />
+        <canvas 
+		draggable={false}
+
+		ref={this.handleCanvas}/>
 		</View>
 		)
 	} else {
@@ -295,7 +312,10 @@ export default class DrawCanvas extends Component {
 			onResponderRelease={this.onDrawEnd}
 			style= {styles.drawBox}
 			>
-			<Canvas width={styles.drawBox.width}
+			<Canvas 
+			draggable={false}
+			
+			width={styles.drawBox.width}
 					height={styles.drawBox.height} 
 					ref={this.handleCanvas} 
 			/>

@@ -2,14 +2,6 @@ import { autocrop } from "jimp";
 
 export function generateStyle(device) {
   return {
-    // container: {
-    //   flex: 1,
-    //   flexDirection: 'column',
-    //   alignItems: 'center',
-    //   justifyContent: 'center',
-    //   backgroundColor: 'white',
-    // },
-
     drawBox: {
       borderColor: 'black',
       borderWidth: 2,
@@ -26,26 +18,8 @@ export function generateStyle(device) {
       // padding: 10,
       width: Math.min(device.width * 0.75, device.height * 0.75),
       height: Math.min(device.width * 0.75, device.height * 0.75),
+      userDrag: 'none',
+      userSelect: 'none'
     },
-    // canvasBox: {
-    //   width: Math.min(device.width * 0.75, device.height * 0.75),
-    //   height: Math.min(device.width * 0.75, device.height * 0.75),
-    // },
-    // generatedImageBox: {
-    //   aspectRatio: 1,
-    //   borderWidth: 10,
-    //   borderColor: 'lightblue',
-
-    //   width: Math.min(device.width * 0.75, device.height * 0.75),
-    //   height: Math.min(device.width * 0.75, device.height * 0.75),
-    // },
-    // generatedImage: {
-    //   width: Math.min(device.width * 0.75, device.height * 0.75),
-    //   height: Math.min(device.width * 0.75, device.height * 0.75),
-    // },
-    // functionButton: {
-    //   padding: 4,
-    //   borderRadius: 5,
-    // },
   };
 }

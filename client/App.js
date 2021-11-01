@@ -369,6 +369,7 @@ export default class App extends Component {
 
             <DrawCanvas
               ref="drawCanvasRef"
+              setClickClear={click => this.clearChildAIBrush = click}
               style={{ backgroundColor: "black", position: "absolute", background: 'transparent' }}
               brushType={this.state.currentBrush}
               thickness={this.state.thickness}
@@ -380,6 +381,31 @@ export default class App extends Component {
               opacity={1}
             />
           </View>
+          <View style={styles.toolGroup}>
+
+            {
+              this.state.currentBrush == brushTypes.AI &&
+              <View style={styles.tempButtons}>
+              <View style={{  padding: 5 }}>
+                <Button color="#07235c" title="clear"
+                  onPress={() => this.clearChildAIBrush()}
+                />
+              </View>
+              <View style={{ justifyContent: 'flex-end' }}>
+
+              </View>
+              {/* Generate button */}
+              <View style={{ justifyContent: 'flex-end', padding: 5 }}>
+                <Button
+                  color="#841584"
+                  title="Generate"
+                  onPress={this.grabPixels.bind(this)}
+                />
+              </View>
+            </View>
+
+            }
+          </View>
         </View>
 
         <View id="drawGroup" style={styles.drawGroup}>
@@ -388,6 +414,7 @@ export default class App extends Component {
           <View style={styles.generatedImageBox}>
             {this.state.displayedImageData != null ? (
               <Image
+                draggable={false}
                 style={styles.generatedImage}
                 source={{ uri: this.state.displayedImageData }}
               />
@@ -404,7 +431,7 @@ export default class App extends Component {
 
             <UserCanvas
               ref="userCanvasRef"
-              setClickClear={click => this.clearChild = click}
+              setClickClear={click => this.clearChildUserBrush = click}
               style={{ position: "absolute", background: 'transparent' }}
               brushType={this.state.currentBrush}
               userBrushType={this.state.userBrushType}
@@ -423,20 +450,11 @@ export default class App extends Component {
           <View style={styles.toolGroup}>
 
             {
-              this.state.currentBrush == brushTypes.AI &&
+              this.state.currentBrush == brushTypes.USER &&
               <View style={styles.tempButtons}>
-              {/* <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
-                <Button color="#073ead" title="undo!" />
-              </View> */}
-              {/* <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
-                <Button color="#073ead" title="redo!" />
-              </View> */}
-              {/* <View style={{justifyContent: 'flex-end', paddingHorizontal: 5}}>
-                <Button color="#07235c" title="erase" />
-              </View> */}
-              <View style={{ justifyContent: 'flex-end', paddingHorizontal: 5 }}>
+              <View style={{  padding: 5 }}>
                 <Button color="#07235c" title="clear"
-                  onPress={() => this.clearChild()}
+                  onPress={() => this.clearChildUserBrush()}
                 />
               </View>
               <View style={{ justifyContent: 'flex-end' }}>
@@ -452,14 +470,7 @@ export default class App extends Component {
                 }} /> */}
 
               </View>
-              {/* Generate button */}
-              <View style={{ justifyContent: 'flex-end' }}>
-                <Button
-                  color="#841584"
-                  title="Generate"
-                  onPress={this.grabPixels.bind(this)}
-                />
-              </View>
+
             </View>
 
             }
@@ -487,7 +498,9 @@ export default class App extends Component {
                           this.setState({ color: obj.color });
                         }}>
 
-                        <Image style={styles.brushes} source={obj.logo} />
+                        <Image 
+                        draggable={false}
+                        style={styles.brushes} source={obj.logo} />
                         <Text
                           style={{
                             color: 'white',
@@ -575,8 +588,9 @@ export default class App extends Component {
                 {/* Programmatically render all options */}
                 {userBrushesOptions.userBrushes.map(obj => {
                   return (
-                    <View style={{ margin: 2 }}>
+                    <View style={{margin: 2,}}>
                       <TouchableOpacity
+                        
                         style={[styles.functionButton, { backgroundColor: 'white' }]}
                         onPress={() => {
                           console.log("SETTING TO ", obj.name)
@@ -584,6 +598,7 @@ export default class App extends Component {
                             ...prevState,
                             userBrushType: obj.name
                           }))
+                          this.setState({backgroundColor: 'red'});
                         }}>
 
                         <Image style={styles.userBrushes} source={obj.image_url} />
@@ -674,6 +689,8 @@ const styles = StyleSheet.create({
   //     height: CANVASHEIGHT,
   //   },
   generatedImageBox: {
+    userDrag: 'none',
+    userSelect: 'none',
     borderWidth: 8,
     backgroundColor: 'transparent',
     borderColor: '#fffef5',
@@ -684,6 +701,8 @@ const styles = StyleSheet.create({
   generatedImage: {
     width: "100%",
     height: "100%",
+    userDrag: 'none',
+    userSelect: 'none',
   },
   shadowBox: {
     shadowColor: 'grey',
@@ -699,7 +718,8 @@ const styles = StyleSheet.create({
 
   drawGroup: {
     flexDirection: 'column',
-    display: 'flex'
+    display: 'flex',
+ 
   },
   //   genGroup: {
   //     flexDirection: 'column',
@@ -714,8 +734,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tempButtons: {
-    height: 40,
-    width: 70,
     flexDirection: 'row',
   },
   toolGroup: {
@@ -729,6 +747,8 @@ const styles = StyleSheet.create({
     height: 100,
     width: 166,
     padding: 0,
+    userDrag: 'none',
+    userSelect: 'none'
   },
   brushesContainer: {
     flexDirection: 'column',
@@ -739,11 +759,12 @@ const styles = StyleSheet.create({
   userBrushes: {
     justifyContent: 'start',
     margin: 0,
-    height: 50,
+    height: 80,
     width: 200,
-    padding: 0,
+    paddingTop: 0,
     
   },
+  
   spinnerTextStyle: {
     color: 'transparent'
   },
