@@ -159,8 +159,8 @@ def save():
     background_base64_decoded = base64.b64decode(backgroundCanvasData)
 
     # Get the background
-    background_img = Image.open(io.BytesIO(background_base64_decoded)).resize((1024,1024))
-    foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((1024,1024))
+    background_img = Image.open(io.BytesIO(background_base64_decoded)).resize((512,512))
+    foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((512,512))
 
 
     # Overlay the foreground onto the background

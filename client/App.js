@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import DrawCanvas from './components/DrawCanvas';
 import UserCanvas from './components/UserCanvas';
+import ColorPicker from './components/Colorpicker';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 import Slider from '@react-native-community/slider';
@@ -40,7 +41,7 @@ import Point from './classes/Point';
 import { startClock } from 'react-native-reanimated';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-import ColorPicker from 'react-native-wheel-color-picker';
+// import ColorPicker from 'react-native-wheel-color-picker';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {
   BallIndicator,
@@ -335,12 +336,14 @@ export default class App extends Component {
               ...prevState,
               isLoading: false,
             }))
-            console.log("RESP IS ", this.state.imageData)
 
             // FIXME: Will probably only work on expo web, untested on android/ios
             if (message.savedImageData != '')
             {
-            triggerBase64Download(message.savedImageData, `Painting`)
+              triggerBase64Download(message.savedImageData, `Painting`)
+            }
+            else {
+              alert("Please generate a painting with the AI brush first.")
             }
             break;
     }
@@ -417,13 +420,17 @@ export default class App extends Component {
             <Image style={[styles.brushes, { opacity: this.state.currentBrush == brushTypes.USER ? 1 : 0.72 }]}
               source={require('./resources/userBrush.png')} />
           </TouchableOpacity>
-
-          <Button
+          
+          <TouchableOpacity style={{paddingLeft:7}} onPress={() => this.saveGeneratedImage()}>
+            <Image style={styles.donwloadButton}
+                   source={require('./resources/DownloadButton.png')}/>
+          </TouchableOpacity>
+          {/* <Button
           title="Save painting"
           onPress={() => this.saveGeneratedImage()}
           >
             
-          </Button>
+          </Button> */}
 
         </View>
 
@@ -744,6 +751,14 @@ const styles = StyleSheet.create({
     margin: 0,
     height: 100,
     width: 180,
+    padding: 0,
+    userDrag: 'none',
+    userSelect: 'none',
+  },
+  donwloadButton: {
+    margin: 0,
+    height: 50,
+    width: 50,
     padding: 0,
     userDrag: 'none',
     userSelect: 'none',
