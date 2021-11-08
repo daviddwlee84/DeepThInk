@@ -109,7 +109,6 @@ export default class DrawCanvas extends Component {
 		// point: Point
 
 		// draw a point
-		console.log("canvas ref in update is", client)
 		if (!this.canvasRef) {
 			return;
 		}
@@ -188,7 +187,7 @@ export default class DrawCanvas extends Component {
 		var ctx = canvas.getContext("2d");
 
 		// Fill upper half of the canvas with sky
-		ctx.fillStyle = "#efefef";
+		ctx.fillStyle = "#759edf";
 		ctx.fillRect(0, 0, canvas.width, 3*canvas.height/4);
 		
 		// Fill bottom half of canvas with sea

@@ -53,6 +53,8 @@ import {
   UIActivityIndicator,
   WaveIndicator,
 } from 'react-native-indicators';
+import { triggerBase64Download } from 'react-base64-downloader';
+
 import backendConstants from './constants/backendUrl';
 
 
@@ -203,6 +205,30 @@ export default class App extends Component {
     );
   };
 
+  saveGeneratedImage = () => {
+    var getImage = this.refs.userCanvasRef.getBase64().then(value => {
+
+      var resultImage = value.split(';base64,')[1];
+      var foregroundImageDataStripped = this.state.displayedImageData.split(';base64,')[1];
+      this.setState(
+        prevState => ({
+          ...prevState,
+          isLoading: true,
+        }))
+      this.state.socket.send(
+        JSON.stringify({
+          kind: messageKinds.MESSAGE_SAVE,
+          data: {
+            displayedImageData: foregroundImageDataStripped,
+            userCanvasImageData: resultImage,
+            aiCanvasImageData: this.state.imageData
+          },
+        }),
+      );
+    });
+  };
+  
+
   handleThickness = sliderValue => {
     this.setState(prevState => ({
       ...prevState,
@@ -293,6 +319,8 @@ export default class App extends Component {
         }));
 
 
+
+
         this.setState(
           prevState => ({
             ...prevState,
@@ -300,6 +328,21 @@ export default class App extends Component {
           }))
 
         break;
+
+        case messageKinds.MESSAGE_SAVE:
+          this.setState(
+            prevState => ({
+              ...prevState,
+              isLoading: false,
+            }))
+            console.log("RESP IS ", this.state.imageData)
+
+            // FIXME: Will probably only work on expo web, untested on android/ios
+            if (message.savedImageData != '')
+            {
+            triggerBase64Download(message.savedImageData, `Painting`)
+            }
+            break;
     }
   };
 
@@ -318,7 +361,7 @@ export default class App extends Component {
 
         <Slider
           style={{
-            width: 120,
+            width: 150,
             margin: 'auto',
             height: device.height * 0.03,
           }}
@@ -331,8 +374,11 @@ export default class App extends Component {
           maximumTrackTintColor="#000000"
           onValueChange={this.handleThickness}
         />
-        <View style={{ height: device.height * 0.20, marginBottom: "1em" }}>
-          <Ionicons style={{ margin: "auto" }} name="ellipse" color={this.state.currentBrush == brushTypes.USER ? this.state.userBrushColor : this.state.color} size={this.state.thickness}></Ionicons>
+        <View style={{ height: device.height * 0.18, marginBottom: "0.5em" }}>
+          <Ionicons style={{ margin: "auto" }} 
+                    name="ellipse" 
+                    color={this.state.currentBrush == brushTypes.USER ? this.state.userBrushColor : this.state.color} 
+                    size={this.state.thickness}></Ionicons>
 
         </View>
 
@@ -371,6 +417,14 @@ export default class App extends Component {
             <Image style={[styles.brushes, { opacity: this.state.currentBrush == brushTypes.USER ? 1 : 0.72 }]}
               source={require('./resources/userBrush.png')} />
           </TouchableOpacity>
+
+          <Button
+          title="Save painting"
+          onPress={() => this.saveGeneratedImage()}
+          >
+            
+          </Button>
+
         </View>
 
         <View id="drawGroup" style={styles.drawGroup}>
@@ -477,7 +531,7 @@ export default class App extends Component {
 
               {brushSlider}
 
-              <View style={{width:"100%", marginBottom: "0.2em"}}>
+              <View style={{width:"100%", marginBottom: "0.00em", padding: 5}}>
                 <Button
                   mode="contained"
                   style={{padding: 10}}
@@ -487,7 +541,7 @@ export default class App extends Component {
                 />
                 </View>
 
-              <View style={{ width: "100%", height:80}}>
+              <View style={{ width: "100%", padding: 5}}>
                 <Button style={{ marginTop: 10, height: "80"}} color="#5e748a" title="clear"
                     onPress={() => this.clearChildAIBrush()}
                 />
@@ -614,7 +668,7 @@ export default class App extends Component {
             </View>
             {brushSlider}
 
-            <View style={[{ width: "100%", padding: 10}]}>
+            <View style={[{ width: "100%"}]}>
 
               <Button color="#717591" title="clear strokes"
                 onPress={() => this.clearChildUserBrush()}
@@ -643,7 +697,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: 'white',
-    paddingTop: device.height * 0.02,
   },
   generatedImageBox: {
     userDrag: 'none',
@@ -699,7 +752,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-around',
     alignItems: 'center',
-    height: device.height * 0.95,
+    height: device.height,
     borderLeftColor: "#C8C8C8",
     backgroundColor: "#f2f2eb",
     borderLeftWidth: 3,

@@ -142,6 +142,39 @@ def colorize():
 
     return {"message":"Success", "data": img_str}
 
+# Save generated paintings
+@app.route('/save', methods=['POST'])
+def save():
+    # Get the displayed image data
+    data = request.get_json()
+    aiCanvasData = data.get("aiCanvasImageData")
+    backgroundCanvasData = data.get("displayedImageData")
+    foregroundCanvasData = data.get("userCanvasImageData")
+
+
+    print("AI IS", aiCanvasData.find("base64"), "BACKGROUND IS", backgroundCanvasData.find("base64"), "FOREGROUND IS", foregroundCanvasData.find("base64"))
+    # Remove the javascript file type header
+    aiCanvasData = base64.b64decode(aiCanvasData)
+    foreground_base64_decoded = base64.b64decode(foregroundCanvasData)
+    background_base64_decoded = base64.b64decode(backgroundCanvasData)
+
+    # Get the background
+    background_img = Image.open(io.BytesIO(background_base64_decoded)).resize((1024,1024))
+    foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((1024,1024))
+
+
+    # Overlay the foreground onto the background
+    background_img.paste(foreground_img, (0, 0), foreground_img)
+
+    buffered = io.BytesIO()
+    background_img.save(buffered, format="PNG")
+    final_painting_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+    print(final_painting_str)
+
+    return {"message":"Success", "data": "data:image/png;base64," + final_painting_str}
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000)

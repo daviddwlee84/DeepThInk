@@ -119,7 +119,6 @@ export default class UserCanvas extends Component {
 	}
 
 	onDrawMove = (event) => {
-		console.log("BTYPE IS", this.props.userBrushType)
 		// Disable drawing on this canvas if brush type not selected
 		if (this.props.brushType !== brushTypes.USER) {
 			return;
@@ -130,6 +129,7 @@ export default class UserCanvas extends Component {
 		var p = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color, 0.8), "move")
 		this.updateCanvas(p, "self")
 
+		// Deprecated multi-brush
 		// var q = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color,0.9), "move")
 		// q.offset = this.props.thickness*0.5
 		// this.updateCanvas(q, "self")
@@ -209,7 +209,6 @@ export default class UserCanvas extends Component {
 		// point: Point
 
 		// draw a point
-		console.log("canvas ref in update is", client)
 		if (!this.canvasRef) {
 			return;
 		}

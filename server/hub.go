@@ -247,6 +247,41 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 
 		hub.broadcastAll(msg)
 
+		//
+	case message.KindSave:
+		generate_url := fmt.Sprintf("%s/save", MODEL_URL)
+
+		log.Println("Got save painting")
+
+		// Fetch imagedata and style from payload
+		data := gjson.GetBytes(data, "data")
+		displayedImageData := data.Get("displayedImageData").String()
+		userCanvasImageData := data.Get("userCanvasImageData").String()
+		aiCanvasImageData := data.Get("aiCanvasImageData").String()
+
+		// Make request to model server
+		postBody, _ := json.Marshal(map[string]string{
+			"displayedImageData":  displayedImageData,
+			"userCanvasImageData": userCanvasImageData,
+			"aiCanvasImageData":   aiCanvasImageData,
+		})
+
+		responseBody := bytes.NewBuffer(postBody)
+		resp, err := http.Post(generate_url, "application/json", responseBody)
+		if err != nil {
+			log.Fatal(err)
+		}
+		body, err := ioutil.ReadAll(resp.Body)
+		fmt.Println("body is", string(body))
+
+		savedImageData := gjson.GetBytes(body, "data").String()
+
+		var msg message.Save = message.Save{
+			Kind:           message.KindSave,
+			SavedImageData: savedImageData,
+		}
+
+		hub.send(msg, client)
 	}
 
 }
