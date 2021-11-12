@@ -211,7 +211,9 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			ImageData: generatedImageData,
 		}
 
-		hub.broadcastAll(msg)
+		hub.send(msg, client)
+		// Collab mode (disabled)
+		// hub.broadcastAll(msg)
 
 	// Generate a stylized image and send it to all clients
 	case message.KindStylize:
@@ -245,7 +247,9 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Style:     style,
 		}
 
-		hub.broadcastAll(msg)
+		hub.send(msg, client)
+		// Collab mode (disabled)
+		// hub.broadcastAll(msg)
 
 		//
 	case message.KindSave:

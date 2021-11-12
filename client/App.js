@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import DrawCanvas from './components/DrawCanvas';
 import UserCanvas from './components/UserCanvas';
-import ColorPicker from './components/Colorpicker';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 import Slider from '@react-native-community/slider';
@@ -41,7 +40,8 @@ import Point from './classes/Point';
 import { startClock } from 'react-native-reanimated';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-// import ColorPicker from 'react-native-wheel-color-picker';
+// import ColorPicker from './components/Colorpicker';
+import ColorPicker from 'react-native-wheel-color-picker';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {
   BallIndicator,
@@ -252,45 +252,48 @@ export default class App extends Component {
   executeMessage = message => {
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE_START:
-        console.log('RECEIVED STROKE STARTT', message);
-        // Append collaborator stroke
-        this.setState(prevState => ({
-          ...prevState,
-          collaboratorStroke: [
-            ...prevState.collaboratorStroke,
-            new Point(
-              message.point.x * CANVASWIDTH,
-              message.point.y * CANVASHEIGHT,
-              message.thickness,
-              message.color,
-              'start',
-            ),
-          ],
-        }));
+        // Disabled collab drawing
+        // console.log('RECEIVED STROKE STARTT', message);
+        // // Append collaborator stroke
+        // this.setState(prevState => ({
+        //   ...prevState,
+        //   collaboratorStroke: [
+        //     ...prevState.collaboratorStroke,
+        //     new Point(
+        //       message.point.x * CANVASWIDTH,
+        //       message.point.y * CANVASHEIGHT,
+        //       message.thickness,
+        //       message.color,
+        //       'start',
+        //     ),
+        //   ],
+        // }));
 
         break;
       case messageKinds.MESSAGE_STROKE:
+        // Disabled collab drawing
         // console.log("received collaborator point", message)
         // Append collaborator stroke
-        this.setState(prevState => ({
-          ...prevState,
-          collaboratorStroke: [
-            ...prevState.collaboratorStroke,
-            new Point(
-              message.point.x * CANVASWIDTH,
-              message.point.y * CANVASHEIGHT,
-              message.thickness,
-              message.color,
-              'move',
-            ),
-          ],
-        }));
+        // this.setState(prevState => ({
+        //   ...prevState,
+        //   collaboratorStroke: [
+        //     ...prevState.collaboratorStroke,
+        //     new Point(
+        //       message.point.x * CANVASWIDTH,
+        //       message.point.y * CANVASHEIGHT,
+        //       message.thickness,
+        //       message.color,
+        //       'move',
+        //     ),
+        //   ],
+        // }));
         break;
       case messageKinds.MESSAGE_STROKE_END:
-        this.setState(prevState => ({
-          ...prevState,
-          collaboratorStroke: [],
-        }));
+        // Disabled collab drawing
+        // this.setState(prevState => ({
+        //   ...prevState,
+        //   collaboratorStroke: [],
+        // }));
 
         break;
       // User receives a generated image broadcasted from another user
@@ -614,7 +617,10 @@ export default class App extends Component {
         {/* User Brush buttons */}
 
         {this.state.currentBrush == brushTypes.USER &&
+          
           <View style={styles.brushesContainer}>
+          
+            
             <View style={{ height: device.height * 0.4 }}>
               <ScrollView>
                 {/* Programmatically render all options */}

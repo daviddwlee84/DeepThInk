@@ -11,6 +11,7 @@ import (
 
 // Model server deployment URL
 // var MODEL_URL string = "http://localhost:8000"
+
 var MODEL_URL string = "http://104.154.79.84:8000"
 
 func main() {
