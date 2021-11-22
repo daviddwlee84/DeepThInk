@@ -23,6 +23,7 @@ export default class UserCanvas extends Component {
 	state = {
 		strokes: [],
 		imageBrush: 'data:image/png;base64,', // raw image data of the image brush
+		imagedata: "",
 	}
 
 	hexToRGB = (hex, alpha) => {
@@ -64,10 +65,30 @@ export default class UserCanvas extends Component {
 
 	componentDidMount() {
 		this.props.setClickClear(this.clearCanvas);
+
+		if (this.state.imageData != "") {
+			this.loadData();
+		}
 	 }
 
 
 	componentDidUpdate(prevProps) {
+
+
+		// If canvas size has changed
+		if (prevProps.width != this.props.width || prevProps.height != this.props.height) {
+
+	
+				this.canvasRef.current.width = this.props.width;
+				this.canvasRef.current.height = this.props.height;
+
+				// this.clearCanvasKeepState();
+				console.log("RESIZING CANVAS")
+				// this.loadData();
+
+
+		}
+
 		let currentComponent = this;
 		// If user changed the brush type to image brush changed color, request a new brush image
 		if (this.props.brushType === brushTypes.USER && 
@@ -107,6 +128,11 @@ export default class UserCanvas extends Component {
 
 			}
 
+
+
+
+
+
 		// Update collaborator's drawings
 		// DEPRECATED FOR NOW
 		// if (prevProps.otherStrokes != this.props.otherStrokes) {
@@ -120,13 +146,13 @@ export default class UserCanvas extends Component {
 
 	onDrawMove = (event) => {
 		// Disable drawing on this canvas if brush type not selected
-		if (this.props.brushType !== brushTypes.USER) {
+		if (this.props.disable ||  this.props.brushType !== brushTypes.USER) {
 			return;
 		}
 		var posX = event.nativeEvent.locationX
 		var posY = event.nativeEvent.locationY
 
-		var p = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color, 0.8), "move")
+		var p = new Point(posX, posY, this.props.thickness, this.hexToRGB(this.props.color, this.props.opacity), "move")
 		this.updateCanvas(p, "self")
 
 		// Deprecated multi-brush
@@ -158,7 +184,7 @@ export default class UserCanvas extends Component {
 
 	onDrawStart = (event) => {
 		// Disable drawing on this canvas if brush type not selected
-		if (this.props.brushType !== brushTypes.USER) {
+		if (this.props.disable ||  this.props.brushType !== brushTypes.USER) {
 			return;
 		}
 		// console.log("Got start event:", event)
@@ -180,7 +206,7 @@ export default class UserCanvas extends Component {
 
 	onDrawEnd = (event) => {
 		// Disable drawing on this canvas if brush type not selected
-		if (this.props.brushType !== brushTypes.USER) {
+		if (this.props.disable ||  this.props.brushType !== brushTypes.USER) {
 			return;
 		}
 		var posX = event.nativeEvent.locationX
@@ -199,6 +225,17 @@ export default class UserCanvas extends Component {
 	}
 
 	clearCanvas = () => {
+
+		this.setState(prevState => ({
+			...prevState,
+			imagedata: ""
+		}))
+		var canvas = this.canvasRef.current
+		var ctx = canvas.getContext("2d");
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	}
+
+	clearCanvasKeepState = () => {
 		var canvas = this.canvasRef.current
 		var ctx = canvas.getContext("2d");
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -268,8 +305,8 @@ export default class UserCanvas extends Component {
 			}
 
 			if (this.props.userBrushType == userBrushes.PAINT) {
-				ctx.fillStyle = this.props.color;
-				ctx.strokeStyle = point.color;
+				ctx.fillStyle = this.hexToRGB(this.props.color, this.props.opacity);
+				ctx.strokeStyle = this.hexToRGB(this.props.color, this.props.opacity);
 				ctx.lineJoin = 'miter';
 				ctx.lineCap = "butt";
 				console.log("IANTNT", ctx.lineJoin, ctx.lineCap)
@@ -279,8 +316,8 @@ export default class UserCanvas extends Component {
 			}
 
 			else if (this.props.userBrushType == userBrushes.PENCIL) {
-				ctx.fillStyle = this.props.color;
-				ctx.strokeStyle = point.color;
+				ctx.fillStyle = this.hexToRGB(this.props.color, this.props.opacity);
+				ctx.strokeStyle = this.hexToRGB(this.props.color, this.props.opacity);
 				ctx.lineJoin = ctx.lineCap = 'round';
 				ctx.closePath()
 				ctx.stroke();
@@ -314,12 +351,10 @@ export default class UserCanvas extends Component {
 
 			else if (this.props.userBrushType.includes("image")) {
 				// IMAGE BRUSH
-				ctx.globalAlpha = 0.5
-				var c = React.createElement(Canvas)
+				ctx.globalAlpha = this.props.opacity
 
 				const image = new Image(canvas);
 				image.src = this.state.imageBrush
-				console.log('image is loaded');
 
 				ctx.save();
 
@@ -341,6 +376,23 @@ export default class UserCanvas extends Component {
 		}
 
 	}
+	loadData = () => {
+		if (this.state.imagedata != "") {
+			var canvas = this.canvasRef.current
+
+			var ctx = canvas.getContext("2d");
+			const image = new Image(canvas);
+	
+			image.src = this.state.imagedata
+			ctx.save();
+			ctx.drawImage(image,0,0, this.props.width, this.props.height);
+			ctx.restore();
+			console.log("DONE LOAD DATA")
+			console.log("load data is", image.src)
+		
+		}
+	}
+
 
 	handleCanvas = (canvas) => {
 		if (canvas === null) {
@@ -404,11 +456,15 @@ export default class UserCanvas extends Component {
 		var canvas = this.canvasRef.current
 		// console.log("Getting base64 is", canvas.toDataURL());
 
-		// toDataURL is a string on web, and a promise on android/ios
 		var ret = canvas.toDataURL()
 
 		// web
 		if (typeof (ret) == "string") {
+		// toDataURL is a string on web, and a promise on android/ios
+		this.setState((prevState) => ({
+			...prevState,
+			imagedata: ret,
+		}))
 			return Promise.resolve(ret)
 			// android/ios
 		} else {
@@ -437,7 +493,7 @@ export default class UserCanvas extends Component {
 		if (Platform.OS === "web") {
 			return (
 				<View
-					style={[styles.drawBoxInner, { opacity: this.props.opacity }]}
+					style={[styles.drawBoxInner, { width: this.props.width, height: this.props.height }]}
 					onStartShouldSetResponder={(event) => { return true; }}
 					onMoveShouldSetResponder={(event) => { return true; }}
 					onResponderStart={this.onDrawStart}
@@ -446,7 +502,10 @@ export default class UserCanvas extends Component {
 				>
 					<canvas 
 					draggable={false}
-					ref={this.handleCanvas} id="mycanvas" />
+					ref={this.handleCanvas} id="mycanvas"
+					width={this.props.width}
+					height={this.props.height}
+					 />
 				</View>
 			)
 		} else {

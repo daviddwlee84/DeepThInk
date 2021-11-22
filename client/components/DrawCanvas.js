@@ -34,6 +34,8 @@ export default class DrawCanvas extends Component {
 		this.canvasOpacity = props.canvasOpacity;
 		this.clearCanvas = this.clearCanvas.bind(this);
 
+		this.imagedata = "";
+
 	}
 
 	componentDidUpdate(prevProps) {
@@ -44,10 +46,48 @@ export default class DrawCanvas extends Component {
 				this.updateCanvas(newStroke, "other")		
 			}
 		}
-	}	  
+		// If canvas size has changed
+		if (prevProps.width != this.props.width) {
+
+			// Get the current canvas data
+			this.getBase64().then(value => {
+				var canvas = this.canvasRef.current
+
+
+
+				canvas.width = this.props.width;
+				canvas.height = this.props.height;
+		
+				this.canvasRef.current = canvas;
+				this.clearCanvas();
+
+				this.loadData();
+
+
+
+			})
+
+
+		}
+		
+	}
+
+	loadData = () => {
+		var canvas = this.canvasRef.current
+
+		var ctx = canvas.getContext("2d");
+		const image = new Image(canvas);
+
+		// console.log(this.state.imagedata)
+
+		image.src = this.state.imagedata
+		ctx.save();
+		ctx.drawImage(image,0,0, this.props.width, this.props.height);
+		ctx.restore();
+	}
 	
     onDrawMove = (event) => {
-		if (this.props.brushType !== brushTypes.AI) {
+		if (this.props.disable ||  this.props.brushType !== brushTypes.AI) {
 			return
 		}
 		// console.log(event.nativeEvent)
@@ -67,7 +107,7 @@ export default class DrawCanvas extends Component {
     }
 
 	onDrawStart = (event) => {
-		if (this.props.brushType !== brushTypes.AI) {
+		if (this.props.disable ||  this.props.brushType !== brushTypes.AI) {
 			return
 		}
 		// console.log("Got start event:", event)
@@ -87,7 +127,7 @@ export default class DrawCanvas extends Component {
 	}
 
 	onDrawEnd = (event) => {
-		if (this.props.brushType !== brushTypes.AI) {
+		if (this.props.disable || this.props.brushType !== brushTypes.AI) {
 			return
 		}
 		var posX = event.nativeEvent.locationX
@@ -257,15 +297,22 @@ export default class DrawCanvas extends Component {
 
 	getBase64 = async () => {
 		var canvas = this.canvasRef.current
-		console.log("Getting base64 is", canvas.toDataURL());
+		// console.log("Getting base64 is", canvas.toDataURL());
 
 		// toDataURL is a string on web, and a promise on android/ios
-		var ret = canvas.toDataURL() 
+		var ret = canvas.toDataURL(1.0) 
 
 		// web
 		if (typeof(ret) == "string") {
+			this.setState((prevState) => ({
+				...prevState,
+				imagedata: ret,
+			}))
+
 			return Promise.resolve(ret)
-		// android/ios
+
+
+			// android/ios
 		} else {
 			return ret;
 		}
@@ -288,7 +335,7 @@ export default class DrawCanvas extends Component {
       if (Platform.OS === "web") {
 		return (
 		<View
-			style= {[styles.drawBoxInner, {opacity: this.props.opacity}]}
+			style= {[styles.drawBoxInner, {width: this.props.width, height: this.props.height, opacity: this.props.opacity}]}
 			onStartShouldSetResponder={(event) => {return true;}}
 			onMoveShouldSetResponder={(event) => {return true;}}
 			onResponderStart={this.onDrawStart}
