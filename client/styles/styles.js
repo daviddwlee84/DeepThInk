@@ -12,8 +12,6 @@ export function generateStyle(device) {
     },
     drawBoxInner: {
       backgroundColor: 'transparent',
-      borderColor: '#fffef5',
-      borderWidth: 8,
       position:"absolute", left: 0, top: 0,
       // padding: 10,
       width: device.width * 0.33,

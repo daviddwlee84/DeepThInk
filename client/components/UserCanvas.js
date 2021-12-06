@@ -66,9 +66,6 @@ export default class UserCanvas extends Component {
 	componentDidMount() {
 		this.props.setClickClear(this.clearCanvas);
 
-		if (this.state.imageData != "") {
-			this.loadData();
-		}
 	 }
 
 
@@ -376,21 +373,17 @@ export default class UserCanvas extends Component {
 		}
 
 	}
-	loadData = () => {
-		if (this.state.imagedata != "") {
+	loadData = (imageData) => {
 			var canvas = this.canvasRef.current
 
 			var ctx = canvas.getContext("2d");
 			const image = new Image(canvas);
 	
-			image.src = this.state.imagedata
+			image.src = imageData
 			ctx.save();
 			ctx.drawImage(image,0,0, this.props.width, this.props.height);
 			ctx.restore();
-			console.log("DONE LOAD DATA")
-			console.log("load data is", image.src)
 		
-		}
 	}
 
 

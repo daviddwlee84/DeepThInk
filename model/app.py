@@ -151,6 +151,10 @@ def save():
     backgroundCanvasData = data.get("displayedImageData")
     foregroundCanvasData = data.get("userCanvasImageData")
 
+    if (backgroundCanvasData == ""):
+        return {"message":"Success", "data": "data:image/png;base64," +  foregroundCanvasData}
+    
+
 
     print("AI IS", aiCanvasData.find("base64"), "BACKGROUND IS", backgroundCanvasData.find("base64"), "FOREGROUND IS", foregroundCanvasData.find("base64"))
     # Remove the javascript file type header

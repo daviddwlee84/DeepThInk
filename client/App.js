@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Text,
   Platform,
+  ImageBackground,
 } from "react-native";
 import DrawCanvas from "./components/DrawCanvas";
 import UserCanvas from "./components/UserCanvas";
@@ -55,13 +56,13 @@ import {
   WaveIndicator,
 } from "react-native-indicators";
 import { triggerBase64Download } from "react-base64-downloader";
-import { SketchPicker } from "react-color";
+import { ChromePicker } from "react-color";
 import { EyeDropper } from "react-eyedrop";
 import backendConstants from "./constants/backendUrl";
 
 var device = Dimensions.get("window");
-const CANVASWIDTH = device.width * 0.33;
-const CANVASHEIGHT = device.width * 0.33;
+const CANVASWIDTH = device.height * 0.9;
+const CANVASHEIGHT = device.height * 0.9;
 
 // Connect to Go backend
 // for web
@@ -74,19 +75,26 @@ const CANVASHEIGHT = device.width * 0.33;
 export default class App extends Component {
   // React state: store the image data
   state = {
-    AI_CANVASWIDTH: device.width * 0.33,
-    AI_CANVASHEIGHT: device.width * 0.33,
+    showAICanvas: true,
+    showUserCanvas: false,
 
-    USER_CANVASWIDTH: device.width * 0.33,
-    USER_CANVASHEIGHT: device.width * 0.33,
+    AI_CANVASWIDTH: device.height * 0.87,
+    AI_CANVASHEIGHT: device.height * 0.87,
+
+    USER_CANVASWIDTH: device.height * 0.87,
+    USER_CANVASHEIGHT: device.height * 0.87,
+    aiCanvasImageData: "data:image/png;base64,", // image data of the ai canvas
 
     imageData: "data:image/png;base64,", // raw image data of the segmentation image
     generatedImageData: "data:image/png;base64,", // raw image data of the generated image
     stylizedImageData: "data:image/png;base64,", // raw image data of stylized generated image
     displayedImageData: "data:image/png;base64,", // raw image data of displayed image
+    finalImageData: "data:image/png;base64,", // raw image data of generatedImageData + userCanvasImageData
     style: "none", // selected style
     color: "#384f83", // pen color
     userBrushColor: "#00FF00",
+    colorPickerDisplay: "#00FF00", // another color state to keep track of the current color picker state
+
     userBrushBase64: "data:image/png;base64,", // user brush
     userBrushType: userBrushes.PENCIL,
     styleBrushType: "None",
@@ -106,7 +114,11 @@ export default class App extends Component {
     canvasHeight: CANVASHEIGHT,
     currentBrush: brushTypes.AI,
 
+    showImageForEyeDropper: false,
+    showPreview: true, // show the preview of the other canvas at the top left corner
+
     isLoading: true, //for loading spinner
+    isChangeSize: false, //for slider
   };
 
   constructor(props) {
@@ -229,9 +241,19 @@ export default class App extends Component {
     this.setState((prevState) => ({
       ...prevState,
       thickness: sliderValue,
+      isChangeSize: true,
     }));
     console.log("thickness is now", sliderValue);
   };
+
+  handleThicknessEnd = (sliderValue) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      isChangeSize: false,
+    }));
+    console.log("thickness is done chaging", sliderValue);
+  };
+
 
   handleOpacity = (sliderValue) => {
     this.setState((prevState) => ({
@@ -279,14 +301,24 @@ export default class App extends Component {
     this.setState((prevState) => ({
       ...prevState,
       disableDrawing: true,
+      showImageForEyeDropper: true,
+      showPreview: false,
     }));
+
+    // Request a full image of the user canvas with generated image
+    this.saveGeneratedImage();
+    this.disableUserCanvas();
   };
 
   handleOnPickEnd = () => {
     this.setState((prevState) => ({
       ...prevState,
       disableDrawing: false,
+      showImageForEyeDropper: false,
+      showPreview: true,
+      enableUserCanvas: true
     }));
+    this.loadUserCanvas();
   };
 
   executeMessage = (message) => {
@@ -374,8 +406,16 @@ export default class App extends Component {
           isLoading: false,
         }));
 
+        if (this.state.showImageForEyeDropper) {
+          this.setState((prevState) => ({
+            ...prevState,
+            showImageForEyeDropper: true,
+            finalImageData: message.savedImageData,
+          }));
+        }
+
         // FIXME: Will probably only work on expo web, untested on android/ios
-        if (message.savedImageData != "") {
+        else if (message.savedImageData != "") {
           triggerBase64Download(message.savedImageData, `Painting`);
         } else {
           alert("Please generate a painting with the AI brush first.");
@@ -384,104 +424,142 @@ export default class App extends Component {
     }
   };
 
-  setCanvasSideBySide = () => {
-    // To fix user canvas no redisplaying
-    for (var i = 0; i < 2; i++) {
-      setTimeout(() => {
-        this.loadUserCanvas();
-      }, 100);
-  
-    }
-
-    if (this.state.USER_CANVASWIDTH == this.state.AI_CANVASWIDTH) return;
-    // this.refs.userCanvasRef.loadData();
-
-    // Save the drawcanvas and usercanvas data
-    var getImageAICanvas = this.refs.drawCanvasRef
-      .getBase64()
-      .then((aicanvas) => {
-        var getImageUserCanvas = this.refs.userCanvasRef
-          .getBase64()
-          .then((usercanvas) => {
-            this.setState(
-              (prevState) => ({
-                ...prevState,
-                USER_CANVASWIDTH: device.width * 0.33,
-                USER_CANVASHEIGHT: device.width * 0.33,
-                AI_CANVASWIDTH: device.width * 0.33,
-                AI_CANVASHEIGHT: device.width * 0.33,
-              }),
-              () => {
-                this.refs.drawCanvasRef.loadData();
-                this.refs.userCanvasRef.loadData();
-
-              }
-            );
-
-            // Load the data base64
-          });
-      });
-  };
-
-  setCanvasOneByOne = () => {
-    // this.refs.drawCanvasRef.loadData();
-    for (var i = 0; i < 2; i++) {
-      setTimeout(() => {
-        this.loadUserCanvas();
-      }, 100);
-  
+  // Enable the AI canvas for drawing
+  // Display the
+  enableAICanvas = () => {
+    if (this.state.showAICanvas) {
+      return;
     }
 
     // Save the drawcanvas and usercanvas data
-    var getImageAICanvas = this.refs.drawCanvasRef
+    var getImageUserCanvas = this.refs.userCanvasRef
       .getBase64()
-      .then((aicanvas) => {
-        var getImageUserCanvas = this.refs.userCanvasRef
-          .getBase64()
-          .then((usercanvas) => {
-            if (this.state.USER_CANVASWIDTH < this.state.AI_CANVASWIDTH) {
-              this.setState(
-                (prevState) => ({
-                  ...prevState,
-                  USER_CANVASWIDTH: device.width * 0.33,
-                  USER_CANVASHEIGHT: device.width * 0.33,
-                  AI_CANVASWIDTH: device.width * 0.16,
-                  AI_CANVASHEIGHT: device.width * 0.16,
-                }),
-                () => {
-                  this.refs.drawCanvasRef.loadData();
-                  this.refs.userCanvasRef.loadData();
-
-                }
-              );
-            } else {
-              this.setState(
-                (prevState) => ({
-                  ...prevState,
-                  USER_CANVASWIDTH: device.width * 0.16,
-                  USER_CANVASHEIGHT: device.width * 0.16,
-                  AI_CANVASWIDTH: device.width * 0.33,
-                  AI_CANVASHEIGHT: device.width * 0.33,
-                }),
-                () => {
-                  this.refs.userCanvasRef.loadData();
-                  // this.refs.userCanvasRef.loadData();
-
-
-                }
-              );
+      .then((usercanvas) => {
+        this.setState(
+          (prevState) => ({
+            ...prevState,
+            showAICanvas: true,
+            showUserCanvas: false,
+            userCanvasImageData: usercanvas,
+          }),
+          () => {
+            for (var i = 0; i < 2; i++) {
+              setTimeout(() => {
+                this.refs.drawCanvasRef.loadData(this.state.aiCanvasImageData);
+              }, 0);
             }
+            this.refs.drawCanvasRef.loadData(this.state.aiCanvasImageData);
+          }
+        );
 
-            // this.refs.drawCanvasRef.loadData(aicanvas);
-
-            // Load the data base64
-          });
+        // Load the data base64
       });
   };
 
   loadUserCanvas = () => {
-    this.refs.userCanvasRef.loadData();
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        showUserCanvas: true
+      }), () => {
+        for (var i = 0; i < 2; i++) {
+          setTimeout(() => {
+
+            if (this.refs.userCanvasRef !== null) {
+              this.refs.userCanvasRef.loadData(this.state.userCanvasImageData)
+
+            }
+          })
+        }
+      }
+
+
+    )
+
   }
+
+  enableUserCanvas = () => {
+    if (this.state.showUserCanvas) {
+      return;
+    }
+
+    // Save the drawcanvas and usercanvas data
+    var getImageAICanvas = this.refs.drawCanvasRef
+      .getBase64()
+      .then((aicanvas) => {
+        this.setState(
+          (prevState) => ({
+            ...prevState,
+            showAICanvas: false,
+            showUserCanvas: true,
+            aiCanvasImageData: aicanvas,
+          }),
+          () => {
+            for (var i = 0; i < 2; i++) {
+              setTimeout(() => {
+                this.refs.userCanvasRef.loadData(
+                  this.state.userCanvasImageData
+                );
+              }, 0);
+            }
+          }
+        );
+        // Load the data base64
+      });
+  };
+
+  disableUserCanvas = () => {
+    if (this.state.showAICanvas) {
+      return;
+    }
+
+    // Save the usercanvas data
+    var getImageUserCanvas = this.refs.userCanvasRef
+      .getBase64()
+      .then((usercanvas) => {
+        this.setState(
+          (prevState) => ({
+            ...prevState,
+            showAICanvas: false,
+            showUserCanvas: false,
+            userCanvasImageData: usercanvas,
+          })
+        );
+
+      });
+  };
+
+  enableUserCanvas = () => {
+    if (this.state.showUserCanvas) {
+      return;
+    }
+
+    // Save the drawcanvas and usercanvas data
+    var getImageAICanvas = this.refs.drawCanvasRef
+      .getBase64()
+      .then((aicanvas) => {
+        this.setState(
+          (prevState) => ({
+            ...prevState,
+            showAICanvas: false,
+            showUserCanvas: true,
+            aiCanvasImageData: aicanvas,
+          }),
+          () => {
+            for (var i = 0; i < 2; i++) {
+              setTimeout(() => {
+                this.refs.userCanvasRef.loadData(
+                  this.state.userCanvasImageData
+                );
+              }, 0);
+            }
+            // this.refs.userCanvasRef.loadData(this.state.userCanvasImageData);
+          }
+        );
+        // Load the data base64
+      });
+  };
+
 
   render() {
     let brushSlider = (
@@ -492,6 +570,7 @@ export default class App extends Component {
           </Text>
         </View>
 
+
         <Slider
           style={{
             width: 150,
@@ -501,65 +580,35 @@ export default class App extends Component {
           value={this.state.thickness}
           minimumValue={1}
           maximumValue={CANVASWIDTH / 4}
-          minimumTrackTintColor="#000000"
-          maximumTrackTintColor="#000000"
+          thumbTintColor="#4f4f4f"
+          minimumTrackTintColor="#707070"
+          maximumTrackTintColor="#cfcfcf"
           onValueChange={this.handleThickness}
+          onSlidingComplete={this.handleThicknessEnd}
         />
 
-        {this.state.currentBrush ==  brushTypes.USER &&
-        <View>
-        <View>
-          <Text style={{ textAlign: "center", fontSize: 18, padding: 2 }}>
-            Transparency
-          </Text>
-        </View>
-
-        <Slider
-          style={{
-            width: 150,
-            margin: "auto",
-            height: device.height * 0.03,
-          }}
-          value={this.state.opacity}
-          minimumValue={0.0}
-          maximumValue={1.0}
-          minimumTrackTintColor="#000000"
-          maximumTrackTintColor="#000000"
-          onValueChange={this.handleOpacity}
-        />
-
-        </View>
-        
-        }
-
-
-
-        <View style={{ height: device.height * 0.18, marginBottom: "0.5em" }}>
-          <Ionicons
-            style={{ margin: "auto" }}
-            name="ellipse"
-            color={
-              this.state.currentBrush == brushTypes.USER
-                ? this.state.userBrushColor
-                : this.state.color
-            }
-            size={this.state.thickness}
-          ></Ionicons>
-        </View>
       </View>
     );
+
+    // For ipad sizing
+    // prevent bouncing / scroll on ios
+    document.documentElement.style.height = "100%";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.height = "100%";
+    document.body.style.overflow = "auto";
 
     return (
       <View style={styles.container}>
         {/* this View wraps the left column */}
         <View>
           <TouchableOpacity
-            onPress={() =>
+            onPress={() => {
               this.setState((prevState) => ({
                 ...prevState,
                 currentBrush: brushTypes.AI,
-              }))
-            }
+              }));
+              this.enableAICanvas();
+            }}
           >
             <Image
               style={[
@@ -572,12 +621,13 @@ export default class App extends Component {
             />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() =>
+            onPress={() => {
               this.setState((prevState) => ({
                 ...prevState,
                 currentBrush: brushTypes.STYLE,
-              }))
-            }
+              }));
+              this.enableUserCanvas();
+            }}
           >
             <Image
               style={[
@@ -591,12 +641,14 @@ export default class App extends Component {
             />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() =>
+            onPress={() => {
               this.setState((prevState) => ({
                 ...prevState,
                 currentBrush: brushTypes.USER,
-              }))
-            }
+              }));
+              // Display user canvas
+              this.enableUserCanvas();
+            }}
           >
             <Image
               style={[
@@ -609,6 +661,9 @@ export default class App extends Component {
               source={require("./resources/userBrush.png")}
             />
           </TouchableOpacity>
+          {this.state.currentBrush == brushTypes.AI && (
+            <View>{brushSlider}</View>
+          )}
           {this.state.currentBrush == brushTypes.USER && (
             <View>
               <View>
@@ -628,24 +683,28 @@ export default class App extends Component {
                   onPickStart={this.handleOnPickStart}
                   onPickEnd={this.handleOnPickEnd}
                   onChange={this.handleChangeEydropper}
+                  wrapperClasses="eyeDroperButton"
+                  buttonClasses="eyeDroperButton"
                 >
                   Pick Color
                 </EyeDropper>
               </View>
-              <SketchPicker
-                style={{ backgroundColor: this.state.userBrushColor }}
-                color={this.state.userBrushColor}
+              <ChromePicker
+                disableAlpha={false}
+                style={{ boxShadow: "0px 0px 0px 0px", backgroundColor: this.state.colorPickerDisplay }}
+                color={this.state.colorPickerDisplay}
                 onChangeComplete={(color) => {
                   this.setState((prevState) => ({
                     ...prevState,
                     userBrushColor: this.rgbToHex(color.rgb),
+                    opacity: color.hsl.a,
+                    colorPickerDisplay: color.rgb,
                   }));
                 }}
               />
+              {brushSlider}
             </View>
           )}
-
-          {brushSlider}
         </View>
 
         {/* this View wraps middle column */}
@@ -659,6 +718,7 @@ export default class App extends Component {
               marginLeft: "auto",
             }}
           >
+            {/* Download button (commented out)
             <TouchableOpacity
               style={{ margin: 5 }}
               onPress={() => this.saveGeneratedImage()}
@@ -667,152 +727,210 @@ export default class App extends Component {
                 style={styles.donwloadButton}
                 source={require("./resources/DownloadButton.png")}
               />
-            </TouchableOpacity>
-
-            <Button
-              style={{ margin: 5 }}
-              title="View 1"
-              color="#957DAD"
-              onPress={() => {
-                this.setCanvasOneByOne();
-              }}
-            />
-            <Button
-              style={{ margin: 5 }}
-              title="View 2"
-              onPress={() => {
-                this.setCanvasSideBySide();
-              }}
-            />
-
+            </TouchableOpacity> */}
           </View>
 
           {/* this View wraps the two canvas */}
-          <View style={{ flexDirection: "row"}}>
-            {/* this View warps AI canvas */}
-            <View id="drawGroup" style={styles.drawGroup}>
+          <View style={{ flexDirection: "row" }}>
+            {/* Canvas previews */}
+            {/* Show the user canvas if we are in the AI canvas main view */}
+            {this.state.showAICanvas && this.state.showPreview && (
               <View
                 style={[
                   styles.shadowBoxAICanvas,
                   {
-                    width: this.state.AI_CANVASWIDTH,
-                    height: this.state.AI_CANVASHEIGHT,
+                    width: this.state.USER_CANVASHEIGHT / 4,
+                    height: this.state.USER_CANVASHEIGHT / 4,
+                    marginRight: 5
                   },
                 ]}
               >
-                <DrawCanvas
-                  ref="drawCanvasRef"
-                  setClickClear={(click) => (this.clearChildAIBrush = click)}
-                  style={{
-                    backgroundColor: "black",
-                    position: "absolute",
-                    background: "transparent",
-                  }}
-                  brushType={this.state.currentBrush}
-                  thickness={this.state.thickness}
-                  color={this.state.color}
-                  socket={this.state.socket}
-                  otherStrokes={this.state.collaboratorStroke}
-                  width={this.state.AI_CANVASWIDTH}
-                  height={this.state.AI_CANVASHEIGHT}
-                  opacity={1}
-                  disable={this.state.disableDrawing}
-                />
-              </View>
-            </View>
-
-            {/* this View wraps generated image & user canvas */}
-            <View id="drawGroup" style={styles.drawGroup}>
-              {/* Displayed image */}
-              <View
-                style={[
-                  styles.generatedImageBox,
-                  {
-                    width: this.state.USER_CANVASWIDTH,
-                    height: this.state.USER_CANVASHEIGHT,
-                  },
-                ]}
-              >
-                {this.state.displayedImageData != null ? (
+                <ImageBackground source={this.state.displayedImageData}>
                   <Image
-                    draggable={false}
-                    style={styles.generatedImage}
-                    source={{ uri: this.state.displayedImageData }}
+                    style={{
+                      width: this.state.USER_CANVASHEIGHT / 4,
+                      height: this.state.USER_CANVASHEIGHT / 4,
+                    }}
+                    source={this.state.userCanvasImageData}
                   />
-                ) : null}
+                </ImageBackground>
               </View>
-              {/* Main canvas */}
-              {/* Conditionally render the main canvas if toggleDraw == true */}
-
+            )}
+            {this.state.showUserCanvas && this.state.showPreview && (
               <View
                 style={[
-                  styles.shadowBox,
+                  styles.shadowBoxAICanvas,
                   {
-                    width: this.state.USER_CANVASWIDTH,
-                    height: this.state.USER_CANVASHEIGHT,
+                    width: this.state.USER_CANVASHEIGHT / 4,
+                    height: this.state.USER_CANVASHEIGHT / 4,
+                    marginRight: 5
+
                   },
                 ]}
               >
-                {/* USER CANVAS */}
-                <UserCanvas
-                  ref="userCanvasRef"
-                  setClickClear={(click) => (this.clearChildUserBrush = click)}
-                  style={{ position: "absolute", background: "transparent" }}
-                  brushType={this.state.currentBrush}
-                  userBrushType={this.state.userBrushType}
-                  thickness={this.state.thickness}
-                  color={this.state.userBrushColor}
-                  socket={this.state.socket}
-                  otherStrokes={this.state.collaboratorStroke}
-                  width={this.state.USER_CANVASWIDTH}
-                  height={this.state.USER_CANVASHEIGHT}
-                  opacity={this.state.opacity}
-                  disable={this.state.disableDrawing}
-                  id="myCanvas"
+                <Image
+                  style={{
+                    width: this.state.USER_CANVASHEIGHT / 4,
+                    height: this.state.USER_CANVASHEIGHT / 4,
+                  }}
+                  source={this.state.aiCanvasImageData}
                 />
               </View>
+            )}
+
+            {/* this wraps the middle big canvas and buttons */}
+            <View style={{ flexDirection: "column" }}>
+              {/* this View warps AI canvas */}
+              {this.state.showAICanvas && (
+                <View id="drawGroup" style={styles.drawGroup}>
+                  <View
+                    style={[
+                      styles.shadowBoxAICanvas,
+                      {
+                        width: this.state.AI_CANVASWIDTH,
+                        height: this.state.AI_CANVASHEIGHT,
+                      },
+                    ]}
+                  >
+                    <DrawCanvas
+                      ref="drawCanvasRef"
+                      setClickClear={(click) =>
+                        (this.clearChildAIBrush = click)
+                      }
+                      style={{
+                        backgroundColor: "black",
+                        position: "absolute",
+                        background: "transparent",
+                      }}
+                      brushType={this.state.currentBrush}
+                      thickness={this.state.thickness}
+                      color={this.state.color}
+                      socket={this.state.socket}
+                      otherStrokes={this.state.collaboratorStroke}
+                      width={this.state.AI_CANVASWIDTH}
+                      height={this.state.AI_CANVASHEIGHT}
+                      opacity={1}
+                      disable={this.state.disableDrawing}
+                    />
+                  </View>
+                </View>
+              )}
+              {/* this View wraps generated image & user canvas */}
+              {this.state.showUserCanvas && (
+                <View id="drawGroup" style={styles.drawGroup}>
+                  {/* Displayed image */}
+                  <View
+                    style={[
+                      styles.generatedImageBox,
+                      {
+                        width: this.state.USER_CANVASWIDTH,
+                        height: this.state.USER_CANVASHEIGHT,
+                      },
+                    ]}
+                  >
+                    {this.state.displayedImageData != null ? (
+                      <Image
+                        draggable={false}
+                        style={styles.generatedImage}
+                        source={{ uri: this.state.displayedImageData }}
+                      />
+                    ) : null}
+                  </View>
+                  {/* Main canvas */}
+                  {/* Conditionally render the main canvas if toggleDraw == true */}
+                  <View
+                    style={[
+                      styles.shadowBox,
+                      {
+                        width: this.state.USER_CANVASWIDTH,
+                        height: this.state.USER_CANVASHEIGHT,
+                      },
+                    ]}
+                  >
+                    {/* USER CANVAS */}
+                    <UserCanvas
+                      ref="userCanvasRef"
+                      setClickClear={(click) =>
+                        (this.clearChildUserBrush = click)
+                      }
+                      style={{
+                        position: "absolute",
+                        background: "transparent",
+                      }}
+                      brushType={this.state.currentBrush}
+                      userBrushType={this.state.userBrushType}
+                      thickness={this.state.thickness}
+                      color={this.state.userBrushColor}
+                      socket={this.state.socket}
+                      otherStrokes={this.state.collaboratorStroke}
+                      width={this.state.USER_CANVASWIDTH}
+                      height={this.state.USER_CANVASHEIGHT}
+                      opacity={this.state.opacity}
+                      disable={this.state.disableDrawing}
+                      id="myCanvas"
+                    />
+                  </View>
+                </View>
+              )}
+
+              {/* Show the image for the eye dropper */}
+              {this.state.showImageForEyeDropper && (
+                <Image
+                  style={{
+                    width: this.state.USER_CANVASWIDTH,
+                    height: this.state.USER_CANVASHEIGHT,
+                  }}
+                  source={this.state.finalImageData}
+                />
+              )}
+
+              {/* this wraps the buttons at the bottom of canvas */}
+              {this.state.currentBrush == brushTypes.AI && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <View style={{ padding: 5, width: "40%" }}>
+                    <Button
+                      style={{ marginTop: 10, height: "80" }}
+                      color="#5e748a"
+                      title="clear"
+                      onPress={() => this.clearChildAIBrush()}
+                    />
+                  </View>
+
+                  <View style={{ padding: 5, width: "40%" }}>
+                    <Button
+                      mode="contained"
+                      style={{ padding: 10 }}
+                      onPress={this.grabPixels.bind(this)}
+                      color="#88508c"
+                      title="generate"
+                    />
+                  </View>
+                </View>
+              )}
+              {this.state.currentBrush == brushTypes.USER && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-around",
+                  }}
+                >
+
+                  <View style={{ padding: 5, width: "40%" }}>
+                    <Button
+                      color="#717591"
+                      title="clear strokes"
+                      onPress={() => this.clearChildUserBrush()}
+                    />
+                  </View>
+                </View>
+              )}
             </View>
           </View>
-
-          {/* this wraps the buttons at the bottom of canvas */}
-          {this.state.currentBrush == brushTypes.AI && (
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-around" }}
-            >
-              <View style={{ padding: 5, width: "20%" }}>
-                <Button
-                  style={{ marginTop: 10, height: "80" }}
-                  color="#5e748a"
-                  title="clear"
-                  onPress={() => this.clearChildAIBrush()}
-                />
-              </View>
-
-              <View style={{ padding: 5, width: "20%" }}>
-                <Button
-                  mode="contained"
-                  style={{ padding: 10 }}
-                  onPress={this.grabPixels.bind(this)}
-                  color="#88508c"
-                  title="generate"
-                />
-              </View>
-            </View>
-          )}
-          {this.state.currentBrush == brushTypes.USER && (
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-around" }}
-            >
-              <View style={{ padding: 5, width: "20%" }}></View>
-              <View style={{ padding: 5, width: "20%" }}>
-                <Button
-                  color="#717591"
-                  title="clear strokes"
-                  onPress={() => this.clearChildUserBrush()}
-                />
-              </View>
-            </View>
-          )}
         </View>
 
         {/* this View wraps the right column */}
@@ -951,8 +1069,8 @@ export default class App extends Component {
                         {
                           backgroundColor:
                             this.state.userBrushType == obj.name
-                              ? "#999999"
-                              : "#ced2d9",
+                              ? "#dbdbdb"
+                              : "white",
                         },
                       ]}
                       onPress={() => {
@@ -970,7 +1088,7 @@ export default class App extends Component {
                         style={{
                           color:
                             this.state.userBrushType == obj.name
-                              ? "white"
+                              ? "black"
                               : "#2e2e2e",
                           fontSize: device.height * 0.024,
                         }}
@@ -996,6 +1114,25 @@ export default class App extends Component {
             style={{ transform: [{ scale: 3 }] }}
           />
         </View>
+
+
+        {this.state.isChangeSize == true && (
+          <View style={styles.circleContainer}>
+            <Text style={{color:"#4d4d4d",}}>
+              Size Preview:
+            </Text>
+            <Ionicons
+              style={{justifyContent: "center", alignItems: "center", margin: "auto", }}
+              name="ellipse"
+              color={
+                this.state.currentBrush == brushTypes.USER
+                  ? this.state.userBrushColor
+                  : this.state.color
+              }
+              size={this.state.thickness * 1.2}
+            ></Ionicons>
+          </View>
+        )}
       </View>
     );
   }
@@ -1011,9 +1148,7 @@ const styles = StyleSheet.create({
   generatedImageBox: {
     userDrag: "none",
     userSelect: "none",
-    borderWidth: 8,
     backgroundColor: "transparent",
-    borderColor: "#fffef5",
     position: "absolute",
   },
   generatedImage: {
@@ -1052,8 +1187,8 @@ const styles = StyleSheet.create({
   },
   brushes: {
     margin: 0,
-    height: device.height * 0.145,
-    width: device.height * 0.145 * 1.8,
+    height: device.height * 0.110,
+    width: device.height * 0.110 * 1.8,
     padding: 0,
     userDrag: "none",
     userSelect: "none",
@@ -1078,8 +1213,8 @@ const styles = StyleSheet.create({
   userBrushes: {
     justifyContent: "start",
     margin: 0,
-    height: device.height * 0.12,
-    width: device.height * 0.12 * 2.5,
+    height: device.height * 0.110,
+    width: device.height * 0.110 * 1.8,
     paddingTop: 0,
   },
   spinnerTextStyle: {
@@ -1093,6 +1228,19 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     left: device.width / 2,
     top: device.height / 2.5,
+  },
+  circleContainer: {
+    height: device.height * 0.35, 
+    width: device.height * 0.3, 
+    marginBottom: "0.5em",
+    position: "absolute",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(245, 245, 237, 0.8)",
+    borderRadius: 10,
+    left: device.width / 2,
+    top: device.height / 3,
   },
 
   swatch: {
@@ -1118,5 +1266,9 @@ const styles = StyleSheet.create({
     width: "36px",
     height: "14px",
     borderRadius: "2px",
+  },
+  eyeDroperButton: {
+    color: "pink",
+    backgroundColor: "pink",
   },
 });

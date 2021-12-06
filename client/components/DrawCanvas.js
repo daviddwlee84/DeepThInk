@@ -46,33 +46,28 @@ export default class DrawCanvas extends Component {
 				this.updateCanvas(newStroke, "other")		
 			}
 		}
-		// If canvas size has changed
-		if (prevProps.width != this.props.width) {
+		// // If canvas size has changed
+		// if (prevProps.width != this.props.width) {
 
-			// Get the current canvas data
-			this.getBase64().then(value => {
-				var canvas = this.canvasRef.current
+		// 	// Get the current canvas data
+		// 	this.getBase64().then(value => {
+		// 		var canvas = this.canvasRef.current
 
 
 
-				canvas.width = this.props.width;
-				canvas.height = this.props.height;
+		// 		canvas.width = this.props.width;
+		// 		canvas.height = this.props.height;
 		
-				this.canvasRef.current = canvas;
-				this.clearCanvas();
+		// 		this.canvasRef.current = canvas;
+		// 		this.clearCanvas();
 
-				this.loadData();
-
-
-
-			})
-
-
-		}
+		// 		this.loadData();
+		// 	})
+		// }
 		
 	}
 
-	loadData = () => {
+	loadData = (imageData) => {
 		var canvas = this.canvasRef.current
 
 		var ctx = canvas.getContext("2d");
@@ -80,7 +75,7 @@ export default class DrawCanvas extends Component {
 
 		// console.log(this.state.imagedata)
 
-		image.src = this.state.imagedata
+		image.src = imageData;
 		ctx.save();
 		ctx.drawImage(image,0,0, this.props.width, this.props.height);
 		ctx.restore();
