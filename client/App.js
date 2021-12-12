@@ -82,6 +82,7 @@ const CustomEyeDropper = ({ onClick }) => (
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "center",
+      width: device.height * 0.25,
     }}
     onPress={onClick}
   >
@@ -105,11 +106,31 @@ export default class App extends Component {
     showAICanvas: true,
     showUserCanvas: false,
 
-    AI_CANVASWIDTH: device.height * 0.85, //0.85+0.11 * 1.8
-    AI_CANVASHEIGHT: device.height * 0.85,
+    leftColumnWidth: device.height * 0.25,
+    leftColumnLeftMargin: device.height * 0.007,
 
-    USER_CANVASWIDTH: device.height * 0.85,
-    USER_CANVASHEIGHT: device.height * 0.85,
+    //canvas + small canvas, right col, left col, marginleft of left col
+    AI_CANVASWIDTH:
+      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
+        ? device.height * 0.5
+        : device.height * 0.85, //0.85+0.11 * 1.8+0.22
+    AI_CANVASHEIGHT:
+      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
+        ? device.height * 0.5
+        : device.height * 0.85, //0.85+0.11 * 1.8+0.22
+    //AI_CANVASWIDTH: device.height * 0.85, 
+    //AI_CANVASHEIGHT: device.height * 0.85,
+
+    //USER_CANVASWIDTH: device.height * 0.85,
+    //USER_CANVASHEIGHT: device.height * 0.85,
+    USER_CANVASWIDTH:
+      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
+        ? device.height * 0.5
+        : device.height * 0.85,
+    USER_CANVASHEIGHT:
+      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
+        ? device.height * 0.5
+        : device.height * 0.85,
     aiCanvasImageData: "data:image/png;base64,", // image data of the ai canvas
 
     imageData: "data:image/png;base64,", // raw image data of the segmentation image
@@ -120,7 +141,7 @@ export default class App extends Component {
     style: "none", // selected style
     color: "#384f83", // pen color
     userBrushColor: "#00FF00",
-    colorPickerDisplay: {"r":0, "g": 255, "b": 0}, // another color state to keep track of the current color picker state
+    colorPickerDisplay: { r: 0, g: 255, b: 0 }, // another color state to keep track of the current color picker state
 
     userBrushBase64: "data:image/png;base64,", // user brush
     userBrushType: userBrushes.PENCIL,
@@ -147,7 +168,6 @@ export default class App extends Component {
 
     isLoading: true, //for loading spinner
     isChangeSize: false, //for slider
-
   };
 
   constructor(props) {
@@ -311,12 +331,12 @@ export default class App extends Component {
     return "#" + (0x1000000 + rgb).toString(16).slice(1);
   };
   hex2rgb = (hex) => {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
     // return {r, g, b} // return an object
-    return {"r": r, "g":g, "b":b }
-  }
+    return { r: r, g: g, b: b };
+  };
 
   handleChangeEydropper = ({ rgb, hex }) => {
     console.log("color is", rgb);
@@ -329,10 +349,8 @@ export default class App extends Component {
           .split(",")
           .map((x) => (+x).toString(16).padStart(2, 0))
           .join(""),
-      colorPickerDisplay: this.hex2rgb(hex)
-    }
-    ));
-
+      colorPickerDisplay: this.hex2rgb(hex),
+    }));
   };
 
   handleOnPickStart = () => {
@@ -341,7 +359,7 @@ export default class App extends Component {
       disableDrawing: true,
       showImageForEyeDropper: true,
       showPreview: false,
-      disableButtons: true
+      disableButtons: true,
     }));
 
     // Request a full image of the user canvas with generated image
@@ -356,8 +374,7 @@ export default class App extends Component {
       showImageForEyeDropper: false,
       showPreview: true,
       enableUserCanvas: true,
-      disableButtons: false
-
+      disableButtons: false,
     }));
     this.loadUserCanvas();
   };
@@ -598,10 +615,10 @@ export default class App extends Component {
     let brushSlider = (
       <View
         style={{
-          backgroundColor: "#f2f2eb",
+          width: this.state.leftColumnWidth,
+          marginLeft: this.state.leftColumnLeftMargin,
           borderRadius: 10,
           flexDirection: "column",
-          marginLeft: 3,
           padding: 5,
         }}
       >
@@ -647,7 +664,7 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         {/* this View wraps the left column */}
-        <View>
+        <View style={{ width: device.height * (0.25+0.007), backgroundColor: "pink" }}>
           <TouchableOpacity
             onPress={() => {
               this.setState((prevState) => ({
@@ -677,7 +694,6 @@ export default class App extends Component {
               this.enableUserCanvas();
             }}
             disabled={this.state.disableButtons}
-
           >
             <Image
               style={[
@@ -700,7 +716,6 @@ export default class App extends Component {
               this.enableUserCanvas();
             }}
             disabled={this.state.disableButtons}
-
           >
             <Image
               style={[
@@ -718,27 +733,37 @@ export default class App extends Component {
           )}
           {this.state.currentBrush == brushTypes.USER && (
             <View>
-              <RgbaColorPicker 
-              style={{margin:16}}
-              color={this.state.colorPickerDisplay}
-              onChange={(color) => {
-                this.setState((prevState) => ({
-                  ...prevState,
-                  userBrushColor: this.rgbToHex(color),
-                  opacity: color.a,
-                  colorPickerDisplay: color,
-                }));
-              }}
+              <RgbaColorPicker
+                style={{
+                  marginLeft: this.state.leftColumnLeftMargin,
+                  marginBottom: 3,
+                  width: this.state.leftColumnWidth,
+                  height: this.state.leftColumnWidth,
+                }}
+                color={this.state.colorPickerDisplay}
+                onChange={(color) => {
+                  this.setState((prevState) => ({
+                    ...prevState,
+                    userBrushColor: this.rgbToHex(color),
+                    opacity: color.a,
+                    colorPickerDisplay: color,
+                  }));
+                }}
               />
-              <View style={{ margin: 16 }}>
+              <View
+                style={{
+                  width: this.state.leftColumnWidth,
+                  marginLeft: this.state.leftColumnLeftMargin,
+                  marginBottom: 3,
+                  margin: "auto",
+                }}
+              >
                 <EyeDropper
                   onPickStart={this.handleOnPickStart}
                   onPickEnd={this.handleOnPickEnd}
                   onChange={this.handleChangeEydropper}
                   customComponent={CustomEyeDropper}
-                >
-                  
-                </EyeDropper>
+                ></EyeDropper>
               </View>
               {brushSlider}
             </View>
@@ -1000,7 +1025,6 @@ export default class App extends Component {
                           this.setState({ color: obj.color });
                         }}
                         disabled={this.state.disableButtons}
-
                       >
                         <Image
                           draggable={false}
@@ -1049,7 +1073,6 @@ export default class App extends Component {
                       }));
                     }}
                     disabled={this.state.disableButtons}
-
                   >
                     <Image
                       style={styles.brushes}
@@ -1064,7 +1087,6 @@ export default class App extends Component {
                     <View style={{ margin: 2 }}>
                       <TouchableOpacity
                         disabled={this.state.disableButtons}
-
                         style={[
                           styles.functionButton,
                           {
@@ -1162,7 +1184,9 @@ export default class App extends Component {
 
         {this.state.isChangeSize == true && (
           <View style={styles.circleContainer}>
-            <Text style={{ color: "#4d4d4d", fontWeight: "bold" }}>Size Preview:</Text>
+            <Text style={{ color: "#4d4d4d", fontWeight: "bold" }}>
+              Size Preview:
+            </Text>
             <Ionicons
               style={{
                 opacity: this.state.opacity,

@@ -10,8 +10,9 @@ docker build -t leungjch/hai-art-server:latest .
 ```
 To run the Docker image, run
 ```shell
-docker run -p 8080:8080 leungjch/hai-art-server:latest
+docker run --net elastic -p 8080:8080 -e ELASTICSEARCH_URL="http://es01:9200" leungjch/hai-art-server:latest
 ```
+
 To push the Docker image to Docker Hub, run
 ```
 docker push leungjch/hai-art-server:latest
