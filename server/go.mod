@@ -3,6 +3,8 @@ module main.com/m/v2
 go 1.16
 
 require (
+	github.com/elastic/go-elasticsearch v0.0.0 // indirect
+	github.com/elastic/go-elasticsearch/v8 v8.0.0-20211207161625-b8fa12c97f1d // indirect
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-chi/chi/v5 v5.0.3 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect

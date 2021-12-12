@@ -16,3 +16,25 @@ To push the Docker image to Docker Hub, run
 ```
 docker push leungjch/hai-art-server:latest
 ```
+
+# Elasticsearch
+
+The server uses Elasticsearch for logging data.
+
+## Install elasticsearch
+```shell
+docker network create elastic
+
+docker pull docker.elastic.co/elasticsearch/elasticsearch:7.16.0
+```
+
+## Install kibana
+```shell
+docker pull docker.elastic.co/kibana/kibana:7.16.0
+```
+
+## Start elasticsearch and kibana
+```shell
+./run-elastic.sh
+```
+

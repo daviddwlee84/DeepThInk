@@ -2,11 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+	"time"
+
+	"github.com/elastic/go-elasticsearch/esapi"
+	"github.com/elastic/go-elasticsearch/v8"
 
 	"github.com/gorilla/websocket"
 	"github.com/tidwall/gjson"
@@ -17,13 +23,28 @@ type Hub struct {
 	clients    []*Client
 	register   chan *Client
 	unregister chan *Client
+	es         *elasticsearch.Client
 }
 
 func newHub() *Hub {
+	esClient, err := elasticsearch.NewDefaultClient()
+	if err != nil {
+		log.Fatalf("Error creating the client: %s", err)
+	}
+	log.Println(elasticsearch.Version)
+
+	res, err := esClient.Info()
+	if err != nil {
+		log.Fatalf("Error getting response: %s", err)
+	}
+	defer res.Body.Close()
+	log.Println(res)
+
 	return &Hub{
 		clients:    make([]*Client, 0),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
+		es:         esClient,
 	}
 }
 
@@ -36,6 +57,16 @@ func (hub *Hub) run() {
 			hub.onDisconnect(client)
 		}
 	}
+}
+
+func (hub *Hub) sendES(clientId string, msgStr []byte) {
+	request := esapi.IndexRequest{
+		Index:      clientId,
+		DocumentID: fmt.Sprint(time.Now().UnixNano()),
+		Body:       strings.NewReader(string(msgStr)),
+	}
+	request.Do(context.Background(), hub.es)
+
 }
 
 var upgrader = websocket.Upgrader{
@@ -92,6 +123,7 @@ func (hub *Hub) onConnect(client *Client) {
 	hub.send(message.NewConnected(users), client)
 	// Broadcast new user joined to other users
 	hub.broadcast(message.NewUserJoined(client.id), client)
+
 }
 
 func (hub *Hub) onDisconnect(client *Client) {
@@ -133,6 +165,10 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		}
 		hub.broadcast(msg, client)
 
+		// Elasticsearch logging
+		msgStr, _ := json.Marshal(msg)
+		hub.sendES(client.id, msgStr)
+
 		// Create a new element in Strokes
 	case message.KindStrokeEnd:
 		log.Println("Send start message")
@@ -146,6 +182,10 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Color:     data.Get("color").String(),
 		}
 		hub.broadcast(msg, client)
+
+		// Elasticsearch logging
+		msgStr, _ := json.Marshal(msg)
+		hub.sendES(client.id, msgStr)
 
 	case message.KindStroke:
 		data := gjson.GetBytes(data, "data")
@@ -164,7 +204,13 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Color:     data.Get("color").String(),
 		}
 		fmt.Printf("%#v\n", msg)
+
 		hub.broadcast(msg, client)
+
+		// Elasticsearch logging
+		msgStr, _ := json.Marshal(msg)
+		hub.sendES(client.id, msgStr)
+
 	case message.KindClear:
 		var msg message.Clear
 		if json.Unmarshal(data, &msg) != nil {
@@ -172,6 +218,11 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		}
 		msg.UserID = client.id
 		hub.broadcast(msg, client)
+
+		// Elasticsearch logging
+		msgStr, _ := json.Marshal(msg)
+		hub.sendES(client.id, msgStr)
+
 	case message.KindClientInfo:
 		// Update the client info
 		canvasData := gjson.GetBytes(data, "data")
@@ -215,6 +266,10 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		// Collab mode (disabled)
 		// hub.broadcastAll(msg)
 
+		// Elasticsearch logging
+		msgStr, _ := json.Marshal(msg)
+		hub.sendES(client.id, msgStr)
+
 	// Generate a stylized image and send it to all clients
 	case message.KindStylize:
 		generate_url := fmt.Sprintf("%s/stylize", MODEL_URL)
@@ -251,7 +306,10 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		// Collab mode (disabled)
 		// hub.broadcastAll(msg)
 
-		//
+		// Elasticsearch logging
+		msgStr, _ := json.Marshal(msg)
+		hub.sendES(client.id, msgStr)
+
 	case message.KindSave:
 		generate_url := fmt.Sprintf("%s/save", MODEL_URL)
 
@@ -286,6 +344,10 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		}
 
 		hub.send(msg, client)
+
+		// Elasticsearch logging
+		msgStr, _ := json.Marshal(msg)
+		hub.sendES(client.id, msgStr)
 	}
 
 }
