@@ -108,29 +108,33 @@ export default class App extends Component {
 
     leftColumnWidth: device.height * 0.25,
     leftColumnLeftMargin: device.height * 0.007,
+    //device.width - (device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007 + 0.3))
 
     //canvas + small canvas, right col, left col, marginleft of left col
-    AI_CANVASWIDTH:
-      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
-        ? device.height * 0.5
-        : device.height * 0.85, //0.85+0.11 * 1.8+0.22
-    AI_CANVASHEIGHT:
-      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
-        ? device.height * 0.5
-        : device.height * 0.85, //0.85+0.11 * 1.8+0.22
-    //AI_CANVASWIDTH: device.height * 0.85, 
+    AI_CANVASWIDTH: Math.min(
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
+      device.height * 0.85
+    ),
+    // device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
+    //   ? device.height * 0.5
+    //   : device.height * 0.85,
+    AI_CANVASHEIGHT: Math.min(
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
+      device.height * 0.85
+    ),
+    //AI_CANVASWIDTH: device.height * 0.85,
     //AI_CANVASHEIGHT: device.height * 0.85,
 
     //USER_CANVASWIDTH: device.height * 0.85,
     //USER_CANVASHEIGHT: device.height * 0.85,
-    USER_CANVASWIDTH:
-      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
-        ? device.height * 0.5
-        : device.height * 0.85,
-    USER_CANVASHEIGHT:
-      device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
-        ? device.height * 0.5
-        : device.height * 0.85,
+    USER_CANVASWIDTH: Math.min(
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
+      device.height * 0.85
+    ),
+    USER_CANVASHEIGHT: Math.min(
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
+      device.height * 0.85
+    ),
     aiCanvasImageData: "data:image/png;base64,", // image data of the ai canvas
 
     imageData: "data:image/png;base64,", // raw image data of the segmentation image
@@ -141,7 +145,7 @@ export default class App extends Component {
     style: "none", // selected style
     color: "#384f83", // pen color
     userBrushColor: "#00FF00",
-    colorPickerDisplay: { r: 0, g: 255, b: 0 }, // another color state to keep track of the current color picker state
+    colorPickerDisplay: { r: 0, g: 255, b: 0, a:1 }, // another color state to keep track of the current color picker state
 
     userBrushBase64: "data:image/png;base64,", // user brush
     userBrushType: userBrushes.PENCIL,
@@ -168,6 +172,8 @@ export default class App extends Component {
 
     isLoading: true, //for loading spinner
     isChangeSize: false, //for slider
+
+    isFirstLoadDrawCanvas: true, // show a default segmentation map for the first time in the AI canvas
   };
 
   constructor(props) {
@@ -206,6 +212,7 @@ export default class App extends Component {
     this.setState((prevState) => ({
       ...prevState,
       isLoading: false,
+      isFirstLoadDrawCanvas: false,
     }));
   }
 
@@ -515,18 +522,28 @@ export default class App extends Component {
   };
 
   loadUserCanvas = () => {
+    
     this.setState(
       (prevState) => ({
         ...prevState,
         showUserCanvas: true,
+        isLoading: true
       }),
       () => {
         for (var i = 0; i < 2; i++) {
           setTimeout(() => {
             if (this.refs.userCanvasRef !== null) {
+              console.log("Load user canvas")
               this.refs.userCanvasRef.loadData(this.state.userCanvasImageData);
+              this.setState(
+                (prevState)=>({
+                  ...prevState,
+                  isLoading: false,
+                  disableDrawing: false
+                }
+              ), () => {this.refs.userCanvasRef.makeBrushColor(this.state.userBrushColor)})
             }
-          }, 200);
+          }, 1500);
         }
       }
     );
@@ -615,6 +632,7 @@ export default class App extends Component {
     let brushSlider = (
       <View
         style={{
+          backgroundColor: "#f2f2eb",
           width: this.state.leftColumnWidth,
           marginLeft: this.state.leftColumnLeftMargin,
           borderRadius: 10,
@@ -664,7 +682,11 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         {/* this View wraps the left column */}
-        <View style={{ width: device.height * (0.25+0.007), backgroundColor: "pink" }}>
+        <View
+          style={{
+            width: this.state.leftColumnLeftMargin + this.state.leftColumnWidth,
+          }}
+        >
           <TouchableOpacity
             onPress={() => {
               this.setState((prevState) => ({
@@ -873,6 +895,7 @@ export default class App extends Component {
                       height={this.state.AI_CANVASHEIGHT}
                       opacity={1}
                       disable={this.state.disableDrawing}
+                      isFirstLoadDrawCanvas={this.state.isFirstLoadDrawCanvas}
                     />
                   </View>
                 </View>

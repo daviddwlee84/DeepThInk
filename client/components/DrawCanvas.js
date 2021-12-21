@@ -223,11 +223,13 @@ export default class DrawCanvas extends Component {
 
 		// Fill upper half of the canvas with sky
 		ctx.fillStyle = "#759edf";
-		ctx.fillRect(0, 0, canvas.width, 3*canvas.height/4);
-		
-		// Fill bottom half of canvas with sea
-		ctx.fillStyle = "#384f83";
-		ctx.fillRect(0, 3*canvas.height/4, canvas.width, canvas.height/4);
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		if (this.props.isFirstLoadDrawCanvas)
+		{
+			// Fill bottom half of canvas with sea
+			ctx.fillStyle = "#384f83";
+			ctx.fillRect(0, 3*canvas.height/4, canvas.width, canvas.height/4);
+		}
 	}
 
 

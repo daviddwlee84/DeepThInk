@@ -65,6 +65,42 @@ export default class UserCanvas extends Component {
 
 	componentDidMount() {
 		this.props.setClickClear(this.clearCanvas);
+		this.defaultWhiteCanvas()
+	 }
+	 makeBrushColor = (color) => {
+		let currentComponent = this;
+		console.log("Making newbrush")
+
+		fetch(`http://${backendConstants.BACKEND_URL}:8000/makeBrush`,
+			{
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				},
+				method: "POST",
+				body: JSON.stringify(
+					{
+						"brushType": this.props.userBrushType,
+						"color": color
+					})
+
+					
+			})
+			.then(function (res) {
+				res.json().then(parsedJson => {
+					// image.src = asset.uri ;
+					currentComponent.setState((prevState, props) => {
+						return {
+						...prevState,
+						imageBrush: parsedJson.data.imageData
+					}})
+			  
+
+				})
+
+
+			})
+			.catch(function (res) { console.log(res) })
 
 	 }
 
@@ -92,7 +128,7 @@ export default class UserCanvas extends Component {
 			(this.props.userBrushType.includes("image") &&
 			prevProps.userBrushType !== this.props.userBrushType) ||
 			prevProps.color !== this.props.color) {
-				console.log("FETCHING NOW")
+				console.log("Making newbrush")
 
 				fetch(`http://${backendConstants.BACKEND_URL}:8000/makeBrush`,
 					{
@@ -481,6 +517,16 @@ export default class UserCanvas extends Component {
 	onStrokeStartHandler = (x, y) => {
 		// sendStrokeStart(this.props.socket);
 	};
+
+	defaultWhiteCanvas = () => {
+		var canvas = this.canvasRef.current
+		var ctx = canvas.getContext("2d");
+
+		// Fill upper half of the canvas with sky
+		ctx.fillStyle = "rgba(255,255,255,0.0)";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	}
 
 	render() {
 		if (Platform.OS === "web") {
