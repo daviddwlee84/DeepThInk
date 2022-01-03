@@ -25,6 +25,8 @@ import brushTypes from "./constants/brushTypes.js";
 import userBrushes from "./constants/userBrushes.js";
 import styleTransferOptions from "./constants/styleTransferOptions.js";
 import userBrushesOptions from "./constants/userBrushesOptions.js";
+import filterOptions from "./constants/filterBrushOptions.js";
+
 import messageKinds from "./constants/messageKinds.js";
 import {
   onOpen,
@@ -144,12 +146,14 @@ export default class App extends Component {
     finalImageData: "data:image/png;base64,", // raw image data of generatedImageData + userCanvasImageData
     style: "none", // selected style
     color: "#384f83", // pen color
+    imageFilter: "",
     userBrushColor: "#00FF00",
     colorPickerDisplay: { r: 0, g: 255, b: 0, a:1 }, // another color state to keep track of the current color picker state
 
     userBrushBase64: "data:image/png;base64,", // user brush
     userBrushType: userBrushes.PENCIL,
     styleBrushType: "None",
+    filterBrushType: "None",
     thickness: 10, // stroke thickness
     ownStroke: [], // client stroke data
     collaboratorStroke: [], // collaborator data
@@ -365,7 +369,7 @@ export default class App extends Component {
       ...prevState,
       disableDrawing: true,
       showImageForEyeDropper: true,
-      showPreview: false,
+      showPreview: true,
       disableButtons: true,
     }));
 
@@ -681,6 +685,7 @@ export default class App extends Component {
 
     return (
       <View style={styles.container}>
+
         {/* this View wraps the left column */}
         <View
           style={{
@@ -723,6 +728,27 @@ export default class App extends Component {
                 {
                   opacity:
                     this.state.currentBrush == brushTypes.STYLE ? 1 : 0.72,
+                },
+              ]}
+              source={require("./resources/styleBrush.png")}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              this.setState((prevState) => ({
+                ...prevState,
+                currentBrush: brushTypes.FILTER,
+              }));
+              this.enableUserCanvas();
+            }}
+            disabled={this.state.disableButtons}
+          >
+            <Image
+              style={[
+                styles.brushes,
+                {
+                  opacity:
+                    this.state.currentBrush == brushTypes.FILTER ? 1 : 0.72,
                 },
               ]}
               source={require("./resources/styleBrush.png")}
@@ -841,7 +867,10 @@ export default class App extends Component {
                 </ImageBackground>
               </View>
             )}
-            {this.state.showUserCanvas && this.state.showPreview && (
+            {/* AI Brush preview */}
+            {!this.state.showAICanvas && this.state.showPreview && (
+            // {this.state.showUserCanvas && this.state.showPreview && (
+
               <View
                 style={[
                   styles.shadowBoxAICanvas,
@@ -916,7 +945,7 @@ export default class App extends Component {
                     {this.state.displayedImageData != null ? (
                       <Image
                         draggable={false}
-                        style={styles.generatedImage}
+                        style={[styles.generatedImage, {filter: this.state.imageFilter}]}
                         source={{ uri: this.state.displayedImageData }}
                       />
                     ) : null}
@@ -1142,7 +1171,80 @@ export default class App extends Component {
               </ScrollView>
             </View>
           )}
+
+          {/* Filter buttons */}
+          {this.state.currentBrush == brushTypes.FILTER && (
+            <View style={styles.brushesContainer}>
+              {/* None style button */}
+              <ScrollView>
+                <View style={{ margin: 2 }}>
+                  <TouchableOpacity
+                    style={[
+                      styles.functionButton,
+                      {
+                        backgroundColor:
+                          this.state.filterBrushType == "None"
+                            ? "#3d3d3d"
+                            : "grey",
+                      },
+                    ]}
+                    onPress={() => {
+                      this.setState((prevState) => ({
+                        ...prevState,
+                        imageFilter: "",
+                        filterBrushType: "None"
+                      }));
+                    }}
+                    disabled={this.state.disableButtons}
+                  >
+                    <Image
+                      style={styles.brushes}
+                      source={require("./resources/none_style.png")}
+                    />
+                    <Text style={{ color: "white", fontSize: 20 }}> None </Text>
+                  </TouchableOpacity>
+                </View>
+                {/* Programmatically render all style options */}
+                {filterOptions.filters.map((obj) => {
+                  return (
+                    <View style={{ margin: 2 }}>
+                      <TouchableOpacity
+                        disabled={this.state.disableButtons}
+                        style={[
+                          styles.functionButton,
+                          {
+                            backgroundColor:
+                              this.state.filterBrushType == obj.name
+                                ? "#3d3d3d"
+                                : "grey",
+                          },
+                        ]}
+                        onPress={() => {
+                          this.setState((prevState) => ({
+                            imageFilter: obj.filter,
+                            filterBrushType: obj.name
+                              }));
+                        }}
+                      >
+                        <Image style={styles.brushes} source={obj.image_url} />
+                        <Text
+                          style={{
+                            color: "white",
+                            fontSize: device.height * 0.024,
+                          }}
+                        >
+                          {obj.label}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
         </View>
+
 
         {/* User Brush buttons */}
         {this.state.currentBrush == brushTypes.USER && (
@@ -1227,6 +1329,8 @@ export default class App extends Component {
             ></Ionicons>
           </View>
         )}
+
+
       </View>
     );
   }
