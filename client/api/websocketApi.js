@@ -40,9 +40,27 @@ export function sendStroke(socket, point, color, thickness) {
       thickness: thickness,
     },
   };
-  // console.log(JSON.stringify(data));
 
   socket.send(JSON.stringify(data));
+}
+
+export function sendSwitchBrush(socket, type) {
+  console.log("send switch")
+  var data = {
+    kind: messageKinds.MESSAGE_SWITCH_BRUSH,
+    brushType: type
+  };
+  socket.send(JSON.stringify(data));
+}
+
+export function sendSwitchFilter(socket, type) {
+  console.log("send filter switch")
+  var data = {
+    kind: messageKinds.MESSAGE_SWITCH_FILTER,
+    filterType: type
+  }
+  socket.send(JSON.stringify(data));
+
 }
 
 export function onOpen(socket, data) {

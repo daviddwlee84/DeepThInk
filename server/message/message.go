@@ -23,6 +23,10 @@ const (
 	KindStylize
 	// KindSaveGenerated message is sent when user saves their painting (genrated image + user canvas)
 	KindSave
+	// KindSwitchBrush message is sent when a user selects a different brush (AI, Filter, User brush)
+	KindSwitchBrush
+	// KindSwitchFilter message is sent when user selects a different filter
+	KindSwitchFilter
 )
 
 type Point struct {
@@ -116,4 +120,14 @@ type Stylize struct {
 type Save struct {
 	Kind           int    `json:"kind"`
 	SavedImageData string `json:"savedImageData"`
+}
+
+type SwitchBrush struct {
+	Kind int    `json:"kind"`
+	Type string `json:"brushType"`
+}
+
+type SwitchFilter struct {
+	Kind int    `json:"kind"`
+	Type string `json:"filterType"`
 }

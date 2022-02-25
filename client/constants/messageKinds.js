@@ -9,7 +9,9 @@ const messageKinds = {
   MESSAGE_STROKE_END: 8,
   MESSAGE_GENERATE: 9,
   MESSAGE_STYLIZE: 10,
-  MESSAGE_SAVE: 11
+  MESSAGE_SAVE: 11,
+  MESSAGE_SWITCH_BRUSH: 12,
+  MESSAGE_SWITCH_FILTER: 13
 };
 
 export default messageKinds;

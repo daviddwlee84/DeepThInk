@@ -40,7 +40,6 @@ export default class DrawCanvas extends Component {
 
 	componentDidUpdate(prevProps) {
 		if (prevProps.otherStrokes != this.props.otherStrokes) {
-		//   console.log("collaborator", prevProps.otherStrokes, "new:", this.props.otherStrokes)
 			if (this.props.otherStrokes.length > 0) {
 				var newStroke = this.props.otherStrokes[this.props.otherStrokes.length-1]
 				this.updateCanvas(newStroke, "other")		
@@ -97,7 +96,7 @@ export default class DrawCanvas extends Component {
 		this.setState({
 			strokes: this.state.strokes.concat(p)
 		})
-		sendStroke(this.props.socket, {x: posX/this.width, y: posY/this.height}, this.props.color, this.props.thickness)
+		sendStroke(this.props.socket, {x: posX/this.props.width, y: posY/this.props.height}, this.props.color, this.props.thickness)
 		
     }
 
@@ -117,7 +116,7 @@ export default class DrawCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		} )
 		// socket: start stroke
-		sendStrokeStart(this.props.socket, {x: p.x, y: p.y}, p.thickness, p.color);
+		sendStrokeStart(this.props.socket, {x: p.x/this.width, y: p.y/this.height}, p.thickness, p.color);
 
 	}
 

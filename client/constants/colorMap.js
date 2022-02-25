@@ -5,12 +5,14 @@ export default {
       id: 154,
       label: 'Sea',
       logo: require('../resources/seaLogo.png'),
+      // logo: require('../resources/tmp/seaLogo2.png'),
     },
     {
       color: '#efefef',
       id: 105,
       label: 'Cloud',
       logo: require('../resources/cloudLogo.png'),
+      // logo: require('../resources/tmp/cloudLogo2.png'),
       labelColor: "#d3d3d3"
     },
     {
@@ -18,12 +20,14 @@ export default {
       id: 110,
       label: 'Dirt',
       logo: require('../resources/dirtLogo.png'),
+      // logo: require('../resources/tmp/dirtLogo2.png'),
     },
     {
       color: '#5d6e32',
       id: 96,
       label: 'Bush',
       logo: require('../resources/bushLogo.png'),
+      // logo: require('../resources/tmp/bushLogo2.png'),
     },
     // {
     //   color: '#b7d24e',
@@ -37,6 +41,7 @@ export default {
       id: 134,
       label: 'Mountain',
       logo: require('../resources/mountainLogo.png'),
+      // logo: require('../resources/tmp/mountainLogo2.png'),
     },
     // {
     //   color: '#987e6a',
@@ -49,12 +54,14 @@ export default {
       id: 156,
       label: 'Sky',
       logo: require('../resources/skyLogo.png'),
+      // logo: require('../resources/tmp/skyLogo2.png'),
     },
     {
       color: '#352613',
       id: 168,
       label: 'Tree',
       logo: require('../resources/treeLogo.png'),
+      // logo: require('../resources/tmp/treeLogo2.png'),
     },
     // {
     //   color: '#e670b6',
@@ -73,9 +80,10 @@ export default {
       id: 126,
       label: 'Hill',
       logo: require('../resources/hillLogo.png'),
+      // logo: require('../resources/tmp/hillLogo2.png'),
     },
     // {
-    //   color: '#bf602c',
+    //   color: '#bf602c', 
     //   id: 128,
     //   label: 'leaves',
     //   logo: './resources/leavesLogo.png',
@@ -85,6 +93,7 @@ export default {
       id: 147,
       label: 'River',
       logo: require('../resources/riverLogo.png'),
+      // logo: require('../resources/tmp/riverLogo2.png'),
     },
     // {
     //   color: '#fafafa',

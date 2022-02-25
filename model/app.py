@@ -14,6 +14,19 @@ import uuid
 import base64
 from PIL import Image, ImageDraw, ImageColor
 import io
+import os
+import boto3
+from dotenv import load_dotenv
+from datetime import datetime
+
+load_dotenv()  
+
+s3 = boto3.resource(
+    service_name='s3',
+    region_name='us-east-1',
+    aws_access_key_id=os.environ['ACCESS_ID'],
+    aws_secret_access_key=os.environ['SECRET_KEY']
+)
 
 app = Flask(__name__)
 CORS(app)
@@ -147,16 +160,36 @@ def colorize():
 def save():
     # Get the displayed image data
     data = request.get_json()
-    aiCanvasData = data.get("aiCanvasImageData")
-    backgroundCanvasData = data.get("displayedImageData")
-    foregroundCanvasData = data.get("userCanvasImageData")
-
+    aiCanvasData = data.get("aiCanvasImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+    backgroundCanvasData = data.get("displayedImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+    foregroundCanvasData = data.get("userCanvasImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+    userId = data.get("userId", "unknownUser")
     if (backgroundCanvasData == ""):
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y-%H:%M:%S")
+
+        filename1 = "img/" + userId + "-"+dt_string+".png"
+
+
+        foreground_base64_decoded = base64.b64decode(foregroundCanvasData)
+
+        # Get the background
+        foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((512,512))
+
+
+        objPainting = s3.Object(os.environ['S3_BUCKET'],filename1)
+
+        buffered = io.BytesIO()
+        foreground_img.save(buffered, format="PNG")
+        final_painting_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+
+
+        objPainting.put(Body=base64.b64decode(final_painting_str))
+
         return {"message":"Success", "data": "data:image/png;base64," +  foregroundCanvasData}
     
 
-
-    print("AI IS", aiCanvasData.find("base64"), "BACKGROUND IS", backgroundCanvasData.find("base64"), "FOREGROUND IS", foregroundCanvasData.find("base64"))
     # Remove the javascript file type header
     aiCanvasData = base64.b64decode(aiCanvasData)
     foreground_base64_decoded = base64.b64decode(foregroundCanvasData)
@@ -165,14 +198,24 @@ def save():
     # Get the background
     background_img = Image.open(io.BytesIO(background_base64_decoded)).resize((512,512))
     foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((512,512))
-
+    canvas_img =  Image.open(io.BytesIO(aiCanvasData)).resize((512,512))
 
     # Overlay the foreground onto the background
     background_img.paste(foreground_img, (0, 0), foreground_img)
 
+    # save painting
     buffered = io.BytesIO()
     background_img.save(buffered, format="PNG")
     final_painting_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    now = datetime.now()
+
+
+    dt_string = now.strftime("%d-%m-%Y-%H:%M:%S")
+    filename = "img/" + userId + "-"+dt_string+".png"
+    obj = s3.Object(os.environ['S3_BUCKET'],filename)
+    obj.put(Body=base64.b64decode(final_painting_str))
+
+
 
     print(final_painting_str)
 

@@ -2,17 +2,11 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
-	"time"
-
-	"github.com/elastic/go-elasticsearch/esapi"
-	"github.com/elastic/go-elasticsearch/v8"
 
 	"github.com/gorilla/websocket"
 	"github.com/tidwall/gjson"
@@ -23,22 +17,24 @@ type Hub struct {
 	clients    []*Client
 	register   chan *Client
 	unregister chan *Client
-	es         *elasticsearch.Client
+	// es         *elasticsearch.Client
+	es int
 }
 
 func newHub() *Hub {
-	esClient, err := elasticsearch.NewDefaultClient()
-	if err != nil {
-		log.Fatalf("Error creating the client: %s", err)
-	}
-	log.Println(elasticsearch.Version)
+	// esClient, err := elasticsearch.NewDefaultClient()
+	// if err != nil {
+	// 	log.Fatalf("Error creating the client: %s", err)
+	// }
+	// log.Println(elasticsearch.Version)
 
-	res, err := esClient.Info()
-	if err != nil {
-		log.Fatalf("Error getting response: %s", err)
-	}
-	defer res.Body.Close()
-	log.Println(res)
+	// res, err := esClient.Info()
+	// if err != nil {
+	// 	log.Fatalf("Error getting response: %s", err)
+	// }
+	// defer res.Body.Close()
+	// log.Println(res)
+	esClient := -1 // disable ES
 
 	return &Hub{
 		clients:    make([]*Client, 0),
@@ -60,12 +56,12 @@ func (hub *Hub) run() {
 }
 
 func (hub *Hub) sendES(clientId string, msgStr []byte) {
-	request := esapi.IndexRequest{
-		Index:      clientId,
-		DocumentID: fmt.Sprint(time.Now().UnixNano()),
-		Body:       strings.NewReader(string(msgStr)),
-	}
-	request.Do(context.Background(), hub.es)
+	// request := esapi.IndexRequest{
+	// 	Index:      clientId,
+	// 	DocumentID: fmt.Sprint(time.Now().UnixNano()),
+	// 	Body:       strings.NewReader(string(msgStr)),
+	// }
+	// request.Do(context.Background(), hub.es)
 
 }
 
@@ -95,10 +91,10 @@ func (hub *Hub) send(message interface{}, client *Client) {
 }
 
 // Broadcast a message to all clients except one
-func (hub *Hub) broadcast(message interface{}, ignore *Client) {
+func (hub *Hub) broadcast(message interface{}, ignoreId string) {
 	data, _ := json.Marshal(message)
 	for _, c := range hub.clients {
-		if c != ignore {
+		if c.id != ignoreId {
 			c.outbound <- data
 		}
 	}
@@ -122,7 +118,7 @@ func (hub *Hub) onConnect(client *Client) {
 	// Notify the new user
 	hub.send(message.NewConnected(users), client)
 	// Broadcast new user joined to other users
-	hub.broadcast(message.NewUserJoined(client.id), client)
+	hub.broadcast(message.NewUserJoined(client.id), client.id)
 
 }
 
@@ -142,7 +138,7 @@ func (hub *Hub) onDisconnect(client *Client) {
 	hub.clients[len(hub.clients)-1] = nil
 	hub.clients = hub.clients[:len(hub.clients)-1]
 	// Notify user left
-	hub.broadcast(message.NewUserLeft(client.id), nil)
+	hub.broadcast(message.NewUserLeft(client.id), "")
 }
 
 func (hub *Hub) onMessage(data []byte, client *Client) {
@@ -163,7 +159,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Thickness: data.Get("thickness").Float(),
 			Color:     data.Get("color").String(),
 		}
-		hub.broadcast(msg, client)
+		hub.broadcast(msg, client.id)
 
 		// Elasticsearch logging
 		msgStr, _ := json.Marshal(msg)
@@ -181,7 +177,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Thickness: data.Get("thickness").Float(),
 			Color:     data.Get("color").String(),
 		}
-		hub.broadcast(msg, client)
+		hub.broadcast(msg, client.id)
 
 		// Elasticsearch logging
 		msgStr, _ := json.Marshal(msg)
@@ -190,7 +186,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 	case message.KindStroke:
 		data := gjson.GetBytes(data, "data")
 		var msg message.StrokePoint
-		log.Println("Got stroke", string(data.String()))
+		// log.Println("Got stroke", string(data.String()))
 
 		msg.UserID = client.id
 		msg = message.StrokePoint{
@@ -203,9 +199,9 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Thickness: data.Get("thickness").Float(),
 			Color:     data.Get("color").String(),
 		}
-		fmt.Printf("%#v\n", msg)
+		// fmt.Printf("%#v\n", msg)
 
-		hub.broadcast(msg, client)
+		hub.broadcast(msg, client.id)
 
 		// Elasticsearch logging
 		msgStr, _ := json.Marshal(msg)
@@ -217,7 +213,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			return
 		}
 		msg.UserID = client.id
-		hub.broadcast(msg, client)
+		hub.broadcast(msg, client.id)
 
 		// Elasticsearch logging
 		msgStr, _ := json.Marshal(msg)
@@ -264,7 +260,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 
 		hub.send(msg, client)
 		// Collab mode (disabled)
-		// hub.broadcastAll(msg)
+		hub.broadcast(msg, client.id)
 
 		// Elasticsearch logging
 		msgStr, _ := json.Marshal(msg)
@@ -304,7 +300,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 
 		hub.send(msg, client)
 		// Collab mode (disabled)
-		// hub.broadcastAll(msg)
+		hub.broadcast(msg, client.id)
 
 		// Elasticsearch logging
 		msgStr, _ := json.Marshal(msg)
@@ -326,6 +322,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			"displayedImageData":  displayedImageData,
 			"userCanvasImageData": userCanvasImageData,
 			"aiCanvasImageData":   aiCanvasImageData,
+			"userId":              client.id,
 		})
 
 		responseBody := bytes.NewBuffer(postBody)
@@ -348,6 +345,24 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		// Elasticsearch logging
 		msgStr, _ := json.Marshal(msg)
 		hub.sendES(client.id, msgStr)
+	// When a user switches main brush ,all collaborators go to the same main brush
+	case message.KindSwitchBrush:
+		var msg message.SwitchBrush
+		if json.Unmarshal(data, &msg) != nil {
+			return
+		}
+		hub.broadcast(msg, client.id)
+		log.Println("Got switch " + msg.Type)
+
+	// when user applies a new filter, all collaborators get the same filter
+	case message.KindSwitchFilter:
+		var msg message.SwitchFilter
+		if json.Unmarshal(data, &msg) != nil {
+			return
+		}
+		hub.broadcast(msg, client.id)
+		log.Println("Got filter " + msg.Type)
+
 	}
 
 }

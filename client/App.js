@@ -36,6 +36,8 @@ import {
   sendStroke,
   sendStrokeEnd,
   sendStrokeStart,
+  sendSwitchBrush,
+  sendSwitchFilter,
 } from "./api/websocketApi.js";
 import { sendRequest, sendRequestStyle } from "./api/modelApi.js";
 import { hello, generateStyle } from "./styles/styles.js";
@@ -76,10 +78,10 @@ const CANVASHEIGHT = device.height * 0.9;
 // Create dynamic style based on device width/height
 // const styles = StyleSheet.create(generateStyle(device));
 
-const CustomEyeDropper = ({ onClick }) => (
+const CustomEyeDropper = ({ onClick, disabled }) => (
   <TouchableOpacity
     style={{
-      backgroundColor: "#f2f2eb",
+      backgroundColor: disabled ? "#999999" : "#f2f2eb",
       borderRadius: 10,
       flexDirection: "row",
       justifyContent: "center",
@@ -107,6 +109,9 @@ export default class App extends Component {
   state = {
     showAICanvas: true,
     showUserCanvas: false,
+
+    rightColumnWidth: device.height * 0.11 * 1.8,
+    rightColumnMargin: device.height * 0.007,
 
     leftColumnWidth: device.height * 0.25,
     leftColumnLeftMargin: device.height * 0.007,
@@ -148,7 +153,7 @@ export default class App extends Component {
     color: "#384f83", // pen color
     imageFilter: "",
     userBrushColor: "#00FF00",
-    colorPickerDisplay: { r: 0, g: 255, b: 0, a:1 }, // another color state to keep track of the current color picker state
+    colorPickerDisplay: { r: 0, g: 255, b: 0, a: 1 }, // another color state to keep track of the current color picker state
 
     userBrushBase64: "data:image/png;base64,", // user brush
     userBrushType: userBrushes.PENCIL,
@@ -218,8 +223,7 @@ export default class App extends Component {
       isLoading: false,
       isFirstLoadDrawCanvas: false,
     }));
-  }
-
+    }
   // Fetch image data from canvas
   // Then call sendRequest to send the data to backend
   grabPixels = async () => {
@@ -276,25 +280,32 @@ export default class App extends Component {
   };
 
   saveGeneratedImage = () => {
-    var getImage = this.refs.userCanvasRef.getBase64().then((value) => {
-      var resultImage = value.split(";base64,")[1];
-      var foregroundImageDataStripped =
-        this.state.displayedImageData.split(";base64,")[1];
-      this.setState((prevState) => ({
-        ...prevState,
-        isLoading: true,
-      }));
-      this.state.socket.send(
-        JSON.stringify({
-          kind: messageKinds.MESSAGE_SAVE,
-          data: {
-            displayedImageData: foregroundImageDataStripped,
-            userCanvasImageData: resultImage,
-            aiCanvasImageData: this.state.imageData,
-          },
-        })
+    if (this.refs.userCanvasRef == null) {
+      alert(
+        "Unable to save the painting in AI Brush. Please select 'User Brush' or 'Style' or 'Filter' and try again."
       );
-    });
+      return;
+    } else {
+      var getImage = this.refs.userCanvasRef.getBase64().then((value) => {
+        var resultImage = value.split(";base64,")[1];
+        var foregroundImageDataStripped =
+          this.state.displayedImageData.split(";base64,")[1];
+        this.setState((prevState) => ({
+          ...prevState,
+          isLoading: true,
+        }));
+        this.state.socket.send(
+          JSON.stringify({
+            kind: messageKinds.MESSAGE_SAVE,
+            data: {
+              displayedImageData: foregroundImageDataStripped,
+              userCanvasImageData: resultImage,
+              aiCanvasImageData: this.state.imageData,
+            },
+          })
+        );
+      });
+    }
   };
 
   handleThickness = (sliderValue) => {
@@ -346,7 +357,7 @@ export default class App extends Component {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     // return {r, g, b} // return an object
-    return { r: r, g: g, b: b };
+    return { r: r, g: g, b: b, a: 1 };
   };
 
   handleChangeEydropper = ({ rgb, hex }) => {
@@ -394,47 +405,46 @@ export default class App extends Component {
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE_START:
         // Disabled collab drawing
-        // console.log('RECEIVED STROKE STARTT', message);
-        // // Append collaborator stroke
-        // this.setState(prevState => ({
-        //   ...prevState,
-        //   collaboratorStroke: [
-        //     ...prevState.collaboratorStroke,
-        //     new Point(
-        //       message.point.x * CANVASWIDTH,
-        //       message.point.y * CANVASHEIGHT,
-        //       message.thickness,
-        //       message.color,
-        //       'start',
-        //     ),
-        //   ],
-        // }));
+        console.log('RECEIVED STROKE STARTT', message);
+        // Append collaborator stroke
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [
+            ...prevState.collaboratorStroke,
+            new Point(
+              message.point.x * this.state.AI_CANVASWIDTH,
+              message.point.y * this.state.AI_CANVASHEIGHT,
+              message.thickness,
+              message.color,
+              'start',
+            ),
+          ],
+        }));
 
         break;
       case messageKinds.MESSAGE_STROKE:
         // Disabled collab drawing
-        // console.log("received collaborator point", message)
         // Append collaborator stroke
-        // this.setState(prevState => ({
-        //   ...prevState,
-        //   collaboratorStroke: [
-        //     ...prevState.collaboratorStroke,
-        //     new Point(
-        //       message.point.x * CANVASWIDTH,
-        //       message.point.y * CANVASHEIGHT,
-        //       message.thickness,
-        //       message.color,
-        //       'move',
-        //     ),
-        //   ],
-        // }));
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [
+            ...prevState.collaboratorStroke,
+            new Point(
+              message.point.x * this.state.AI_CANVASWIDTH,
+              message.point.y * this.state.AI_CANVASHEIGHT,
+              message.thickness,
+              message.color,
+              'move',
+            ),
+          ],
+        }));
         break;
       case messageKinds.MESSAGE_STROKE_END:
         // Disabled collab drawing
-        // this.setState(prevState => ({
-        //   ...prevState,
-        //   collaboratorStroke: [],
-        // }));
+        this.setState(prevState => ({
+          ...prevState,
+          collaboratorStroke: [],
+        }));
 
         break;
       // User receives a generated image broadcasted from another user
@@ -457,7 +467,7 @@ export default class App extends Component {
         console.log("image stylize", message);
         this.setState((prevState) => ({
           ...prevState,
-          style: message.style,
+          styleBrushType: message.style,
           stylizedImageData: message.imageData,
           displayedImageData: message.imageData,
         }));
@@ -478,19 +488,33 @@ export default class App extends Component {
         if (this.state.showImageForEyeDropper) {
           this.setState((prevState) => ({
             ...prevState,
-            showImageForEyeDropper: true,
             finalImageData: message.savedImageData,
           }));
+        } else {
+          alert("Image saved to cloud storage!");
+          // triggerBase64Download(message.savedImageData, `Painting`);
         }
 
-        // FIXME: Will probably only work on expo web, untested on android/ios
-        else if (message.savedImageData != "") {
-          triggerBase64Download(message.savedImageData, `Painting`);
-        } else {
-          alert("Please generate a painting with the AI brush first.");
+        break;
+      case messageKinds.MESSAGE_SWITCH_BRUSH: 
+      console.log("got switch from collaborator", message)
+        if (message.brushType == "ai") {
+          this.switchToAICanvas();
+
+        } else if (message.brushType == "filter") {
+          this.switchToFilterBrush();
+        } else if (message.brushType == "style") {
+          this.switchToStyleBrush();
+        } else if (message.brushType == "user") {
+          this.switchToUserBrush();
         }
         break;
-    }
+      case messageKinds.MESSAGE_SWITCH_FILTER:
+        this.setState((prevState) => ({
+          ...prevState,
+          imageFilter: message.filterType,
+        }));    
+      }
   };
 
   // Enable the AI canvas for drawing
@@ -526,26 +550,30 @@ export default class App extends Component {
   };
 
   loadUserCanvas = () => {
-    
     this.setState(
       (prevState) => ({
         ...prevState,
         showUserCanvas: true,
-        isLoading: true
+        isLoading: true,
       }),
       () => {
         for (var i = 0; i < 2; i++) {
           setTimeout(() => {
             if (this.refs.userCanvasRef !== null) {
-              console.log("Load user canvas")
+              console.log("Load user canvas");
               this.refs.userCanvasRef.loadData(this.state.userCanvasImageData);
               this.setState(
-                (prevState)=>({
+                (prevState) => ({
                   ...prevState,
                   isLoading: false,
-                  disableDrawing: false
+                  disableDrawing: false,
+                }),
+                () => {
+                  this.refs.userCanvasRef.makeBrushColor(
+                    this.state.userBrushColor
+                  );
                 }
-              ), () => {this.refs.userCanvasRef.makeBrushColor(this.state.userBrushColor)})
+              );
             }
           }, 1500);
         }
@@ -632,6 +660,40 @@ export default class App extends Component {
       });
   };
 
+  switchToAICanvas = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      currentBrush: brushTypes.AI,
+    }));
+    this.enableAICanvas();
+  }
+
+  switchToStyleBrush = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      currentBrush: brushTypes.STYLE,
+    }));
+    this.enableUserCanvas();
+  }
+
+  switchToFilterBrush = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      currentBrush: brushTypes.FILTER,
+    }));
+    this.enableUserCanvas();
+
+  }
+
+  switchToUserBrush = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      currentBrush: brushTypes.USER,
+    }));
+    // Display user canvas
+    this.enableUserCanvas();
+  }
+
   render() {
     let brushSlider = (
       <View
@@ -685,7 +747,6 @@ export default class App extends Component {
 
     return (
       <View style={styles.container}>
-
         {/* this View wraps the left column */}
         <View
           style={{
@@ -694,11 +755,9 @@ export default class App extends Component {
         >
           <TouchableOpacity
             onPress={() => {
-              this.setState((prevState) => ({
-                ...prevState,
-                currentBrush: brushTypes.AI,
-              }));
-              this.enableAICanvas();
+              this.switchToAICanvas();
+
+              sendSwitchBrush(this.state.socket,brushTypes.AI)
             }}
             disabled={this.state.disableButtons}
           >
@@ -706,7 +765,15 @@ export default class App extends Component {
               style={[
                 styles.brushes,
                 {
-                  opacity: this.state.currentBrush == brushTypes.AI ? 1 : 0.72,
+                  height:
+                    this.state.currentBrush == brushTypes.AI
+                      ? device.height * 0.14
+                      : device.height * 0.11,
+                  width:
+                    this.state.currentBrush == brushTypes.AI
+                      ? device.height * 0.14 * 1.8
+                      : device.height * 0.11 * 1.8,
+                  opacity: this.state.currentBrush == brushTypes.AI ? 1 : 0.55,
                 },
               ]}
               source={require("./resources/AIBrush.png")}
@@ -714,11 +781,9 @@ export default class App extends Component {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              this.setState((prevState) => ({
-                ...prevState,
-                currentBrush: brushTypes.STYLE,
-              }));
-              this.enableUserCanvas();
+              this.switchToStyleBrush();
+
+              sendSwitchBrush(this.state.socket,brushTypes.STYLE)
             }}
             disabled={this.state.disableButtons}
           >
@@ -726,8 +791,16 @@ export default class App extends Component {
               style={[
                 styles.brushes,
                 {
+                  height:
+                    this.state.currentBrush == brushTypes.STYLE
+                      ? device.height * 0.14
+                      : device.height * 0.11,
+                  width:
+                    this.state.currentBrush == brushTypes.STYLE
+                      ? device.height * 0.14 * 1.8
+                      : device.height * 0.11 * 1.8,
                   opacity:
-                    this.state.currentBrush == brushTypes.STYLE ? 1 : 0.72,
+                    this.state.currentBrush == brushTypes.STYLE ? 1 : 0.55,
                 },
               ]}
               source={require("./resources/styleBrush.png")}
@@ -735,11 +808,9 @@ export default class App extends Component {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              this.setState((prevState) => ({
-                ...prevState,
-                currentBrush: brushTypes.FILTER,
-              }));
-              this.enableUserCanvas();
+              this.switchToFilterBrush();
+              sendSwitchBrush(this.state.socket,brushTypes.FILTER)
+
             }}
             disabled={this.state.disableButtons}
           >
@@ -747,21 +818,26 @@ export default class App extends Component {
               style={[
                 styles.brushes,
                 {
+                  height:
+                    this.state.currentBrush == brushTypes.FILTER
+                      ? device.height * 0.14
+                      : device.height * 0.11,
+                  width:
+                    this.state.currentBrush == brushTypes.FILTER
+                      ? device.height * 0.14 * 1.8
+                      : device.height * 0.11 * 1.8,
                   opacity:
-                    this.state.currentBrush == brushTypes.FILTER ? 1 : 0.72,
+                    this.state.currentBrush == brushTypes.FILTER ? 1 : 0.55,
                 },
               ]}
-              source={require("./resources/styleBrush.png")}
+              source={require("./resources/filterBrush.png")}
             />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              this.setState((prevState) => ({
-                ...prevState,
-                currentBrush: brushTypes.USER,
-              }));
-              // Display user canvas
-              this.enableUserCanvas();
+              this.switchToUserBrush();
+
+              sendSwitchBrush(this.state.socket,brushTypes.USER)
             }}
             disabled={this.state.disableButtons}
           >
@@ -769,13 +845,22 @@ export default class App extends Component {
               style={[
                 styles.brushes,
                 {
+                  height:
+                    this.state.currentBrush == brushTypes.USER
+                      ? device.height * 0.14
+                      : device.height * 0.11,
+                  width:
+                    this.state.currentBrush == brushTypes.USER
+                      ? device.height * 0.14 * 1.8
+                      : device.height * 0.11 * 1.8,
                   opacity:
-                    this.state.currentBrush == brushTypes.USER ? 1 : 0.72,
+                    this.state.currentBrush == brushTypes.USER ? 1 : 0.55,
                 },
               ]}
               source={require("./resources/userBrush.png")}
             />
           </TouchableOpacity>
+
           {this.state.currentBrush == brushTypes.AI && (
             <View>{brushSlider}</View>
           )}
@@ -816,6 +901,16 @@ export default class App extends Component {
               {brushSlider}
             </View>
           )}
+          {/* Save painting button */}
+          <View
+            style={{ padding: "1em", marginTop: "10px", marginBottom: "10px" }}
+          >
+            <Button
+              color="#717591"
+              title="Save Painting"
+              onPress={() => this.saveGeneratedImage()}
+            />
+          </View>
         </View>
 
         {/* this View wraps middle column */}
@@ -828,18 +923,7 @@ export default class App extends Component {
               alignContent: "flex-end",
               marginLeft: "auto",
             }}
-          >
-            {/* Download button (commented out)
-            <TouchableOpacity
-              style={{ margin: 5 }}
-              onPress={() => this.saveGeneratedImage()}
-            >
-              <Image
-                style={styles.donwloadButton}
-                source={require("./resources/DownloadButton.png")}
-              />
-            </TouchableOpacity> */}
-          </View>
+          ></View>
 
           {/* this View wraps the two canvas */}
           <View style={{ flexDirection: "row" }}>
@@ -856,12 +940,17 @@ export default class App extends Component {
                   },
                 ]}
               >
-                <ImageBackground source={this.state.displayedImageData}>
+                <ImageBackground
+                  source={this.state.displayedImageData}
+                  style={{ filter: this.state.imageFilter }}
+                >
                   <Image
-                    style={{
-                      width: this.state.USER_CANVASHEIGHT / 4,
-                      height: this.state.USER_CANVASHEIGHT / 4,
-                    }}
+                    style={[
+                      {
+                        width: this.state.USER_CANVASHEIGHT / 4,
+                        height: this.state.USER_CANVASHEIGHT / 4,
+                      },
+                    ]}
                     source={this.state.userCanvasImageData}
                   />
                 </ImageBackground>
@@ -869,7 +958,7 @@ export default class App extends Component {
             )}
             {/* AI Brush preview */}
             {!this.state.showAICanvas && this.state.showPreview && (
-            // {this.state.showUserCanvas && this.state.showPreview && (
+              // {this.state.showUserCanvas && this.state.showPreview && (
 
               <View
                 style={[
@@ -945,7 +1034,10 @@ export default class App extends Component {
                     {this.state.displayedImageData != null ? (
                       <Image
                         draggable={false}
-                        style={[styles.generatedImage, {filter: this.state.imageFilter}]}
+                        style={[
+                          styles.generatedImage,
+                          { filter: this.state.imageFilter },
+                        ]}
                         source={{ uri: this.state.displayedImageData }}
                       />
                     ) : null}
@@ -1057,21 +1149,20 @@ export default class App extends Component {
               <ScrollView>
                 {colorMap.colors.map((obj) => {
                   return (
-                    <View style={{ margin: 0 }}>
+                    <View style={{ margin: 2 }}>
                       <TouchableOpacity
                         style={{
                           padding: 4,
-                          borderTopLeftRadius:
-                            this.state.color == obj.color ? 0 : 5,
-                          borderBottomLeftRadius:
-                            this.state.color == obj.color ? 0 : 5,
-                          borderTopRightRadius: 5,
-                          borderBottomRightRadius: 5,
+                          borderRadius: 5,
                           backgroundColor: obj.color,
-                          borderLeftWidth:
-                            this.state.color == obj.color ? 10 : 0,
-                          borderColor:
-                            obj.color == "#efefef" ? "grey" : "#8a8a8a",
+                          borderWidth: this.state.color == obj.color ? 10 : 0,
+                          borderColor: 
+                            obj.color == "#efefef" ? "#d1d1d1" : "#f2f2eb",
+
+                          // backgroundColor:
+                          //   this.state.color == obj.color
+                          //     ? "#3d3d3d"
+                          //     : "#dbdbdb", //obj.color == "#efefef" ? "#dbdbdb" : "white",
                         }}
                         onPress={() => {
                           this.setState({ color: obj.color });
@@ -1085,8 +1176,12 @@ export default class App extends Component {
                         />
                         <Text
                           style={{
-                            color: obj.color == "#efefef" ? "#3d3d3d" : "white",
                             fontSize: device.height * 0.025,
+                            color: obj.color == "#efefef" ? "#3d3d3d" : "white",
+
+                            // color:
+                            //   this.state.color == obj.color ? "white" : "black",
+                            // fontWeight: "500",
                           }}
                         >
                           {obj.label}
@@ -1114,7 +1209,7 @@ export default class App extends Component {
                         backgroundColor:
                           this.state.styleBrushType == "None"
                             ? "#3d3d3d"
-                            : "grey",
+                            : "#dbdbdb",
                       },
                     ]}
                     onPress={() => {
@@ -1130,7 +1225,19 @@ export default class App extends Component {
                       style={styles.brushes}
                       source={require("./resources/none_style.png")}
                     />
-                    <Text style={{ color: "white", fontSize: 20 }}> None </Text>
+                    <Text
+                      style={{
+                        color:
+                          this.state.styleBrushType == "None"
+                            ? "white"
+                            : "black",
+                        fontSize: 20,
+                        fontWeight: "500",
+                      }}
+                    >
+                      {" "}
+                      None{" "}
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 {/* Programmatically render all style options */}
@@ -1145,7 +1252,7 @@ export default class App extends Component {
                             backgroundColor:
                               this.state.styleBrushType == obj.name
                                 ? "#3d3d3d"
-                                : "grey",
+                                : "#dbdbdb",
                           },
                         ]}
                         onPress={() => {
@@ -1158,8 +1265,12 @@ export default class App extends Component {
                         <Image style={styles.brushes} source={obj.image_url} />
                         <Text
                           style={{
-                            color: "white",
+                            color:
+                              this.state.styleBrushType == obj.name
+                                ? "white"
+                                : "black",
                             fontSize: device.height * 0.024,
+                            fontWeight: "500",
                           }}
                         >
                           {obj.label}
@@ -1175,7 +1286,7 @@ export default class App extends Component {
           {/* Filter buttons */}
           {this.state.currentBrush == brushTypes.FILTER && (
             <View style={styles.brushesContainer}>
-              {/* None style button */}
+              {/* None filter button */}
               <ScrollView>
                 <View style={{ margin: 2 }}>
                   <TouchableOpacity
@@ -1185,15 +1296,16 @@ export default class App extends Component {
                         backgroundColor:
                           this.state.filterBrushType == "None"
                             ? "#3d3d3d"
-                            : "grey",
+                            : "#dbdbdb",
                       },
                     ]}
                     onPress={() => {
                       this.setState((prevState) => ({
                         ...prevState,
                         imageFilter: "",
-                        filterBrushType: "None"
+                        filterBrushType: "None",
                       }));
+                      sendSwitchFilter(this.state.socket, "None")
                     }}
                     disabled={this.state.disableButtons}
                   >
@@ -1201,10 +1313,22 @@ export default class App extends Component {
                       style={styles.brushes}
                       source={require("./resources/none_style.png")}
                     />
-                    <Text style={{ color: "white", fontSize: 20 }}> None </Text>
+                    <Text
+                      style={{
+                        color:
+                          this.state.filterBrushType == "None"
+                            ? "white"
+                            : "black",
+                        fontSize: 20,
+                        fontWeight: "500",
+                      }}
+                    >
+                      {" "}
+                      None{" "}
+                    </Text>
                   </TouchableOpacity>
                 </View>
-                {/* Programmatically render all style options */}
+                {/* Programmatically render all filter options */}
                 {filterOptions.filters.map((obj) => {
                   return (
                     <View style={{ margin: 2 }}>
@@ -1216,21 +1340,26 @@ export default class App extends Component {
                             backgroundColor:
                               this.state.filterBrushType == obj.name
                                 ? "#3d3d3d"
-                                : "grey",
+                                : "#dbdbdb",
                           },
                         ]}
                         onPress={() => {
                           this.setState((prevState) => ({
                             imageFilter: obj.filter,
-                            filterBrushType: obj.name
-                              }));
+                            filterBrushType: obj.name,
+                          }));
+                          sendSwitchFilter(this.state.socket, obj.filter)
                         }}
                       >
                         <Image style={styles.brushes} source={obj.image_url} />
                         <Text
                           style={{
-                            color: "white",
+                            color:
+                              this.state.filterBrushType == obj.name
+                                ? "white"
+                                : "black",
                             fontSize: device.height * 0.024,
+                            fontWeight: "500",
                           }}
                         >
                           {obj.label}
@@ -1242,9 +1371,7 @@ export default class App extends Component {
               </ScrollView>
             </View>
           )}
-
         </View>
-
 
         {/* User Brush buttons */}
         {this.state.currentBrush == brushTypes.USER && (
@@ -1261,7 +1388,7 @@ export default class App extends Component {
                         {
                           backgroundColor:
                             this.state.userBrushType == obj.name
-                              ? "#dbdbdb"
+                              ? "#3d3d3d"
                               : "white",
                         },
                       ]}
@@ -1280,7 +1407,7 @@ export default class App extends Component {
                         style={{
                           color:
                             this.state.userBrushType == obj.name
-                              ? "black"
+                              ? "white"
                               : "#2e2e2e",
                           fontSize: device.height * 0.024,
                         }}
@@ -1329,8 +1456,6 @@ export default class App extends Component {
             ></Ionicons>
           </View>
         )}
-
-
       </View>
     );
   }
