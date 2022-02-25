@@ -108,6 +108,17 @@ export default class UserCanvas extends Component {
 	componentDidUpdate(prevProps) {
 
 
+		if (prevProps.otherStrokes != this.props.otherStrokes) {
+			if (this.props.otherStrokes.length > 0) {
+				var newStroke = this.props.otherStrokes[this.props.otherStrokes.length-1]
+				if (newStroke.canvasType == brushTypes.USER)
+				{
+					this.updateCanvas(newStroke, "other")	
+				}
+			}
+
+		}
+
 		// If canvas size has changed
 		if (prevProps.width != this.props.width || prevProps.height != this.props.height) {
 
@@ -118,8 +129,6 @@ export default class UserCanvas extends Component {
 				// this.clearCanvasKeepState();
 				console.log("RESIZING CANVAS")
 				// this.loadData();
-
-
 		}
 
 		let currentComponent = this;
@@ -211,7 +220,7 @@ export default class UserCanvas extends Component {
 			...prevState,
 			strokes: this.state.strokes.concat(p)
 		}))
-		// sendStroke(this.props.socket, {x: posX/this.width, y: posY/this.height}, this.props.color, this.props.thickness)
+		sendStroke(this.props.socket, {x: posX/this.width, y: posY/this.height, canvasType: "user"}, this.props.color, this.props.thickness)
 
 	}
 
@@ -225,7 +234,7 @@ export default class UserCanvas extends Component {
 		var posY = event.nativeEvent.locationY
 
 		// Create stroke move object
-		var p = new Point(posX, posY, this.props.thickness, this.props.color, "start")
+		var p = new Point(posX, posY, this.props.thickness, this.props.color, "start", "user")
 		this.updateCanvas(p, "self")
 
 		this.setState(prevState => ({
@@ -246,7 +255,7 @@ export default class UserCanvas extends Component {
 		var posY = event.nativeEvent.locationY
 
 		// Create stroke move object
-		var p = new Point(posX, posY, this.props.thickness, this.props.color, "end")
+		var p = new Point(posX, posY, this.props.thickness, this.props.color, "end", "user")
 		this.updateCanvas(p, "self")
 
 		this.setState(prevState => ({
@@ -507,7 +516,7 @@ export default class UserCanvas extends Component {
 
 	// Send stroke point data
 	onStrokeChangeHandler = (x, y) => {
-		// sendStroke(this.props.socket, { x: x, y: y }, this.props.color, this.props.thickness);
+		sendStroke(this.props.socket, { x: x, y: y, canvasType: "user"}, this.props.color, this.props.thickness);
 	};
 
 	// Send stroke end signal

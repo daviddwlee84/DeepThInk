@@ -27,11 +27,14 @@ const (
 	KindSwitchBrush
 	// KindSwitchFilter message is sent when user selects a different filter
 	KindSwitchFilter
+	// KindSwitchUserBrush message is sent when user selects a new user brush type
+	KindSwitchUserBrush
 )
 
 type Point struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
+	X          float64 `json:"x"`
+	Y          float64 `json:"y"`
+	CanvasType string  `json:"canvasType"`
 }
 
 type User struct {
@@ -92,10 +95,11 @@ type Clear struct {
 }
 
 type StrokeEnd struct {
-	Kind      int     `json:"kind"`
-	UserID    string  `json:"userId"`
-	Thickness float64 `json:"thickness"`
-	Color     string  `json:"color"`
+	Kind       int     `json:"kind"`
+	UserID     string  `json:"userId"`
+	Thickness  float64 `json:"thickness"`
+	Color      string  `json:"color"`
+	CanvasType string  `json:"canvasType"`
 }
 
 type StrokeStart struct {
@@ -130,4 +134,11 @@ type SwitchBrush struct {
 type SwitchFilter struct {
 	Kind int    `json:"kind"`
 	Type string `json:"filterType"`
+	Name string `json:"filterName"`
+}
+
+type SwitchUserBrush struct {
+	Kind  int    `json:"kind"`
+	Type  string `json:"userBrushType"`
+	Color string `json:"color"`
 }

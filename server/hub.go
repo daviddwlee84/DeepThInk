@@ -153,8 +153,9 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Kind:   message.KindStrokeStart,
 			UserID: client.id,
 			Point: message.Point{
-				X: data.Get("point.x").Float(),
-				Y: data.Get("point.y").Float(),
+				X:          data.Get("point.x").Float(),
+				Y:          data.Get("point.y").Float(),
+				CanvasType: data.Get(("point.canvasType")).String(),
 			},
 			Thickness: data.Get("thickness").Float(),
 			Color:     data.Get("color").String(),
@@ -172,10 +173,11 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		log.Println("Got end", string(data.String()))
 
 		var msg message.StrokeEnd = message.StrokeEnd{
-			Kind:      message.KindStrokeEnd,
-			UserID:    client.id,
-			Thickness: data.Get("thickness").Float(),
-			Color:     data.Get("color").String(),
+			Kind:       message.KindStrokeEnd,
+			UserID:     client.id,
+			Thickness:  data.Get("thickness").Float(),
+			Color:      data.Get("color").String(),
+			CanvasType: data.Get(("point.canvasType")).String(),
 		}
 		hub.broadcast(msg, client.id)
 
@@ -193,8 +195,9 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 			Kind:   message.KindStroke,
 			UserID: client.id,
 			Point: message.Point{
-				X: data.Get("point.x").Float(),
-				Y: data.Get("point.y").Float(),
+				X:          data.Get("point.x").Float(),
+				Y:          data.Get("point.y").Float(),
+				CanvasType: data.Get(("point.canvasType")).String(),
 			},
 			Thickness: data.Get("thickness").Float(),
 			Color:     data.Get("color").String(),
@@ -362,6 +365,15 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		}
 		hub.broadcast(msg, client.id)
 		log.Println("Got filter " + msg.Type)
+
+	// when user changes their user brush type, all collaborators get the same color and brush type
+	case message.KindSwitchUserBrush:
+		var msg message.SwitchUserBrush
+		if json.Unmarshal(data, &msg) != nil {
+			return
+		}
+		hub.broadcast(msg, client.id)
+		log.Println("Got switch user brush " + msg.Type)
 
 	}
 

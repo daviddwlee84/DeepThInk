@@ -35,14 +35,16 @@ export default class DrawCanvas extends Component {
 		this.clearCanvas = this.clearCanvas.bind(this);
 
 		this.imagedata = "";
-
 	}
 
 	componentDidUpdate(prevProps) {
 		if (prevProps.otherStrokes != this.props.otherStrokes) {
 			if (this.props.otherStrokes.length > 0) {
 				var newStroke = this.props.otherStrokes[this.props.otherStrokes.length-1]
-				this.updateCanvas(newStroke, "other")		
+				if (newStroke.canvasType == brushTypes.AI)
+				{
+					this.updateCanvas(newStroke, "other")	
+				}
 			}
 		}
 		// // If canvas size has changed
@@ -89,14 +91,14 @@ export default class DrawCanvas extends Component {
 		var posX = event.nativeEvent.locationX
 		var posY = event.nativeEvent.locationY
 
-		var p = new Point(posX, posY, this.props.thickness, this.props.color, "move")
+		var p = new Point(posX, posY, this.props.thickness, this.props.color, "move", "ai")
 		this.updateCanvas(p, "self")
 
 		// Create stroke move object
 		this.setState({
 			strokes: this.state.strokes.concat(p)
 		})
-		sendStroke(this.props.socket, {x: posX/this.props.width, y: posY/this.props.height}, this.props.color, this.props.thickness)
+		sendStroke(this.props.socket, {x: posX/this.props.width, y: posY/this.props.height, canvasType: "ai"}, this.props.color, this.props.thickness)
 		
     }
 
@@ -109,7 +111,7 @@ export default class DrawCanvas extends Component {
 		var posY = event.nativeEvent.locationY
 
 		// Create stroke move object
-		var p = new Point(posX, posY, this.props.thickness, this.props.color, "start")
+		var p = new Point(posX, posY, this.props.thickness, this.props.color, "start", "ai")
 		this.updateCanvas(p, "self")
 
 		this.setState({
@@ -128,7 +130,7 @@ export default class DrawCanvas extends Component {
 		var posY = event.nativeEvent.locationY
 
 		// Create stroke move object
-		var p = new Point(posX, posY, this.props.thickness, this.props.color,  "end")
+		var p = new Point(posX, posY, this.props.thickness, this.props.color,  "end", "ai")
 		this.updateCanvas(p, "self")
 
 		this.setState({
@@ -247,9 +249,6 @@ export default class DrawCanvas extends Component {
 		this.canvasRef.current = canvas;
 
 		this.clearCanvas();
-
-
-
 	}
 
 
@@ -316,7 +315,7 @@ export default class DrawCanvas extends Component {
 
 	// Send stroke point data
 	onStrokeChangeHandler = (x, y) => {
-		sendStroke(this.props.socket, {x: x, y: y}, this.props.color, this.props.thickness);
+		sendStroke(this.props.socket, {x: x, y: y, canvasType: "ai"}, this.props.color, this.props.thickness);
 	};
 
 	// Send stroke end signal

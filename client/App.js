@@ -38,6 +38,7 @@ import {
   sendStrokeStart,
   sendSwitchBrush,
   sendSwitchFilter,
+  sendSwitchUserBrush,
 } from "./api/websocketApi.js";
 import { sendRequest, sendRequestStyle } from "./api/modelApi.js";
 import { hello, generateStyle } from "./styles/styles.js";
@@ -405,7 +406,7 @@ export default class App extends Component {
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE_START:
         // Disabled collab drawing
-        console.log('RECEIVED STROKE STARTT', message);
+        console.log('Received stroke start', message);
         // Append collaborator stroke
         this.setState(prevState => ({
           ...prevState,
@@ -417,6 +418,7 @@ export default class App extends Component {
               message.thickness,
               message.color,
               'start',
+              message.point.canvasType
             ),
           ],
         }));
@@ -435,6 +437,7 @@ export default class App extends Component {
               message.thickness,
               message.color,
               'move',
+              message.point.canvasType,
             ),
           ],
         }));
@@ -513,8 +516,17 @@ export default class App extends Component {
         this.setState((prevState) => ({
           ...prevState,
           imageFilter: message.filterType,
+          filterBrushType: message.filterName
         }));    
-      }
+        break;
+
+      case messageKinds.MESSAGE_SWITCH_USER_BRUSH:
+        this.setState((prevState) => ({
+          ...prevState,
+          userBrushType: message.userBrushType,
+          userBrushColor: message.color
+        }));
+    }
   };
 
   // Enable the AI canvas for drawing
@@ -1305,7 +1317,7 @@ export default class App extends Component {
                         imageFilter: "",
                         filterBrushType: "None",
                       }));
-                      sendSwitchFilter(this.state.socket, "None")
+                      sendSwitchFilter(this.state.socket, "", "None")
                     }}
                     disabled={this.state.disableButtons}
                   >
@@ -1348,7 +1360,7 @@ export default class App extends Component {
                             imageFilter: obj.filter,
                             filterBrushType: obj.name,
                           }));
-                          sendSwitchFilter(this.state.socket, obj.filter)
+                          sendSwitchFilter(this.state.socket, obj.filter, obj.name)
                         }}
                       >
                         <Image style={styles.brushes} source={obj.image_url} />
@@ -1397,6 +1409,7 @@ export default class App extends Component {
                           ...prevState,
                           userBrushType: obj.name,
                         }));
+                        sendSwitchUserBrush(this.state.socket,obj.name,this.state.userBrushColor)
                       }}
                     >
                       <Image

@@ -53,14 +53,24 @@ export function sendSwitchBrush(socket, type) {
   socket.send(JSON.stringify(data));
 }
 
-export function sendSwitchFilter(socket, type) {
+export function sendSwitchFilter(socket, type,name) {
   console.log("send filter switch")
   var data = {
     kind: messageKinds.MESSAGE_SWITCH_FILTER,
-    filterType: type
+    filterType: type,
+    filterName: name
   }
   socket.send(JSON.stringify(data));
 
+}
+
+export function sendSwitchUserBrush(socket, type, color) {
+  var data = {
+    kind: messageKinds.MESSAGE_SWITCH_USER_BRUSH,
+    userBrushType: type,
+    color: color
+  }
+  socket.send(JSON.stringify(data));
 }
 
 export function onOpen(socket, data) {
