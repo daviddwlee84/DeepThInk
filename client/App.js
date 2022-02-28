@@ -443,6 +443,7 @@ export default class App extends Component {
         }));
         break;
       case messageKinds.MESSAGE_STROKE_END:
+        console.log("received stroke end")
         // Disabled collab drawing
         this.setState(prevState => ({
           ...prevState,
@@ -887,12 +888,15 @@ export default class App extends Component {
                 }}
                 color={this.state.colorPickerDisplay}
                 onChange={(color) => {
+
                   this.setState((prevState) => ({
                     ...prevState,
                     userBrushColor: this.rgbToHex(color),
                     opacity: color.a,
                     colorPickerDisplay: color,
                   }));
+                  sendSwitchUserBrush(this.state.socket,this.state.userBrushType,this.rgbToHex(color))
+
                 }}
               />
               <View

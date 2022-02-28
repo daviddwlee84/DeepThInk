@@ -106,8 +106,6 @@ export default class UserCanvas extends Component {
 
 
 	componentDidUpdate(prevProps) {
-
-
 		if (prevProps.otherStrokes != this.props.otherStrokes) {
 			if (this.props.otherStrokes.length > 0) {
 				var newStroke = this.props.otherStrokes[this.props.otherStrokes.length-1]
@@ -242,7 +240,7 @@ export default class UserCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		}))
 		// socket: start stroke
-		// sendStrokeStart(this.props.socket, {x: p.x, y: p.y}, p.thickness, p.color);
+		sendStrokeStart(this.props.socket, {x: p.x, y: p.y}, p.thickness, p.color);
 
 	}
 
@@ -263,7 +261,7 @@ export default class UserCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		}))
 		// socket: end stroke
-		// sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
+		sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
 	}
 
 	clearCanvas = () => {
