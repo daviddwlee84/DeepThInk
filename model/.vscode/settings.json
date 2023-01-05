@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./all_models/gaugan/SPADE_pretrained/SPADE"
+    ]
+}

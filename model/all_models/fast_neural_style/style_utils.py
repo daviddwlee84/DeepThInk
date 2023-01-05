@@ -9,6 +9,8 @@ sys.path.append(
                  'fast_neural_style', 'neural_style'))
 
 from vgg import Vgg16
+# from vgg import *
+# from dpn import *
 from transformer_net import TransformerNet
 import torch
 import re
