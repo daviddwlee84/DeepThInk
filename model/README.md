@@ -6,6 +6,7 @@ You will need to download additional files to add into your local to get the mod
 
 The GauGAN model uses the open-source pretrained version by Gene Kogan. 
 1. Download the "SPADE_pretrained" folder from `https://drive.google.com/drive/folders/1VEiKvM1aR9yug3O6kdvRQXA3s2o3_do3?usp=sharing` and put it under `all_models/gaugan/`.
+(There is a missing file called latest_net_G.pth, download it from `https://drive.google.com/drive/folders/1QJr5HBv8PAjJuVNB9zf8EiA6IcIVCswa`)
 
 2. Clone Justin's forked version of `pytorch/examples` repo: 
 ```shell
