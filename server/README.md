@@ -18,9 +18,9 @@ To push the Docker image to Docker Hub, run
 docker push leungjch/hai-art-server:latest
 ```
 
-# Elasticsearch
+# (Optional) Elasticsearch
 
-The server uses Elasticsearch for logging data.
+This is an old feature that is now disabled by default. The server can optionally run Elasticsearch for logging data.
 
 ## Install elasticsearch
 ```shell
