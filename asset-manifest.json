@@ -1,7 +1,7 @@
 {
   "files": {
-    "app.js": "/DeepThInkWeb/static/js/app.53ff821c.chunk.js",
-    "app.js.map": "/DeepThInkWeb/static/js/app.53ff821c.chunk.js.map",
+    "app.js": "/DeepThInkWeb/static/js/app.bc10fa77.chunk.js",
+    "app.js.map": "/DeepThInkWeb/static/js/app.bc10fa77.chunk.js.map",
     "runtime~app.js": "/DeepThInkWeb/static/js/runtime~app.8946a4fa.js",
     "runtime~app.js.map": "/DeepThInkWeb/static/js/runtime~app.8946a4fa.js.map",
     "static/js/2.2301798d.chunk.js": "/DeepThInkWeb/static/js/2.2301798d.chunk.js",
@@ -60,6 +60,6 @@
   "entrypoints": [
     "static/js/runtime~app.8946a4fa.js",
     "static/js/2.2301798d.chunk.js",
-    "static/js/app.53ff821c.chunk.js"
+    "static/js/app.bc10fa77.chunk.js"
   ]
 }
