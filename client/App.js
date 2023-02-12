@@ -65,8 +65,8 @@ import { FontAwesome } from "@expo/vector-icons";
 import { RgbaColorPicker } from "react-colorful";
 
 var device = Dimensions.get("window");
-const CANVASWIDTH = device.height * 0.9;
-const CANVASHEIGHT = device.height * 0.9;
+const CANVASWIDTH = device.height * 0.8;
+const CANVASHEIGHT = device.height * 0.8;
 
 // Connect to Go backend
 // for web
@@ -118,15 +118,15 @@ export default class App extends Component {
 
     //canvas + small canvas, right col, left col, marginleft of left col
     AI_CANVASWIDTH: Math.min(
-      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
-      device.height * 0.85
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.65,
+      device.height * 0.65
     ),
     // device.height * (0.85 * 1.25 + 0.11 * 1.8 + 0.25 + 0.007) > device.width
     //   ? device.height * 0.5
     //   : device.height * 0.85,
     AI_CANVASHEIGHT: Math.min(
-      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
-      device.height * 0.85
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.65,
+      device.height * 0.65
     ),
     //AI_CANVASWIDTH: device.height * 0.85,
     //AI_CANVASHEIGHT: device.height * 0.85,
@@ -134,12 +134,12 @@ export default class App extends Component {
     //USER_CANVASWIDTH: device.height * 0.85,
     //USER_CANVASHEIGHT: device.height * 0.85,
     USER_CANVASWIDTH: Math.min(
-      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
-      device.height * 0.85
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.65,
+      device.height * 0.65
     ),
     USER_CANVASHEIGHT: Math.min(
-      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.8,
-      device.height * 0.85
+      (device.width - device.height * (0.11 * 1.8 + 0.25 + 0.007 + 0.15)) * 0.65,
+      device.height * 0.65
     ),
     aiCanvasImageData: "data:image/png;base64,", // image data of the ai canvas
 
@@ -997,8 +997,8 @@ export default class App extends Component {
                 style={[
                   styles.shadowBoxAICanvas,
                   {
-                    width: this.state.USER_CANVASHEIGHT / 4,
-                    height: this.state.USER_CANVASHEIGHT / 4,
+                    width: this.state.USER_CANVASHEIGHT / 1.5,
+                    height: this.state.USER_CANVASHEIGHT / 1.5,
                     marginRight: 5,
                   },
                 ]}
@@ -1010,8 +1010,8 @@ export default class App extends Component {
                   <Image
                     style={[
                       {
-                        width: this.state.USER_CANVASHEIGHT / 4,
-                        height: this.state.USER_CANVASHEIGHT / 4,
+                        width: this.state.USER_CANVASHEIGHT / 1.5,
+                        height: this.state.USER_CANVASHEIGHT / 1.5,
                       },
                     ]}
                     source={this.state.userCanvasImageData}
@@ -1027,16 +1027,16 @@ export default class App extends Component {
                 style={[
                   styles.shadowBoxAICanvas,
                   {
-                    width: this.state.USER_CANVASHEIGHT / 4,
-                    height: this.state.USER_CANVASHEIGHT / 4,
+                    width: this.state.USER_CANVASHEIGHT / 1.5,
+                    height: this.state.USER_CANVASHEIGHT / 1.5,
                     marginRight: 5,
                   },
                 ]}
               >
                 <Image
                   style={{
-                    width: this.state.USER_CANVASHEIGHT / 4,
-                    height: this.state.USER_CANVASHEIGHT / 4,
+                    width: this.state.USER_CANVASHEIGHT / 1.5,
+                    height: this.state.USER_CANVASHEIGHT / 1.5,
                   }}
                   source={this.state.aiCanvasImageData}
                 />
