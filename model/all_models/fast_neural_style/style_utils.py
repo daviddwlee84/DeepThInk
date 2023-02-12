@@ -7,8 +7,11 @@ dir = pathlib.Path(__file__).parent.resolve()
 sys.path.append(
     os.path.join(os.path.dirname(__file__), 'pytorch_examples', 'examples',
                  'fast_neural_style', 'neural_style'))
+print(os.path.dirname(__file__))
 
 from vgg import Vgg16
+# from vgg import *
+# from dpn import *
 from transformer_net import TransformerNet
 import torch
 import re

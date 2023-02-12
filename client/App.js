@@ -1,11 +1,9 @@
 import React, { Component } from "react";
 import {
   ActivityIndicator,
-  AppRegistry,
   StyleSheet,
   View,
   Button,
-  Alert,
   Dimensions,
   Image,
   TouchableOpacity,
@@ -15,7 +13,6 @@ import {
 } from "react-native";
 import DrawCanvas from "./components/DrawCanvas";
 import UserCanvas from "./components/UserCanvas";
-import { FontAwesome5 } from "@expo/vector-icons";
 
 import Slider from "@react-native-community/slider";
 // import Snackbar from 'react-native-snackbar';
@@ -79,6 +76,7 @@ const CANVASHEIGHT = device.height * 0.9;
 // Create dynamic style based on device width/height
 // const styles = StyleSheet.create(generateStyle(device));
 
+// xxxxx
 const CustomEyeDropper = ({ onClick, disabled }) => (
   <TouchableOpacity
     style={{
@@ -169,10 +167,10 @@ export default class App extends Component {
     disableButtons: false, // used when the eyedropper is active
     // 1 = show drawing canvas, 0 = show image
     // socket: new WebSocket('ws://localhost:8080/ws')
-    socket:
-      Platform.OS === "web"
-        ? new WebSocket(`ws://${backendConstants.BACKEND_URL}:8080/ws`)
-        : new WebSocket(`ws://${backendConstants.BACKEND_URL}:8080/ws`),
+    // socket:
+    //   Platform.OS === "web"
+    //     ? new WebSocket(`ws://${backendConstants.BACKEND_URL}:8080/ws`)
+    //     : new WebSocket(`ws://${backendConstants.BACKEND_URL}:8080/ws`),
     canvasWidth: CANVASWIDTH,
     canvasHeight: CANVASHEIGHT,
     currentBrush: brushTypes.AI,
@@ -196,28 +194,28 @@ export default class App extends Component {
     console.log("Attempting connection");
 
     // Setup this.state.socket handlers
-    this.state.socket.onopen = () => {
-      console.log(
-        "CANVAS DIMS ARE",
-        this.state.canvasWidth,
-        this.state.canvasHeight
-      );
+    // this.state.socket.onopen = () => {
+    //   console.log(
+    //     "CANVAS DIMS ARE",
+    //     this.state.canvasWidth,
+    //     this.state.canvasHeight
+    //   );
 
-      onOpen(this.state.socket, {
-        canvasWidth: this.state.canvasWidth,
-        canvasHeight: this.state.canvasHeight,
-      });
-    };
-    this.state.socket.onclose = (event) => {
-      onClose(event);
-    };
-    this.state.socket.onerror = (error) => {
-      onError(error);
-    };
+    //   onOpen(this.state.socket, {
+    //     canvasWidth: this.state.canvasWidth,
+    //     canvasHeight: this.state.canvasHeight,
+    //   });
+    // };
+    // this.state.socket.onclose = (event) => {
+    //   onClose(event);
+    // };
+    // this.state.socket.onerror = (error) => {
+    //   onError(error);
+    // };
 
-    this.state.socket.onmessage = (event) => {
-      this.onMesageHandler(event);
-    };
+    // this.state.socket.onmessage = (event) => {
+    //   this.onMesageHandler(event);
+    // };
 
     this.setState((prevState) => ({
       ...prevState,
@@ -253,14 +251,37 @@ export default class App extends Component {
       isLoading: true,
     }));
 
-    this.state.socket.send(
-      JSON.stringify({
-        kind: messageKinds.MESSAGE_GENERATE,
-        data: {
-          imageData: this.state.imageData,
-        },
-      })
-    );
+    const response = await fetch('http://127.0.0.1:8000/generate', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        imageData: this.state.imageData,
+      }),
+    });
+
+    const msg = await response.json()
+    console.log(msg)
+    this.setState((prevState) => ({
+      ...prevState,
+      generatedImageData: msg.data,
+      displayedImageData: msg.data,
+    }));
+
+    this.setState((prevState) => ({
+      ...prevState,
+      isLoading: false,
+    }));
+
+    // this.state.socket.send(
+    //   JSON.stringify({
+    //     kind: messageKinds.MESSAGE_GENERATE,
+    //     data: {
+    //       imageData: this.state.imageData,
+    //     },
+    //   })
+    // );
   };
   // Send a request to the model server to stylize the generated painting
   sendRequestStyleHelper = async (newStyle) => {
@@ -269,17 +290,42 @@ export default class App extends Component {
       isLoading: true,
     }));
 
-    this.state.socket.send(
-      JSON.stringify({
-        kind: messageKinds.MESSAGE_STYLIZE,
-        data: {
-          imageData: this.state.generatedImageData,
-          style: newStyle,
-        },
-      })
-    );
-  };
+    const response = await fetch('http://127.0.0.1:8000/stylize', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        imageData: this.state.generatedImageData,
+        style: newStyle,
+      }),
+    });
 
+    const msg = await response.json();
+    console.log(msg)
+    this.setState((prevState) => ({
+      ...prevState,
+      styleBrushType: newStyle,
+      stylizedImageData: msg.data,
+      displayedImageData: msg.data,
+    }));
+
+    this.setState((prevState) => ({
+      ...prevState,
+      isLoading: false,
+    }));
+
+    // this.state.socket.send(
+    //   JSON.stringify({
+    //     kind: messageKinds.MESSAGE_STYLIZE,
+    //     data: {
+    //       imageData: this.state.generatedImageData,
+    //       style: newStyle,
+    //     },
+    //   })
+    // );
+  };
+  // xxxxx
   saveGeneratedImage = () => {
     if (this.refs.userCanvasRef == null) {
       alert(
@@ -360,7 +406,7 @@ export default class App extends Component {
     // return {r, g, b} // return an object
     return { r: r, g: g, b: b, a: 1 };
   };
-
+  // xxxxx
   handleChangeEydropper = ({ rgb, hex }) => {
     console.log("color is", rgb);
     this.setState((prevState) => ({
@@ -375,7 +421,7 @@ export default class App extends Component {
       colorPickerDisplay: this.hex2rgb(hex),
     }));
   };
-
+  // xxxxx
   handleOnPickStart = () => {
     this.setState((prevState) => ({
       ...prevState,
@@ -389,7 +435,7 @@ export default class App extends Component {
     this.saveGeneratedImage();
     this.disableUserCanvas();
   };
-
+  // xxxxx
   handleOnPickEnd = () => {
     this.setState((prevState) => ({
       ...prevState,
@@ -403,6 +449,7 @@ export default class App extends Component {
   };
 
   executeMessage = (message) => {
+    console.log("406", message.kind)
     switch (message.kind) {
       case messageKinds.MESSAGE_STROKE_START:
         // Disabled collab drawing
@@ -501,7 +548,7 @@ export default class App extends Component {
 
         break;
       case messageKinds.MESSAGE_SWITCH_BRUSH: 
-      console.log("got switch from collaborator", message)
+        console.log("got switch from collaborator", message)
         if (message.brushType == "ai") {
           this.switchToAICanvas();
 
@@ -769,8 +816,8 @@ export default class App extends Component {
           <TouchableOpacity
             onPress={() => {
               this.switchToAICanvas();
-
-              sendSwitchBrush(this.state.socket,brushTypes.AI)
+             
+              // sendSwitchBrush(this.state.socket,brushTypes.AI)
             }}
             disabled={this.state.disableButtons}
           >
@@ -780,12 +827,12 @@ export default class App extends Component {
                 {
                   height:
                     this.state.currentBrush == brushTypes.AI
-                      ? device.height * 0.14
-                      : device.height * 0.11,
+                      ? device.height * 0.10
+                      : device.height * 0.08,
                   width:
                     this.state.currentBrush == brushTypes.AI
-                      ? device.height * 0.14 * 1.8
-                      : device.height * 0.11 * 1.8,
+                      ? device.height * 0.10 * 1.5
+                      : device.height * 0.08 * 1.5,
                   opacity: this.state.currentBrush == brushTypes.AI ? 1 : 0.55,
                 },
               ]}
@@ -796,7 +843,7 @@ export default class App extends Component {
             onPress={() => {
               this.switchToStyleBrush();
 
-              sendSwitchBrush(this.state.socket,brushTypes.STYLE)
+              // sendSwitchBrush(this.state.socket,brushTypes.STYLE)
             }}
             disabled={this.state.disableButtons}
           >
@@ -806,12 +853,12 @@ export default class App extends Component {
                 {
                   height:
                     this.state.currentBrush == brushTypes.STYLE
-                      ? device.height * 0.14
-                      : device.height * 0.11,
+                      ? device.height * 0.10
+                      : device.height * 0.08,
                   width:
                     this.state.currentBrush == brushTypes.STYLE
-                      ? device.height * 0.14 * 1.8
-                      : device.height * 0.11 * 1.8,
+                      ? device.height * 0.10 * 1.5
+                      : device.height * 0.08 * 1.5,
                   opacity:
                     this.state.currentBrush == brushTypes.STYLE ? 1 : 0.55,
                 },
@@ -822,7 +869,7 @@ export default class App extends Component {
           <TouchableOpacity
             onPress={() => {
               this.switchToFilterBrush();
-              sendSwitchBrush(this.state.socket,brushTypes.FILTER)
+              // sendSwitchBrush(this.state.socket,brushTypes.FILTER)
 
             }}
             disabled={this.state.disableButtons}
@@ -833,12 +880,12 @@ export default class App extends Component {
                 {
                   height:
                     this.state.currentBrush == brushTypes.FILTER
-                      ? device.height * 0.14
-                      : device.height * 0.11,
+                      ? device.height * 0.10
+                      : device.height * 0.08,
                   width:
                     this.state.currentBrush == brushTypes.FILTER
-                      ? device.height * 0.14 * 1.8
-                      : device.height * 0.11 * 1.8,
+                      ? device.height * 0.10 * 1.5
+                      : device.height * 0.08 * 1.5,
                   opacity:
                     this.state.currentBrush == brushTypes.FILTER ? 1 : 0.55,
                 },
@@ -850,7 +897,7 @@ export default class App extends Component {
             onPress={() => {
               this.switchToUserBrush();
 
-              sendSwitchBrush(this.state.socket,brushTypes.USER)
+              // sendSwitchBrush(this.state.socket,brushTypes.USER)
             }}
             disabled={this.state.disableButtons}
           >
@@ -860,12 +907,12 @@ export default class App extends Component {
                 {
                   height:
                     this.state.currentBrush == brushTypes.USER
-                      ? device.height * 0.14
-                      : device.height * 0.11,
+                      ? device.height * 0.10
+                      : device.height * 0.08,
                   width:
                     this.state.currentBrush == brushTypes.USER
-                      ? device.height * 0.14 * 1.8
-                      : device.height * 0.11 * 1.8,
+                      ? device.height * 0.10 * 1.5
+                      : device.height * 0.08 * 1.5,
                   opacity:
                     this.state.currentBrush == brushTypes.USER ? 1 : 0.55,
                 },
@@ -895,11 +942,11 @@ export default class App extends Component {
                     opacity: color.a,
                     colorPickerDisplay: color,
                   }));
-                  sendSwitchUserBrush(this.state.socket,this.state.userBrushType,this.rgbToHex(color))
+                  // sendSwitchUserBrush(this.state.socket,this.state.userBrushType,this.rgbToHex(color))
 
                 }}
               />
-              <View
+              {/* <View
                 style={{
                   width: this.state.leftColumnWidth,
                   marginLeft: this.state.leftColumnLeftMargin,
@@ -913,12 +960,12 @@ export default class App extends Component {
                   onChange={this.handleChangeEydropper}
                   customComponent={CustomEyeDropper}
                 ></EyeDropper>
-              </View>
+              </View> */}
               {brushSlider}
             </View>
           )}
           {/* Save painting button */}
-          <View
+          {/* <View
             style={{ padding: "1em", marginTop: "10px", marginBottom: "10px" }}
           >
             <Button
@@ -926,7 +973,7 @@ export default class App extends Component {
               title="Save Painting"
               onPress={() => this.saveGeneratedImage()}
             />
-          </View>
+          </View> */}
         </View>
 
         {/* this View wraps middle column */}
@@ -1023,7 +1070,7 @@ export default class App extends Component {
                       brushType={this.state.currentBrush}
                       thickness={this.state.thickness}
                       color={this.state.color}
-                      socket={this.state.socket}
+                      // socket={this.state.socket}
                       otherStrokes={this.state.collaboratorStroke}
                       width={this.state.AI_CANVASWIDTH}
                       height={this.state.AI_CANVASHEIGHT}
@@ -1083,7 +1130,7 @@ export default class App extends Component {
                       userBrushType={this.state.userBrushType}
                       thickness={this.state.thickness}
                       color={this.state.userBrushColor}
-                      socket={this.state.socket}
+                      // socket={this.state.socket}
                       otherStrokes={this.state.collaboratorStroke}
                       width={this.state.USER_CANVASWIDTH}
                       height={this.state.USER_CANVASHEIGHT}
@@ -1192,7 +1239,7 @@ export default class App extends Component {
                         />
                         <Text
                           style={{
-                            fontSize: device.height * 0.025,
+                            fontSize: device.height * 0.015,
                             color: obj.color == "#efefef" ? "#3d3d3d" : "white",
 
                             // color:
@@ -1215,8 +1262,8 @@ export default class App extends Component {
           {/* Style buttons */}
           {this.state.currentBrush == brushTypes.STYLE && (
             <View style={styles.brushesContainer}>
-              {/* None style button */}
               <ScrollView>
+                {/* None style button */}
                 <View style={{ margin: 2 }}>
                   <TouchableOpacity
                     style={[
@@ -1247,7 +1294,7 @@ export default class App extends Component {
                           this.state.styleBrushType == "None"
                             ? "white"
                             : "black",
-                        fontSize: 20,
+                        fontSize: device.height * 0.015,
                         fontWeight: "500",
                       }}
                     >
@@ -1285,7 +1332,7 @@ export default class App extends Component {
                               this.state.styleBrushType == obj.name
                                 ? "white"
                                 : "black",
-                            fontSize: device.height * 0.024,
+                            fontSize: device.height * 0.015,
                             fontWeight: "500",
                           }}
                         >
@@ -1302,8 +1349,8 @@ export default class App extends Component {
           {/* Filter buttons */}
           {this.state.currentBrush == brushTypes.FILTER && (
             <View style={styles.brushesContainer}>
-              {/* None filter button */}
               <ScrollView>
+                {/* None filter button */}
                 <View style={{ margin: 2 }}>
                   <TouchableOpacity
                     style={[
@@ -1321,7 +1368,7 @@ export default class App extends Component {
                         imageFilter: "",
                         filterBrushType: "None",
                       }));
-                      sendSwitchFilter(this.state.socket, "", "None")
+                      // sendSwitchFilter(this.state.socket, "", "None")
                     }}
                     disabled={this.state.disableButtons}
                   >
@@ -1335,7 +1382,7 @@ export default class App extends Component {
                           this.state.filterBrushType == "None"
                             ? "white"
                             : "black",
-                        fontSize: 20,
+                        fontSize: device.height * 0.015,
                         fontWeight: "500",
                       }}
                     >
@@ -1364,7 +1411,7 @@ export default class App extends Component {
                             imageFilter: obj.filter,
                             filterBrushType: obj.name,
                           }));
-                          sendSwitchFilter(this.state.socket, obj.filter, obj.name)
+                          // sendSwitchFilter(this.state.socket, obj.filter, obj.name)
                         }}
                       >
                         <Image style={styles.brushes} source={obj.image_url} />
@@ -1374,7 +1421,7 @@ export default class App extends Component {
                               this.state.filterBrushType == obj.name
                                 ? "white"
                                 : "black",
-                            fontSize: device.height * 0.024,
+                            fontSize: device.height * 0.015,
                             fontWeight: "500",
                           }}
                         >
@@ -1413,7 +1460,7 @@ export default class App extends Component {
                           ...prevState,
                           userBrushType: obj.name,
                         }));
-                        sendSwitchUserBrush(this.state.socket,obj.name,this.state.userBrushColor)
+                        // sendSwitchUserBrush(this.state.socket,obj.name,this.state.userBrushColor)
                       }}
                     >
                       <Image
@@ -1426,7 +1473,7 @@ export default class App extends Component {
                             this.state.userBrushType == obj.name
                               ? "white"
                               : "#2e2e2e",
-                          fontSize: device.height * 0.024,
+                          fontSize: device.height * 0.015,
                         }}
                       >
                         {obj.label}
@@ -1451,6 +1498,7 @@ export default class App extends Component {
           />
         </View>
 
+        {/* this View wraps the size indicator */}
         {this.state.isChangeSize == true && (
           <View style={styles.circleContainer}>
             <Text style={{ color: "#4d4d4d", fontWeight: "bold" }}>
@@ -1527,8 +1575,8 @@ const styles = StyleSheet.create({
   },
   brushes: {
     margin: 0,
-    height: device.height * 0.11,
-    width: device.height * 0.11 * 1.8,
+    height: device.height * 0.06,
+    width: device.height * 0.06 * 1.8,
     padding: 0,
     userDrag: "none",
     userSelect: "none",
@@ -1553,8 +1601,8 @@ const styles = StyleSheet.create({
   userBrushes: {
     justifyContent: "start",
     margin: 0,
-    height: device.height * 0.11,
-    width: device.height * 0.11 * 1.8,
+    height: device.height * 0.06,
+    width: device.height * 0.06 * 1.8,
     paddingTop: 0,
   },
   spinnerTextStyle: {

@@ -143,7 +143,7 @@ func (hub *Hub) onDisconnect(client *Client) {
 
 func (hub *Hub) onMessage(data []byte, client *Client) {
 	kind := gjson.GetBytes(data, "kind").Int()
-
+	log.Println(kind)
 	switch kind {
 	case message.KindStrokeStart:
 		data := gjson.GetBytes(data, "data")
@@ -168,7 +168,6 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 
 		// Create a new element in Strokes
 	case message.KindStrokeEnd:
-		log.Println("Send start message")
 		data := gjson.GetBytes(data, "data")
 		log.Println("Got end", string(data.String()))
 
@@ -188,7 +187,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 	case message.KindStroke:
 		data := gjson.GetBytes(data, "data")
 		var msg message.StrokePoint
-		// log.Println("Got stroke", string(data.String()))
+		log.Println("Got stroke", string(data.String()))
 
 		msg.UserID = client.id
 		msg = message.StrokePoint{
@@ -248,6 +247,7 @@ func (hub *Hub) onMessage(data []byte, client *Client) {
 		})
 
 		responseBody := bytes.NewBuffer(postBody)
+		log.Println("responseBody", responseBody)
 		resp, err := http.Post(generate_url, "application/json", responseBody)
 		if err != nil {
 			log.Fatal(err)

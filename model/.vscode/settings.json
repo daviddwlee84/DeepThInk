@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./all_models/gaugan/SPADE_pretrained/SPADE",
+        "./all_models/fast_neural_style/examples/fast_neural_style/neural_style"
+    ]
+}

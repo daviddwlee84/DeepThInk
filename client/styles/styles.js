@@ -1,4 +1,4 @@
-import { autocrop } from "jimp";
+// import { autocrop } from "jimp";
 
 export function generateStyle(device) {
   return {

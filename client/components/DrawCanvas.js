@@ -98,7 +98,7 @@ export default class DrawCanvas extends Component {
 		this.setState({
 			strokes: this.state.strokes.concat(p)
 		})
-		sendStroke(this.props.socket, {x: posX/this.props.width, y: posY/this.props.height, canvasType: "ai"}, this.props.color, this.props.thickness)
+		// sendStroke(this.props.socket, {x: posX/this.props.width, y: posY/this.props.height, canvasType: "ai"}, this.props.color, this.props.thickness)
 		
     }
 
@@ -118,7 +118,7 @@ export default class DrawCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		} )
 		// socket: start stroke
-		sendStrokeStart(this.props.socket, {x: p.x/this.width, y: p.y/this.height}, p.thickness, p.color);
+		// sendStrokeStart(this.props.socket, {x: p.x/this.width, y: p.y/this.height}, p.thickness, p.color);
 
 	}
 
@@ -137,7 +137,7 @@ export default class DrawCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		})
 		// socket: end stroke
-		sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
+		// sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
 	}
 
 	updateCanvas = (point, client) => {
@@ -314,17 +314,17 @@ export default class DrawCanvas extends Component {
 	}
 
 	// Send stroke point data
-	onStrokeChangeHandler = (x, y) => {
-		sendStroke(this.props.socket, {x: x, y: y, canvasType: "ai"}, this.props.color, this.props.thickness);
-	};
+	// onStrokeChangeHandler = (x, y) => {
+	// 	sendStroke(this.props.socket, {x: x, y: y, canvasType: "ai"}, this.props.color, this.props.thickness);
+	// };
 
 	// Send stroke end signal
-	onStrokeEndHandler = () => {
-		sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
-	};
-	onStrokeStartHandler = (x, y) => {
-		sendStrokeStart(this.props.socket);
-	};
+	// onStrokeEndHandler = () => {
+	// 	sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
+	// };
+	// onStrokeStartHandler = (x, y) => {
+	// 	sendStrokeStart(this.props.socket);
+	// };
    
     render() {
       if (Platform.OS === "web") {
