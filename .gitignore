@@ -5,6 +5,7 @@ __pycache__/
 .ipynb_checkpoints
 node_modules
 .idea
+/model/outputs
 executionHistory.bin
 # Expo files
 .expo

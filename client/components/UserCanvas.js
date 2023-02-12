@@ -218,7 +218,7 @@ export default class UserCanvas extends Component {
 			...prevState,
 			strokes: this.state.strokes.concat(p)
 		}))
-		sendStroke(this.props.socket, {x: posX/this.width, y: posY/this.height, canvasType: "user"}, this.props.color, this.props.thickness)
+		// sendStroke(this.props.socket, {x: posX/this.width, y: posY/this.height, canvasType: "user"}, this.props.color, this.props.thickness)
 
 	}
 
@@ -240,7 +240,7 @@ export default class UserCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		}))
 		// socket: start stroke
-		sendStrokeStart(this.props.socket, {x: p.x, y: p.y}, p.thickness, p.color);
+		// sendStrokeStart(this.props.socket, {x: p.x, y: p.y}, p.thickness, p.color);
 
 	}
 
@@ -261,7 +261,7 @@ export default class UserCanvas extends Component {
 			strokes: this.state.strokes.concat(p)
 		}))
 		// socket: end stroke
-		sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
+		// sendStrokeEnd(this.props.socket, this.props.color, this.props.thickness);
 	}
 
 	clearCanvas = () => {
@@ -513,9 +513,9 @@ export default class UserCanvas extends Component {
 	// DISABLED FOR NOW
 
 	// Send stroke point data
-	onStrokeChangeHandler = (x, y) => {
-		sendStroke(this.props.socket, { x: x, y: y, canvasType: "user"}, this.props.color, this.props.thickness);
-	};
+	// onStrokeChangeHandler = (x, y) => {
+	// 	sendStroke(this.props.socket, { x: x, y: y, canvasType: "user"}, this.props.color, this.props.thickness);
+	// };
 
 	// Send stroke end signal
 	onStrokeEndHandler = () => {
