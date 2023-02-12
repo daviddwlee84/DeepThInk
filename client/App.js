@@ -8,15 +8,12 @@ import {
   Image,
   TouchableOpacity,
   Text,
-  Platform,
   ImageBackground,
 } from "react-native";
 import DrawCanvas from "./components/DrawCanvas";
 import UserCanvas from "./components/UserCanvas";
 
 import Slider from "@react-native-community/slider";
-// import Snackbar from 'react-native-snackbar';
-import axios from "axios";
 import colorMap from "./constants/colorMap.js";
 import brushTypes from "./constants/brushTypes.js";
 import userBrushes from "./constants/userBrushes.js";
@@ -25,48 +22,16 @@ import userBrushesOptions from "./constants/userBrushesOptions.js";
 import filterOptions from "./constants/filterBrushOptions.js";
 
 import messageKinds from "./constants/messageKinds.js";
-import {
-  onOpen,
-  onClose,
-  onMessage,
-  onError,
-  sendStroke,
-  sendStrokeEnd,
-  sendStrokeStart,
-  sendSwitchBrush,
-  sendSwitchFilter,
-  sendSwitchUserBrush,
-} from "./api/websocketApi.js";
-import { sendRequest, sendRequestStyle } from "./api/modelApi.js";
-import { hello, generateStyle } from "./styles/styles.js";
-import Point from "./classes/Point";
-import { startClock } from "react-native-reanimated";
 import { ScrollView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
-// import ColorPicker from './components/Colorpicker';
-import ColorPicker from "react-native-wheel-color-picker";
-import Spinner from "react-native-loading-spinner-overlay";
-import {
-  BallIndicator,
-  BarIndicator,
-  DotIndicator,
-  MaterialIndicator,
-  PacmanIndicator,
-  PulseIndicator,
-  SkypeIndicator,
-  UIActivityIndicator,
-  WaveIndicator,
-} from "react-native-indicators";
-import { triggerBase64Download } from "react-base64-downloader";
-import { ChromePicker } from "react-color";
-import { EyeDropper } from "react-eyedrop";
-import backendConstants from "./constants/backendUrl";
-import { FontAwesome } from "@expo/vector-icons";
 import { RgbaColorPicker } from "react-colorful";
 
 var device = Dimensions.get("window");
 const CANVASWIDTH = device.height * 0.8;
 const CANVASHEIGHT = device.height * 0.8;
+
+// const LOCALURL = "http://127.0.0.1:8000";
+const LOCALURL = "http://region-11.autodl.com:25172"
 
 // Connect to Go backend
 // for web
@@ -75,33 +40,6 @@ const CANVASHEIGHT = device.height * 0.8;
 
 // Create dynamic style based on device width/height
 // const styles = StyleSheet.create(generateStyle(device));
-
-// xxxxx
-const CustomEyeDropper = ({ onClick, disabled }) => (
-  <TouchableOpacity
-    style={{
-      backgroundColor: disabled ? "#999999" : "#f2f2eb",
-      borderRadius: 10,
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      width: device.height * 0.25,
-    }}
-    onPress={onClick}
-  >
-    <Ionicons name="eyedrop" size={25} color={"grey"}></Ionicons>
-    <Text
-      style={{
-        marginLeft: 5,
-        color: "#363636",
-        fontWeight: "bold",
-        fontSize: 16,
-      }}
-    >
-      Pick a Color
-    </Text>
-  </TouchableOpacity>
-);
 
 export default class App extends Component {
   // React state: store the image data
@@ -193,37 +131,13 @@ export default class App extends Component {
   componentDidMount() {
     console.log("Attempting connection");
 
-    // Setup this.state.socket handlers
-    // this.state.socket.onopen = () => {
-    //   console.log(
-    //     "CANVAS DIMS ARE",
-    //     this.state.canvasWidth,
-    //     this.state.canvasHeight
-    //   );
-
-    //   onOpen(this.state.socket, {
-    //     canvasWidth: this.state.canvasWidth,
-    //     canvasHeight: this.state.canvasHeight,
-    //   });
-    // };
-    // this.state.socket.onclose = (event) => {
-    //   onClose(event);
-    // };
-    // this.state.socket.onerror = (error) => {
-    //   onError(error);
-    // };
-
-    // this.state.socket.onmessage = (event) => {
-    //   this.onMesageHandler(event);
-    // };
-
     this.setState((prevState) => ({
       ...prevState,
       isLoading: false,
       isFirstLoadDrawCanvas: false,
     }));
     }
-  // Fetch image data from canvas
+  // get image data from canvas
   // Then call sendRequest to send the data to backend
   grabPixels = async () => {
     this.setState((prevState) => ({
@@ -251,7 +165,7 @@ export default class App extends Component {
       isLoading: true,
     }));
 
-    const response = await fetch('http://127.0.0.1:8000/generate', {
+    const response = await fetch(`${LOCALURL}/generate`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -274,14 +188,6 @@ export default class App extends Component {
       isLoading: false,
     }));
 
-    // this.state.socket.send(
-    //   JSON.stringify({
-    //     kind: messageKinds.MESSAGE_GENERATE,
-    //     data: {
-    //       imageData: this.state.imageData,
-    //     },
-    //   })
-    // );
   };
   // Send a request to the model server to stylize the generated painting
   sendRequestStyleHelper = async (newStyle) => {
@@ -290,7 +196,7 @@ export default class App extends Component {
       isLoading: true,
     }));
 
-    const response = await fetch('http://127.0.0.1:8000/stylize', {
+    const response = await fetch(`${LOCALURL}/stylize`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
@@ -315,15 +221,6 @@ export default class App extends Component {
       isLoading: false,
     }));
 
-    // this.state.socket.send(
-    //   JSON.stringify({
-    //     kind: messageKinds.MESSAGE_STYLIZE,
-    //     data: {
-    //       imageData: this.state.generatedImageData,
-    //       style: newStyle,
-    //     },
-    //   })
-    // );
   };
   // xxxxx
   saveGeneratedImage = () => {
@@ -380,17 +277,6 @@ export default class App extends Component {
     console.log("opacity is now", sliderValue);
   };
 
-  onMesageHandler = (event) => {
-    var messages = event.data.split("\n");
-
-    for (var i = 0; i < messages.length; i++) {
-      var message = JSON.parse(messages[i]);
-      // console.log('Received message is', message);
-      this.executeMessage(message);
-    }
-    // console.log('B stringified is', JSON.stringify(this.canvas.getPaths()));
-  };
-
   // Convert object of rgb {r: g: b:} to hex string
   rgbToHex = (d) => {
     const red = d.r;
@@ -405,176 +291,6 @@ export default class App extends Component {
     const b = parseInt(hex.slice(5, 7), 16);
     // return {r, g, b} // return an object
     return { r: r, g: g, b: b, a: 1 };
-  };
-  // xxxxx
-  handleChangeEydropper = ({ rgb, hex }) => {
-    console.log("color is", rgb);
-    this.setState((prevState) => ({
-      ...prevState,
-      userBrushColor:
-        "#" +
-        rgb
-          .slice(4, -1)
-          .split(",")
-          .map((x) => (+x).toString(16).padStart(2, 0))
-          .join(""),
-      colorPickerDisplay: this.hex2rgb(hex),
-    }));
-  };
-  // xxxxx
-  handleOnPickStart = () => {
-    this.setState((prevState) => ({
-      ...prevState,
-      disableDrawing: true,
-      showImageForEyeDropper: true,
-      showPreview: true,
-      disableButtons: true,
-    }));
-
-    // Request a full image of the user canvas with generated image
-    this.saveGeneratedImage();
-    this.disableUserCanvas();
-  };
-  // xxxxx
-  handleOnPickEnd = () => {
-    this.setState((prevState) => ({
-      ...prevState,
-      disableDrawing: false,
-      showImageForEyeDropper: false,
-      showPreview: true,
-      enableUserCanvas: true,
-      disableButtons: false,
-    }));
-    this.loadUserCanvas();
-  };
-
-  executeMessage = (message) => {
-    console.log("406", message.kind)
-    switch (message.kind) {
-      case messageKinds.MESSAGE_STROKE_START:
-        // Disabled collab drawing
-        console.log('Received stroke start', message);
-        // Append collaborator stroke
-        this.setState(prevState => ({
-          ...prevState,
-          collaboratorStroke: [
-            ...prevState.collaboratorStroke,
-            new Point(
-              message.point.x * this.state.AI_CANVASWIDTH,
-              message.point.y * this.state.AI_CANVASHEIGHT,
-              message.thickness,
-              message.color,
-              'start',
-              message.point.canvasType
-            ),
-          ],
-        }));
-
-        break;
-      case messageKinds.MESSAGE_STROKE:
-        // Disabled collab drawing
-        // Append collaborator stroke
-        this.setState(prevState => ({
-          ...prevState,
-          collaboratorStroke: [
-            ...prevState.collaboratorStroke,
-            new Point(
-              message.point.x * this.state.AI_CANVASWIDTH,
-              message.point.y * this.state.AI_CANVASHEIGHT,
-              message.thickness,
-              message.color,
-              'move',
-              message.point.canvasType,
-            ),
-          ],
-        }));
-        break;
-      case messageKinds.MESSAGE_STROKE_END:
-        console.log("received stroke end")
-        // Disabled collab drawing
-        this.setState(prevState => ({
-          ...prevState,
-          collaboratorStroke: [],
-        }));
-
-        break;
-      // User receives a generated image broadcasted from another user
-      case messageKinds.MESSAGE_GENERATE:
-        console.log("got generate mesage here", message);
-        this.setState((prevState) => ({
-          ...prevState,
-          generatedImageData: message.imageData,
-          displayedImageData: message.imageData,
-        }));
-
-        this.setState((prevState) => ({
-          ...prevState,
-          isLoading: false,
-        }));
-
-        break;
-      // User received a stylized image broadcasted from another user
-      case messageKinds.MESSAGE_STYLIZE:
-        console.log("image stylize", message);
-        this.setState((prevState) => ({
-          ...prevState,
-          styleBrushType: message.style,
-          stylizedImageData: message.imageData,
-          displayedImageData: message.imageData,
-        }));
-
-        this.setState((prevState) => ({
-          ...prevState,
-          isLoading: false,
-        }));
-
-        break;
-
-      case messageKinds.MESSAGE_SAVE:
-        this.setState((prevState) => ({
-          ...prevState,
-          isLoading: false,
-        }));
-
-        if (this.state.showImageForEyeDropper) {
-          this.setState((prevState) => ({
-            ...prevState,
-            finalImageData: message.savedImageData,
-          }));
-        } else {
-          alert("Image saved to cloud storage!");
-          // triggerBase64Download(message.savedImageData, `Painting`);
-        }
-
-        break;
-      case messageKinds.MESSAGE_SWITCH_BRUSH: 
-        console.log("got switch from collaborator", message)
-        if (message.brushType == "ai") {
-          this.switchToAICanvas();
-
-        } else if (message.brushType == "filter") {
-          this.switchToFilterBrush();
-        } else if (message.brushType == "style") {
-          this.switchToStyleBrush();
-        } else if (message.brushType == "user") {
-          this.switchToUserBrush();
-        }
-        break;
-      case messageKinds.MESSAGE_SWITCH_FILTER:
-        this.setState((prevState) => ({
-          ...prevState,
-          imageFilter: message.filterType,
-          filterBrushType: message.filterName
-        }));    
-        break;
-
-      case messageKinds.MESSAGE_SWITCH_USER_BRUSH:
-        this.setState((prevState) => ({
-          ...prevState,
-          userBrushType: message.userBrushType,
-          userBrushColor: message.color
-        }));
-    }
   };
 
   // Enable the AI canvas for drawing
@@ -946,21 +662,6 @@ export default class App extends Component {
 
                 }}
               />
-              {/* <View
-                style={{
-                  width: this.state.leftColumnWidth,
-                  marginLeft: this.state.leftColumnLeftMargin,
-                  marginBottom: 3,
-                  margin: "auto",
-                }}
-              >
-                <EyeDropper
-                  onPickStart={this.handleOnPickStart}
-                  onPickEnd={this.handleOnPickEnd}
-                  onChange={this.handleChangeEydropper}
-                  customComponent={CustomEyeDropper}
-                ></EyeDropper>
-              </View> */}
               {brushSlider}
             </View>
           )}
