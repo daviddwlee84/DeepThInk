@@ -17,7 +17,7 @@ dir = pathlib.Path(__file__).parent.resolve()
 # Import from SPADE
 
 sys.path.append(
-    os.path.join(os.path.dirname(__file__), 'SPADE_pretrained', 'SPADE_weights'))
+    os.path.join(os.path.dirname(__file__), 'SPADE_pretrained', 'SPADE'))
 
 from models.pix2pix_model import Pix2PixModel
 from options.test_options import TestOptions
