@@ -4,8 +4,8 @@
     "app.js.map": "/DeepThInkWeb/static/js/app.bc10fa77.chunk.js.map",
     "runtime~app.js": "/DeepThInkWeb/static/js/runtime~app.8946a4fa.js",
     "runtime~app.js.map": "/DeepThInkWeb/static/js/runtime~app.8946a4fa.js.map",
-    "static/js/2.2301798d.chunk.js": "/DeepThInkWeb/static/js/2.2301798d.chunk.js",
-    "static/js/2.2301798d.chunk.js.map": "/DeepThInkWeb/static/js/2.2301798d.chunk.js.map",
+    "static/js/2.4741d8de.chunk.js": "/DeepThInkWeb/static/js/2.4741d8de.chunk.js",
+    "static/js/2.4741d8de.chunk.js.map": "/DeepThInkWeb/static/js/2.4741d8de.chunk.js.map",
     "fonts/AntDesign.ttf": "/DeepThInkWeb/./fonts/AntDesign.ttf",
     "fonts/Entypo.ttf": "/DeepThInkWeb/./fonts/Entypo.ttf",
     "fonts/Feather.ttf": "/DeepThInkWeb/./fonts/Feather.ttf",
@@ -21,7 +21,7 @@
     "index.html": "/DeepThInkWeb/index.html",
     "manifest.json": "/DeepThInkWeb/manifest.json",
     "serve.json": "/DeepThInkWeb/serve.json",
-    "static/js/2.2301798d.chunk.js.LICENSE.txt": "/DeepThInkWeb/static/js/2.2301798d.chunk.js.LICENSE.txt",
+    "static/js/2.4741d8de.chunk.js.LICENSE.txt": "/DeepThInkWeb/static/js/2.4741d8de.chunk.js.LICENSE.txt",
     "static/media/AIBrush.png": "/DeepThInkWeb/static/media/AIBrush.eb0b1fec.png",
     "static/media/Ballpoint.png": "/DeepThInkWeb/static/media/Ballpoint.6fc6ee6b.png",
     "static/media/Chalk.png": "/DeepThInkWeb/static/media/Chalk.7ca67c72.png",
@@ -59,7 +59,7 @@
   },
   "entrypoints": [
     "static/js/runtime~app.8946a4fa.js",
-    "static/js/2.2301798d.chunk.js",
+    "static/js/2.4741d8de.chunk.js",
     "static/js/app.bc10fa77.chunk.js"
   ]
 }
