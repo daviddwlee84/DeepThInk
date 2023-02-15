@@ -7,7 +7,7 @@ from all_models.gaugan.model_utils import (processByte64, load_model,
                                            run_inference)
 from all_models.fast_neural_style.style_utils import stylizeImage
 from brushes import getBrush
-from flask import Flask, request
+from flask import Flask, request, current_app
 from flask_cors import CORS
 import json
 import uuid
@@ -28,7 +28,7 @@ s3 = boto3.resource(
     aws_secret_access_key=os.environ['SECRET_KEY']
 )
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="DeepThInkWeb")
 CORS(app)
 
 # Load the model
@@ -39,7 +39,8 @@ model, opt = load_model()
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return current_app.send_static_file('index.html')
+    # return 'Hello, World!'
 
 
 @app.route('/generate', methods=['POST'])
