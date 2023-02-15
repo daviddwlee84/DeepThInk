@@ -31,7 +31,8 @@ const CANVASWIDTH = device.height * 0.8;
 const CANVASHEIGHT = device.height * 0.8;
 
 // const LOCALURL = "http://127.0.0.1:8000";
-const LOCALURL = "http://region-11.autodl.com:25172"
+// const LOCALURL = "http://region-11.autodl.com:25172"
+const LOCALURL = ""
 
 // Connect to Go backend
 // for web
