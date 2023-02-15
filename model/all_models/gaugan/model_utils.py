@@ -8,6 +8,7 @@ from easydict import EasyDict
 import os
 from matplotlib.colors import rgb2hex
 from torchvision.transforms import ToPILImage
+import replicate
 
 import sys
 import pathlib
@@ -173,6 +174,48 @@ def load_model() -> Tuple[Pix2PixModel, dict]:
     model = Pix2PixModel(opt)
     return model, opt
 
+def apply_stable_diffusion(image, prompt):
+    model = replicate.models.get("stability-ai/stable-diffusion-img2img")
+    version = model.versions.get("15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d")
+
+    # https://replicate.com/stability-ai/stable-diffusion-img2img/versions/15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d#input
+    inputs = {
+        # Input prompt
+        'prompt': prompt,
+
+        # The prompt NOT to guide the image generation. Ignored when not using
+        # guidance
+        # 'negative_prompt': ...,
+
+        # Inital image to generate variations of.
+        'image': image,
+
+        # Prompt strength when providing the image. 1.0 corresponds to full
+        # destruction of information in init image
+        'prompt_strength': 0.8,
+
+        # Number of images to output. Higher number of outputs may OOM.
+        # Range: 1 to 8
+        'num_outputs': 1,
+
+        # Number of denoising steps
+        # Range: 1 to 500
+        'num_inference_steps': 25,
+
+        # Scale for classifier-free guidance
+        # Range: 1 to 20
+        'guidance_scale': 7.5,
+
+        # Choose a scheduler.
+        'scheduler': "DPMSolverMultistep",
+
+        # Random seed. Leave blank to randomize the seed
+        # 'seed': ...,
+    }
+
+    # https://replicate.com/stability-ai/stable-diffusion-img2img/versions/15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d#output-schema
+    output = version.predict(**inputs)
+    return output
 
 def run_inference(label_data, model, opt):
     assert model is not None, 'Error: no model loaded.'
@@ -192,6 +235,8 @@ def run_inference(label_data, model, opt):
         'image': image_tensor.unsqueeze(0)
     }
     generated = model(data, mode='inference')
+    # apply stable diffusion to improve the generated result
+    generated = apply_stable_diffusion(generated, "Enter your description of the drawing.")
 
     # Get the base64 string to send back to frontend
     generated_base64 = tensor_to_base64(generated)
