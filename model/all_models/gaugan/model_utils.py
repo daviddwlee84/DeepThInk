@@ -18,7 +18,7 @@ dir = pathlib.Path(__file__).parent.resolve()
 # Import from SPADE
 
 sys.path.append(
-    os.path.join(os.path.dirname(__file__), 'SPADE_pretrained', 'SPADE_weights'))
+    os.path.join(os.path.dirname(__file__), 'SPADE_pretrained', 'SPADE'))
 
 from models.pix2pix_model import Pix2PixModel
 from options.test_options import TestOptions
@@ -177,7 +177,7 @@ def load_model() -> Tuple[Pix2PixModel, dict]:
 def apply_stable_diffusion(image, prompt):
     model = replicate.models.get("stability-ai/stable-diffusion-img2img")
     version = model.versions.get("15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d")
-
+    print("prompt", prompt)
     # https://replicate.com/stability-ai/stable-diffusion-img2img/versions/15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d#input
     inputs = {
         # Input prompt
@@ -200,7 +200,7 @@ def apply_stable_diffusion(image, prompt):
 
         # Number of denoising steps
         # Range: 1 to 500
-        'num_inference_steps': 25,
+        'num_inference_steps': 5,
 
         # Scale for classifier-free guidance
         # Range: 1 to 20
@@ -217,7 +217,7 @@ def apply_stable_diffusion(image, prompt):
     output = version.predict(**inputs)
     return output
 
-def run_inference(label_data, model, opt):
+def run_inference(label_data, model, opt, prompt):
     assert model is not None, 'Error: no model loaded.'
     labelmap = Image.fromarray(np.array(label_data).astype(np.uint8))
     params = None
@@ -236,9 +236,10 @@ def run_inference(label_data, model, opt):
     }
     generated = model(data, mode='inference')
     # apply stable diffusion to improve the generated result
-    generated = apply_stable_diffusion(generated, "Enter your description of the drawing.")
 
     # Get the base64 string to send back to frontend
     generated_base64 = tensor_to_base64(generated)
 
-    return generated_base64
+    res = apply_stable_diffusion(generated_base64, prompt)
+
+    return res

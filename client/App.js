@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
   Text,
+  TextInput,
   ImageBackground,
 } from "react-native";
 import DrawCanvas from "./components/DrawCanvas";
@@ -121,6 +122,7 @@ export default class App extends Component {
     isChangeSize: false, //for slider
 
     isFirstLoadDrawCanvas: true, // show a default segmentation map for the first time in the AI canvas
+    text: ''
   };
 
   constructor(props) {
@@ -169,10 +171,12 @@ export default class App extends Component {
     const response = await fetch(`${LOCALURL}/generate`, {
       method: 'POST',
       headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': 'Token f40e401a60e03f6ae459a36e1faa4e5c575819f5'
       },
       body: JSON.stringify({
         imageData: this.state.imageData,
+        prompt: this.state.text
       }),
     });
 
@@ -781,6 +785,7 @@ export default class App extends Component {
                       isFirstLoadDrawCanvas={this.state.isFirstLoadDrawCanvas}
                     />
                   </View>
+                  
                 </View>
               )}
               {/* this View wraps generated image & user canvas */}
@@ -861,28 +866,39 @@ export default class App extends Component {
               {this.state.currentBrush == brushTypes.AI && (
                 <View
                   style={{
-                    flexDirection: "row",
+                    flexDirection: "column",
                     justifyContent: "space-around",
                   }}
                 >
-                  <View style={{ padding: 5, width: "40%" }}>
-                    <Button
-                      style={{ marginTop: 10, height: "80" }}
-                      color="#5e748a"
-                      title="clear"
-                      onPress={() => this.clearChildAIBrush()}
-                    />
-                  </View>
+                  <TextInput
+                    style={{height: 40}}
+                    placeholder="Prompt..."
+                    onChangeText={(text) => this.setState({text})}
+                    value={this.state.text}
+                  />
+                  <View style={{
+                    flexDirection: "row",
+                    justifyContent: "space-around",
+                  }}> 
+                    <View style={{ padding: 5, width: "40%" }}>
+                      <Button
+                        style={{ marginTop: 10, height: "80" }}
+                        color="#5e748a"
+                        title="clear"
+                        onPress={() => this.clearChildAIBrush()}
+                      />
+                    </View>
 
-                  <View style={{ padding: 5, width: "40%" }}>
-                    <Button
-                      mode="contained"
-                      style={{ padding: 10 }}
-                      onPress={this.grabPixels.bind(this)}
-                      color="#88508c"
-                      title="generate"
-                      disabled={this.state.isLoading}
-                    />
+                    <View style={{ padding: 5, width: "40%" }}>
+                      <Button
+                        mode="contained"
+                        style={{ padding: 10 }}
+                        onPress={this.grabPixels.bind(this)}
+                        color="#88508c"
+                        title="generate"
+                        disabled={this.state.isLoading}
+                      />
+                    </View>
                   </View>
                 </View>
               )}

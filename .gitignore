@@ -10,4 +10,4 @@ executionHistory.bin
 # Expo files
 .expo
 __generated__
-web-build
+client/web-build

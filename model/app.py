@@ -4,7 +4,7 @@ Flask server for running deployed gauGAN model
 import numpy as np
 from numpy import imag
 from all_models.gaugan.model_utils import (processByte64, load_model,
-                                           run_inference)
+                                           run_inference, apply_stable_diffusion)
 from all_models.fast_neural_style.style_utils import stylizeImage
 from brushes import getBrush
 from flask import Flask, request, current_app
@@ -18,6 +18,7 @@ import os
 import boto3
 from dotenv import load_dotenv
 from datetime import datetime
+import requests
 
 load_dotenv()  
 
@@ -60,6 +61,8 @@ def generate():
     # Fetch image data
     data = request.get_json()
     image_data = data.get("imageData")
+    prompt = data.get("prompt")
+    print("---------------", image_data)
 
     # Save the image segmentation map
     with open(f"outputs/{request_id}_SEGMENTATION.png", "wb") as fh:
@@ -69,17 +72,28 @@ def generate():
     image_array = processByte64(image_data)
 
     # Perform inference
-    generated_image = run_inference(image_array, model, opt)
+    generated_image = run_inference(image_array, model, opt, prompt)
+    response = requests.get(generated_image[0])
+    img = Image.open(io.BytesIO(response.content))
+    size = 256, 256
+    img_resized = img.resize(size, Image.ANTIALIAS)
+    print("+++++++", img_resized)
+
+    output_buffer = io.BytesIO()
+    img_resized.save(output_buffer, format='PNG')
+    byte_data = output_buffer.getvalue()
+    base64_str = base64.b64encode(byte_data)
+    # print("+++++++", base64_str)
 
     # Remove the javascript file type header
-    generated_image_strip_header = generated_image.lstrip(
-        "data:image/png;base64")
+    # generated_image_strip_header = generated_image.lstrip(
+    #     "data:image/png;base64")
 
     # Save the generated image
-    with open(f"outputs/{request_id}_GENERATED.png", "wb") as fh:
-        fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
+    # with open(f"outputs/{request_id}_GENERATED.png", "wb") as fh:
+    #     fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
 
-    return {"message": "Successfully got image", "data": generated_image}
+    return {"message": "Successfully got image", "data": "data:image/png;base64," + base64_str.decode()}
 
 
 @app.route('/stylize', methods=['POST'])
