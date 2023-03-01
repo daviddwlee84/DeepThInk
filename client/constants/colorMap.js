@@ -29,13 +29,13 @@ export default {
       logo: require('../resources/bushLogo.png'),
       // logo: require('../resources/tmp/bushLogo2.png'),
     },
-    // {
-    //   color: '#b7d24e',
-    //   id: 123,
-    //   label: 'grass',
-    //   labelColor: 'black',
-    //   logo: require('../resources/grassLogo.png'),
-    // },
+    {
+      color: '#b7d24e',
+      id: 123,
+      label: 'grass',
+      labelColor: 'black',
+      logo: require('../resources/bushLogo.png'),
+    },
     {
       color: '#3c3b4b',
       id: 134,

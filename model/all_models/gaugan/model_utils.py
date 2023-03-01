@@ -9,6 +9,7 @@ import os
 from matplotlib.colors import rgb2hex
 from torchvision.transforms import ToPILImage
 import replicate
+import requests
 
 import sys
 import pathlib
@@ -51,6 +52,7 @@ def processByte64(base64_string):
 
     # Resize to 512x512
     image = image.resize((512, 512), Image.NEAREST)
+    # image.show()
 
     image_np = np.array(image)
     # print("image np is", image_np, image_np.shape)
@@ -121,7 +123,7 @@ def getLabelMap(image_hex):
         image_labels_row = []
         for j in range(image_hex.shape[1]):
             # By default, fill with sky if some loss happened.
-            label = colorMap.get(image_hex[i, j], colorMap['#759edf'])['id']
+            label = colorMap.get(image_hex[i, j], colorMap['#3c3b4b'])['id']
             image_labels_row.append(label)
         image_labels.append(image_labels_row)
     # print("image labels is", image_labels)
@@ -217,7 +219,7 @@ def apply_stable_diffusion(image, prompt):
     output = version.predict(**inputs)
     return output
 
-def run_inference(label_data, model, opt, prompt):
+def run_inference(label_data, model, opt, prompt, flag):
     assert model is not None, 'Error: no model loaded.'
     labelmap = Image.fromarray(np.array(label_data).astype(np.uint8))
     params = None
@@ -227,6 +229,8 @@ def run_inference(label_data, model, opt, prompt):
                                     normalize=False)
     label_tensor = transform_label(labelmap) * 255.0
     label_tensor[label_tensor == 255.0] = opt.label_nc
+    print("label_tensor:", label_tensor.shape)
+
     transform_image = get_transform(opt, params)
     image_tensor = transform_image(Image.new('RGB', (500, 500)))
     data = {
@@ -235,11 +239,23 @@ def run_inference(label_data, model, opt, prompt):
         'image': image_tensor.unsqueeze(0)
     }
     generated = model(data, mode='inference')
+    print("generated_image:", generated.shape)
     # apply stable diffusion to improve the generated result
 
     # Get the base64 string to send back to frontend
     generated_base64 = tensor_to_base64(generated)
 
-    res = apply_stable_diffusion(generated_base64, prompt)
+    if (not flag):
+        res = apply_stable_diffusion(generated_base64, prompt)
+        response = requests.get(res[0])
+        img = Image.open(io.BytesIO(response.content))
+        size = 512, 512
+        img_resized = img.resize(size, Image.ANTIALIAS)
+        print("+++++++", img_resized)
 
-    return res
+        output_buffer = io.BytesIO()
+        img_resized.save(output_buffer, format='PNG')
+        byte_data = output_buffer.getvalue()
+        generated_base64 = "data:image/png;base64," + base64.b64encode(byte_data).decode()
+
+    return generated_base64

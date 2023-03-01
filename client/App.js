@@ -122,7 +122,8 @@ export default class App extends Component {
     isChangeSize: false, //for slider
 
     isFirstLoadDrawCanvas: true, // show a default segmentation map for the first time in the AI canvas
-    text: ''
+    text: '',
+    flag: false
   };
 
   constructor(props) {
@@ -142,10 +143,31 @@ export default class App extends Component {
     }
   // get image data from canvas
   // Then call sendRequest to send the data to backend
-  grabPixels = async () => {
+  grabPixelsGan = async () => {
     this.setState((prevState) => ({
       ...prevState,
       isLoading: true,
+      flag: true
+    }));
+    var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
+      var resultImage = value.split(";base64,")[1];
+      console.log("result image is", resultImage);
+      this.setState(
+        (prevState) => ({
+          ...prevState,
+          imageData: resultImage,
+        }),
+        // Do callback to send to server after the imageData is set
+        this.sendRequestHelper
+      );
+    });
+  };
+
+  grabPixelsSd = async () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      isLoading: true,
+      flag: false
     }));
     var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
       var resultImage = value.split(";base64,")[1];
@@ -176,7 +198,8 @@ export default class App extends Component {
       },
       body: JSON.stringify({
         imageData: this.state.imageData,
-        prompt: this.state.text
+        prompt: this.state.text,
+        flag: this.state.flag
       }),
     });
 
@@ -880,7 +903,7 @@ export default class App extends Component {
                     flexDirection: "row",
                     justifyContent: "space-around",
                   }}> 
-                    <View style={{ padding: 5, width: "40%" }}>
+                    <View style={{ padding: 5, width: "30%" }}>
                       <Button
                         style={{ marginTop: 10, height: "80" }}
                         color="#5e748a"
@@ -889,13 +912,24 @@ export default class App extends Component {
                       />
                     </View>
 
-                    <View style={{ padding: 5, width: "40%" }}>
+                    <View style={{ padding: 5, width: "30%" }}>
                       <Button
                         mode="contained"
                         style={{ padding: 10 }}
-                        onPress={this.grabPixels.bind(this)}
+                        onPress={this.grabPixelsGan.bind(this)}
                         color="#88508c"
-                        title="generate"
+                        title="GauGAN"
+                        disabled={this.state.isLoading}
+                      />
+                    </View>
+
+                    <View style={{ padding: 5, width: "30%" }}>
+                      <Button
+                        mode="contained"
+                        style={{ padding: 10 }}
+                        onPress={this.grabPixelsSd.bind(this)}
+                        color="#88508c"
+                        title="Stable Diffusion"
                         disabled={this.state.isLoading}
                       />
                     </View>

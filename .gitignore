@@ -1,5 +1,6 @@
 # Model and data
-SPADE_weights/
+SPADE_pretrained/
+model/all_models/gaugan/SPADE_pretrained
 datasets/
 __pycache__/
 .ipynb_checkpoints

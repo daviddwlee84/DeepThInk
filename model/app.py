@@ -34,6 +34,7 @@ CORS(app)
 
 # Load the model
 model, opt = load_model()
+model.eval()
 
 
 
@@ -62,7 +63,8 @@ def generate():
     data = request.get_json()
     image_data = data.get("imageData")
     prompt = data.get("prompt")
-    print("---------------", image_data)
+    flag = data.get("flag")
+    # print("---------------", image_data)
 
     # Save the image segmentation map
     with open(f"outputs/{request_id}_SEGMENTATION.png", "wb") as fh:
@@ -70,19 +72,24 @@ def generate():
 
     # Convert byte64 into labelmap
     image_array = processByte64(image_data)
+    # print(image_array)
 
     # Perform inference
-    generated_image = run_inference(image_array, model, opt, prompt)
-    response = requests.get(generated_image[0])
-    img = Image.open(io.BytesIO(response.content))
-    size = 256, 256
-    img_resized = img.resize(size, Image.ANTIALIAS)
-    print("+++++++", img_resized)
+    generated_image = run_inference(image_array, model, opt, prompt, flag)
+    #
+    #
+    # response = requests.get(generated_image[0])
+    # img = Image.open(io.BytesIO(response.content))
+    # size = 256, 256
+    # img_resized = img.resize(size, Image.ANTIALIAS)
+    # print("+++++++", img_resized)
 
-    output_buffer = io.BytesIO()
-    img_resized.save(output_buffer, format='PNG')
-    byte_data = output_buffer.getvalue()
-    base64_str = base64.b64encode(byte_data)
+    # output_buffer = io.BytesIO()
+    # img_resized.save(output_buffer, format='PNG')
+    # byte_data = output_buffer.getvalue()
+    # base64_str = base64.b64encode(byte_data).decode()
+    # #
+    #
     # print("+++++++", base64_str)
 
     # Remove the javascript file type header
@@ -93,7 +100,7 @@ def generate():
     # with open(f"outputs/{request_id}_GENERATED.png", "wb") as fh:
     #     fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
 
-    return {"message": "Successfully got image", "data": "data:image/png;base64," + base64_str.decode()}
+    return {"message": "Successfully got image", "data": generated_image}
 
 
 @app.route('/stylize', methods=['POST'])
