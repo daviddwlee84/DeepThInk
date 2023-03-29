@@ -4,7 +4,7 @@ Flask server for running deployed gauGAN model
 import numpy as np
 from numpy import imag
 from all_models.gaugan.model_utils import (processByte64, load_model,
-                                           run_inference, apply_stable_diffusion)
+                                           run_inference, control_net)
 from all_models.fast_neural_style.style_utils import stylizeImage
 from brushes import getBrush
 from flask import Flask, request, current_app
@@ -74,8 +74,11 @@ def generate():
     image_array = processByte64(image_data)
     # print(image_array)
 
-    # Perform inference
-    generated_image = run_inference(image_array, model, opt, prompt, flag)
+    # Perform inference gaugan and stable diffusion
+    if(flag != 3):
+        generated_image = run_inference(image_array, model, opt, prompt, flag)
+    else:
+        generated_image = control_net(image_data, prompt)
     #
     #
     # response = requests.get(generated_image[0])

@@ -31,9 +31,9 @@ var device = Dimensions.get("window");
 const CANVASWIDTH = device.height * 0.8;
 const CANVASHEIGHT = device.height * 0.8;
 
-// const LOCALURL = "http://127.0.0.1:8000";
+const LOCALURL = "http://127.0.0.1:8000";
 // const LOCALURL = "http://region-11.autodl.com:25172"
-const LOCALURL = ""
+// const LOCALURL = ""
 
 // Connect to Go backend
 // for web
@@ -123,7 +123,7 @@ export default class App extends Component {
 
     isFirstLoadDrawCanvas: true, // show a default segmentation map for the first time in the AI canvas
     text: '',
-    flag: false
+    flag: 1
   };
 
   constructor(props) {
@@ -147,7 +147,7 @@ export default class App extends Component {
     this.setState((prevState) => ({
       ...prevState,
       isLoading: true,
-      flag: true
+      flag: 1
     }));
     var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
       var resultImage = value.split(";base64,")[1];
@@ -167,7 +167,27 @@ export default class App extends Component {
     this.setState((prevState) => ({
       ...prevState,
       isLoading: true,
-      flag: false
+      flag: 2
+    }));
+    var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
+      var resultImage = value.split(";base64,")[1];
+      console.log("result image is", resultImage);
+      this.setState(
+        (prevState) => ({
+          ...prevState,
+          imageData: resultImage,
+        }),
+        // Do callback to send to server after the imageData is set
+        this.sendRequestHelper
+      );
+    });
+  };
+
+  grabPixelsCN = async () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      isLoading: true,
+      flag: 3
     }));
     var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
       var resultImage = value.split(";base64,")[1];
@@ -560,8 +580,6 @@ export default class App extends Component {
           <TouchableOpacity
             onPress={() => {
               this.switchToAICanvas();
-             
-              // sendSwitchBrush(this.state.socket,brushTypes.AI)
             }}
             disabled={this.state.disableButtons}
           >
@@ -586,8 +604,6 @@ export default class App extends Component {
           <TouchableOpacity
             onPress={() => {
               this.switchToStyleBrush();
-
-              // sendSwitchBrush(this.state.socket,brushTypes.STYLE)
             }}
             disabled={this.state.disableButtons}
           >
@@ -613,8 +629,6 @@ export default class App extends Component {
           <TouchableOpacity
             onPress={() => {
               this.switchToFilterBrush();
-              // sendSwitchBrush(this.state.socket,brushTypes.FILTER)
-
             }}
             disabled={this.state.disableButtons}
           >
@@ -640,8 +654,6 @@ export default class App extends Component {
           <TouchableOpacity
             onPress={() => {
               this.switchToUserBrush();
-
-              // sendSwitchBrush(this.state.socket,brushTypes.USER)
             }}
             disabled={this.state.disableButtons}
           >
@@ -903,7 +915,7 @@ export default class App extends Component {
                     flexDirection: "row",
                     justifyContent: "space-around",
                   }}> 
-                    <View style={{ padding: 5, width: "30%" }}>
+                    <View style={{ padding: 5, width: "20%" }}>
                       <Button
                         style={{ marginTop: 10, height: "80" }}
                         color="#5e748a"
@@ -912,7 +924,7 @@ export default class App extends Component {
                       />
                     </View>
 
-                    <View style={{ padding: 5, width: "30%" }}>
+                    <View style={{ padding: 5, width: "20%" }}>
                       <Button
                         mode="contained"
                         style={{ padding: 10 }}
@@ -930,6 +942,17 @@ export default class App extends Component {
                         onPress={this.grabPixelsSd.bind(this)}
                         color="#88508c"
                         title="Stable Diffusion"
+                        disabled={this.state.isLoading}
+                      />
+                    </View>
+
+                    <View style={{ padding: 5, width: "25%" }}>
+                      <Button
+                        mode="contained"
+                        style={{ padding: 10 }}
+                        onPress={this.grabPixelsCN.bind(this)}
+                        color="#88508c"
+                        title="Control Net"
                         disabled={this.state.isLoading}
                       />
                     </View>
@@ -967,7 +990,7 @@ export default class App extends Component {
                     <View style={{ margin: 2 }}>
                       <TouchableOpacity
                         style={{
-                          padding: 4,
+                          padding: 2,
                           borderRadius: 5,
                           backgroundColor: obj.color,
                           borderWidth: this.state.color == obj.color ? 10 : 0,
@@ -991,7 +1014,7 @@ export default class App extends Component {
                         />
                         <Text
                           style={{
-                            fontSize: device.height * 0.015,
+                            fontSize: device.height * 0.012,
                             color: obj.color == "#efefef" ? "#3d3d3d" : "white",
 
                             // color:

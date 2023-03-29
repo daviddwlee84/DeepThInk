@@ -223,14 +223,14 @@ export default class DrawCanvas extends Component {
 		var ctx = canvas.getContext("2d");
 
 		// Fill upper half of the canvas with sky
-		ctx.fillStyle = "#759edf";
+		ctx.fillStyle = "#efefef";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		if (this.props.isFirstLoadDrawCanvas)
-		{
-			// Fill bottom half of canvas with sea
-			ctx.fillStyle = "#384f83";
-			ctx.fillRect(0, 3*canvas.height/4, canvas.width, canvas.height/4);
-		}
+		// if (this.props.isFirstLoadDrawCanvas)
+		// {
+		// 	// Fill bottom half of canvas with sea
+		// 	ctx.fillStyle = "#384f83";
+		// 	ctx.fillRect(0, 3*canvas.height/4, canvas.width, canvas.height/4);
+		// }
 	}
 
 

@@ -1,7 +1,7 @@
 import base64
 from typing import Tuple
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 import io
 import torch
 from easydict import EasyDict
@@ -117,13 +117,12 @@ def getLabelMap(image_hex):
     """
     
     """
-
     image_labels = []
     for i in range(image_hex.shape[0]):
         image_labels_row = []
         for j in range(image_hex.shape[1]):
             # By default, fill with sky if some loss happened.
-            label = colorMap.get(image_hex[i, j], colorMap['#3c3b4b'])['id']
+            label = colorMap.get(image_hex[i, j], colorMap['#000000'])['id']
             image_labels_row.append(label)
         image_labels.append(image_labels_row)
     # print("image labels is", image_labels)
@@ -219,6 +218,52 @@ def apply_stable_diffusion(image, prompt):
     output = version.predict(**inputs)
     return output
 
+def diffusers(image, prompt):
+
+    from diffusers import StableDiffusionImg2ImgPipeline
+
+    # model_id_or_path = "runwayml/stable-diffusion-v1-5"
+    model_id_or_path = "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1"
+    pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16)
+    pipe = pipe.to("cuda")
+
+    images = pipe(prompt=prompt+"精细, 高清", image=image, strength=0.75, num_inference_steps=20, guidance_scale=7.5, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印").images
+    images[0].save("fantasy_landscape.png")
+    
+    return images
+
+def control_net(image, prompt):
+
+    base64_decoded = base64.b64decode(image)
+    img = Image.open(io.BytesIO(base64_decoded))
+    img = ImageOps.exif_transpose(img)
+    img = img.convert("RGB")
+    img = img.resize((512, 512), Image.NEAREST)
+    img.save("control_net_in.png")
+
+    from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
+    controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-scribble", torch_dtype=torch.float16)
+    # controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-seg", torch_dtype=torch.float16)
+    pipe = StableDiffusionControlNetPipeline.from_pretrained(
+        "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1", controlnet=controlnet, torch_dtype=torch.float16
+    )
+    pipe.to("cuda")
+    generator = torch.manual_seed(0)
+
+    out_image = pipe(
+        prompt=prompt, num_inference_steps=20, generator=generator, image=img, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印"
+    ).images
+
+    out_image[0].save("control_net.png")
+
+    output_buffer = io.BytesIO()
+    out_image[0].save(output_buffer, format='PNG')
+    byte_data = output_buffer.getvalue()
+    generated_base64 = "data:image/png;base64," + base64.b64encode(byte_data).decode()
+
+    return generated_base64
+
+
 def run_inference(label_data, model, opt, prompt, flag):
     assert model is not None, 'Error: no model loaded.'
     labelmap = Image.fromarray(np.array(label_data).astype(np.uint8))
@@ -245,16 +290,17 @@ def run_inference(label_data, model, opt, prompt, flag):
     # Get the base64 string to send back to frontend
     generated_base64 = tensor_to_base64(generated)
 
-    if (not flag):
-        res = apply_stable_diffusion(generated_base64, prompt)
-        response = requests.get(res[0])
-        img = Image.open(io.BytesIO(response.content))
-        size = 512, 512
-        img_resized = img.resize(size, Image.ANTIALIAS)
-        print("+++++++", img_resized)
+    if (flag == 2):
+        res = diffusers(generated, prompt)
+        print(res)
+        # response = requests.get(res[0])
+        # img = Image.open(res[0])
+        # size = 512, 512
+        # img_resized = img.resize(size, Image.ANTIALIAS)
+        # print("+++++++", img_resized)
 
         output_buffer = io.BytesIO()
-        img_resized.save(output_buffer, format='PNG')
+        res[0].save(output_buffer, format='PNG')
         byte_data = output_buffer.getvalue()
         generated_base64 = "data:image/png;base64," + base64.b64encode(byte_data).decode()
 

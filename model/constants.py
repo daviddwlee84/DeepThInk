@@ -59,4 +59,8 @@ colorMap = {
         'id': 158,
         'label': "snow",
     },
+    "#000000": {
+        'id': 1,
+        'label': "default",
+    },
 }

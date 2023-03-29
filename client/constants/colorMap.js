@@ -64,12 +64,6 @@ export default {
       // logo: require('../resources/tmp/treeLogo2.png'),
     },
     // {
-    //   color: '#e670b6',
-    //   id: 118,
-    //   label: 'flower',
-    //   logo: './resources/flowerLogo.png',
-    // },
-    // {
     //   color: '#c1c3c9',
     //   id: 119,
     //   label: 'fog',
@@ -94,6 +88,12 @@ export default {
       label: 'River',
       logo: require('../resources/riverLogo.png'),
       // logo: require('../resources/tmp/riverLogo2.png'),
+    },
+    {
+      color: '#000000',
+      id: 100,
+      label: 'user brush',
+      // logo: './resources/flowerLogo.png',
     },
     // {
     //   color: '#fafafa',
