@@ -1,11 +1,11 @@
 {
   "files": {
-    "app.js": "/DeepThInkWeb/static/js/app.0138a3ac.chunk.js",
-    "app.js.map": "/DeepThInkWeb/static/js/app.0138a3ac.chunk.js.map",
+    "app.js": "/DeepThInkWeb/static/js/app.41795fc8.chunk.js",
+    "app.js.map": "/DeepThInkWeb/static/js/app.41795fc8.chunk.js.map",
     "runtime~app.js": "/DeepThInkWeb/static/js/runtime~app.8946a4fa.js",
     "runtime~app.js.map": "/DeepThInkWeb/static/js/runtime~app.8946a4fa.js.map",
-    "static/js/2.aadbb146.chunk.js": "/DeepThInkWeb/static/js/2.aadbb146.chunk.js",
-    "static/js/2.aadbb146.chunk.js.map": "/DeepThInkWeb/static/js/2.aadbb146.chunk.js.map",
+    "static/js/2.e55c42a4.chunk.js": "/DeepThInkWeb/static/js/2.e55c42a4.chunk.js",
+    "static/js/2.e55c42a4.chunk.js.map": "/DeepThInkWeb/static/js/2.e55c42a4.chunk.js.map",
     "fonts/AntDesign.ttf": "/DeepThInkWeb/./fonts/AntDesign.ttf",
     "fonts/Entypo.ttf": "/DeepThInkWeb/./fonts/Entypo.ttf",
     "fonts/Feather.ttf": "/DeepThInkWeb/./fonts/Feather.ttf",
@@ -21,7 +21,7 @@
     "index.html": "/DeepThInkWeb/index.html",
     "manifest.json": "/DeepThInkWeb/manifest.json",
     "serve.json": "/DeepThInkWeb/serve.json",
-    "static/js/2.aadbb146.chunk.js.LICENSE.txt": "/DeepThInkWeb/static/js/2.aadbb146.chunk.js.LICENSE.txt",
+    "static/js/2.e55c42a4.chunk.js.LICENSE.txt": "/DeepThInkWeb/static/js/2.e55c42a4.chunk.js.LICENSE.txt",
     "static/media/AIBrush.png": "/DeepThInkWeb/static/media/AIBrush.eb0b1fec.png",
     "static/media/Ballpoint.png": "/DeepThInkWeb/static/media/Ballpoint.6fc6ee6b.png",
     "static/media/Chalk.png": "/DeepThInkWeb/static/media/Chalk.7ca67c72.png",
@@ -59,7 +59,7 @@
   },
   "entrypoints": [
     "static/js/runtime~app.8946a4fa.js",
-    "static/js/2.aadbb146.chunk.js",
-    "static/js/app.0138a3ac.chunk.js"
+    "static/js/2.e55c42a4.chunk.js",
+    "static/js/app.41795fc8.chunk.js"
   ]
 }

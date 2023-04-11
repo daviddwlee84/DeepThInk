@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import DrawCanvas from "./components/DrawCanvas";
 import UserCanvas from "./components/UserCanvas";
+import InspireMode from "./components/InspireMode";
 
 import Slider from "@react-native-community/slider";
 import colorMap from "./constants/colorMap.js";
@@ -31,9 +32,9 @@ var device = Dimensions.get("window");
 const CANVASWIDTH = device.height * 0.8;
 const CANVASHEIGHT = device.height * 0.8;
 
-const LOCALURL = "http://127.0.0.1:8000";
+// const LOCALURL = "http://127.0.0.1:8000";
 // const LOCALURL = "http://region-11.autodl.com:25172"
-// const LOCALURL = ""
+const LOCALURL = ""
 
 // Connect to Go backend
 // for web
@@ -47,6 +48,7 @@ export default class App extends Component {
   // React state: store the image data
   state = {
     showAICanvas: true,
+    showInspireMode: false,
     showUserCanvas: false,
 
     rightColumnWidth: device.height * 0.11 * 1.8,
@@ -115,7 +117,6 @@ export default class App extends Component {
     canvasHeight: CANVASHEIGHT,
     currentBrush: brushTypes.AI,
 
-    showImageForEyeDropper: false,
     showPreview: true, // show the preview of the other canvas at the top left corner
 
     isLoading: true, //for loading spinner
@@ -140,7 +141,7 @@ export default class App extends Component {
       isLoading: false,
       isFirstLoadDrawCanvas: false,
     }));
-    }
+  }
   // get image data from canvas
   // Then call sendRequest to send the data to backend
   grabPixelsGan = async () => {
@@ -356,6 +357,7 @@ export default class App extends Component {
           (prevState) => ({
             ...prevState,
             showAICanvas: true,
+            showInspireMode: false,
             showUserCanvas: false,
             userCanvasImageData: usercanvas,
           }),
@@ -373,38 +375,6 @@ export default class App extends Component {
       });
   };
 
-  loadUserCanvas = () => {
-    this.setState(
-      (prevState) => ({
-        ...prevState,
-        showUserCanvas: true,
-        isLoading: true,
-      }),
-      () => {
-        for (var i = 0; i < 2; i++) {
-          setTimeout(() => {
-            if (this.refs.userCanvasRef !== null) {
-              console.log("Load user canvas");
-              this.refs.userCanvasRef.loadData(this.state.userCanvasImageData);
-              this.setState(
-                (prevState) => ({
-                  ...prevState,
-                  isLoading: false,
-                  disableDrawing: false,
-                }),
-                () => {
-                  this.refs.userCanvasRef.makeBrushColor(
-                    this.state.userBrushColor
-                  );
-                }
-              );
-            }
-          }, 1500);
-        }
-      }
-    );
-  };
-
   enableUserCanvas = () => {
     if (this.state.showUserCanvas) {
       return;
@@ -418,6 +388,7 @@ export default class App extends Component {
           (prevState) => ({
             ...prevState,
             showAICanvas: false,
+            showInspireMode: false,
             showUserCanvas: true,
             aiCanvasImageData: aicanvas,
           }),
@@ -429,55 +400,6 @@ export default class App extends Component {
                 );
               }, 0);
             }
-          }
-        );
-        // Load the data base64
-      });
-  };
-
-  disableUserCanvas = () => {
-    if (this.state.showAICanvas) {
-      return;
-    }
-
-    // Save the usercanvas data
-    var getImageUserCanvas = this.refs.userCanvasRef
-      .getBase64()
-      .then((usercanvas) => {
-        this.setState((prevState) => ({
-          ...prevState,
-          showAICanvas: false,
-          showUserCanvas: false,
-          userCanvasImageData: usercanvas,
-        }));
-      });
-  };
-
-  enableUserCanvas = () => {
-    if (this.state.showUserCanvas) {
-      return;
-    }
-
-    // Save the drawcanvas and usercanvas data
-    var getImageAICanvas = this.refs.drawCanvasRef
-      .getBase64()
-      .then((aicanvas) => {
-        this.setState(
-          (prevState) => ({
-            ...prevState,
-            showAICanvas: false,
-            showUserCanvas: true,
-            aiCanvasImageData: aicanvas,
-          }),
-          () => {
-            for (var i = 0; i < 2; i++) {
-              setTimeout(() => {
-                this.refs.userCanvasRef.loadData(
-                  this.state.userCanvasImageData
-                );
-              }, 0);
-            }
-            // this.refs.userCanvasRef.loadData(this.state.userCanvasImageData);
           }
         );
         // Load the data base64
@@ -490,6 +412,15 @@ export default class App extends Component {
       currentBrush: brushTypes.AI,
     }));
     this.enableAICanvas();
+  }
+
+  switchToInspireMode = () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      showInspireMode: true,
+      currentBrush: brushTypes.INSPIRE,
+    }));
+    // this.enableInspireMode();
   }
 
   switchToStyleBrush = () => {
@@ -574,7 +505,7 @@ export default class App extends Component {
         {/* this View wraps the left column */}
         <View
           style={{
-            width: this.state.leftColumnLeftMargin + this.state.leftColumnWidth,
+            width: this.state.leftColumnLeftMargin + this.state.leftColumnWidth - 40,
           }}
         >
           <TouchableOpacity
@@ -596,6 +527,30 @@ export default class App extends Component {
                       ? device.height * 0.10 * 1.5
                       : device.height * 0.08 * 1.5,
                   opacity: this.state.currentBrush == brushTypes.AI ? 1 : 0.55,
+                },
+              ]}
+              source={require("./resources/AIBrush.png")}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              this.switchToInspireMode();
+            }}
+            disabled={this.state.disableButtons}
+          >
+            <Image
+              style={[
+                styles.brushes,
+                {
+                  height:
+                    this.state.currentBrush == brushTypes.INSPIRE
+                      ? device.height * 0.10
+                      : device.height * 0.08,
+                  width:
+                    this.state.currentBrush == brushTypes.INSPIRE
+                      ? device.height * 0.10 * 1.5
+                      : device.height * 0.08 * 1.5,
+                  opacity: this.state.currentBrush == brushTypes.INSPIRE ? 1 : 0.55,
                 },
               ]}
               source={require("./resources/AIBrush.png")}
@@ -718,7 +673,7 @@ export default class App extends Component {
         </View>
 
         {/* this View wraps middle column */}
-        <View style={{ flexDirection: "column" }}>
+        <View style={{ flexDirection: "column", display: this.state.currentBrush == brushTypes.INSPIRE ? "none" : "block" }} >
           {/* this View wraps around the buttons that changes canva view & camera*/}
           <View
             style={{
@@ -884,19 +839,6 @@ export default class App extends Component {
                 </View>
               )}
 
-              {/* Show the image for the eye dropper */}
-              {this.state.showImageForEyeDropper && (
-                <View style={styles.shadowBox}>
-                  <Image
-                    style={{
-                      width: this.state.USER_CANVASWIDTH,
-                      height: this.state.USER_CANVASHEIGHT,
-                    }}
-                    source={this.state.finalImageData}
-                  />
-                </View>
-              )}
-
               {/* this wraps the buttons at the bottom of canvas */}
               {this.state.currentBrush == brushTypes.AI && (
                 <View
@@ -978,6 +920,15 @@ export default class App extends Component {
             </View>
           </View>
         </View>
+        
+        <View style={{ flexDirection: "row", display: this.state.currentBrush == brushTypes.INSPIRE ? "block" : "none", width: "80%" }}>
+            {/* {this.state.currentBrush == brushTypes.INSPIRE && ( */}
+              <View>
+                <InspireMode localurl={LOCALURL}>
+                </InspireMode>
+              </View>
+            {/* )} */}
+          </View>
 
         {/* this View wraps the right column */}
         <View style={{ flexDirection: "row" }}>

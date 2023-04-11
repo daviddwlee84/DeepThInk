@@ -4,30 +4,24 @@ Flask server for running deployed gauGAN model
 import numpy as np
 from numpy import imag
 from all_models.gaugan.model_utils import (processByte64, load_model,
-                                           run_inference, control_net)
+                                           run_inference, control_net, text2img_diffusers)
 from all_models.fast_neural_style.style_utils import stylizeImage
 from brushes import getBrush
 from flask import Flask, request, current_app
 from flask_cors import CORS
 import json
+import gc
 import uuid
 import base64
 from PIL import Image, ImageDraw, ImageColor
+import torch
 import io
 import os
-import boto3
 from dotenv import load_dotenv
 from datetime import datetime
 import requests
 
 load_dotenv()  
-
-s3 = boto3.resource(
-    service_name='s3',
-    region_name='us-east-1',
-    aws_access_key_id=os.environ['ACCESS_ID'],
-    aws_secret_access_key=os.environ['SECRET_KEY']
-)
 
 app = Flask(__name__, static_folder="DeepThInkWeb")
 CORS(app)
@@ -36,7 +30,9 @@ CORS(app)
 model, opt = load_model()
 model.eval()
 
-
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
+from diffusers import StableDiffusionImg2ImgPipeline
+from diffusers import StableDiffusionPipeline
 
 
 @app.route('/')
@@ -79,6 +75,8 @@ def generate():
         generated_image = run_inference(image_array, model, opt, prompt, flag)
     else:
         generated_image = control_net(image_data, prompt)
+
+
     #
     #
     # response = requests.get(generated_image[0])
@@ -105,6 +103,18 @@ def generate():
 
     return {"message": "Successfully got image", "data": generated_image}
 
+@app.route('/inspire', methods=['POST'])
+def inspire():
+    # Generate a request id for saving the images
+    request_id = str(uuid.uuid4())
+
+    # Fetch image data
+    data = request.get_json()
+    prompt = data.get("prompt")
+    print("---------------", prompt)
+    images = text2img_diffusers(prompt)
+
+    return {"message": "Successfully got prompt", "data": images}
 
 @app.route('/stylize', methods=['POST'])
 def stylize():
@@ -181,70 +191,68 @@ def colorize():
     return {"message":"Success", "data": img_str}
 
 # Save generated paintings
-@app.route('/save', methods=['POST'])
-def save():
-    # Get the displayed image data
-    data = request.get_json()
-    aiCanvasData = data.get("aiCanvasImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
-    backgroundCanvasData = data.get("displayedImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
-    foregroundCanvasData = data.get("userCanvasImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
-    userId = data.get("userId", "unknownUser")
-    if (backgroundCanvasData == ""):
-        now = datetime.now()
-        dt_string = now.strftime("%d-%m-%Y-%H:%M:%S")
+# @app.route('/save', methods=['POST'])
+# def save():
+#     # Get the displayed image data
+#     data = request.get_json()
+#     aiCanvasData = data.get("aiCanvasImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+#     backgroundCanvasData = data.get("displayedImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+#     foregroundCanvasData = data.get("userCanvasImageData", "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+#     userId = data.get("userId", "unknownUser")
+#     if (backgroundCanvasData == ""):
+#         now = datetime.now()
+#         dt_string = now.strftime("%d-%m-%Y-%H:%M:%S")
 
-        filename1 = "img/" + userId + "-"+dt_string+".png"
-
-
-        foreground_base64_decoded = base64.b64decode(foregroundCanvasData)
-
-        # Get the background
-        foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((512,512))
+#         filename1 = "img/" + userId + "-"+dt_string+".png"
 
 
-        objPainting = s3.Object(os.environ['S3_BUCKET'],filename1)
+#         foreground_base64_decoded = base64.b64decode(foregroundCanvasData)
 
-        buffered = io.BytesIO()
-        foreground_img.save(buffered, format="PNG")
-        final_painting_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-
+#         # Get the background
+#         foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((512,512))
 
 
-        objPainting.put(Body=base64.b64decode(final_painting_str))
+#         objPainting = s3.Object(os.environ['S3_BUCKET'],filename1)
 
-        return {"message":"Success", "data": "data:image/png;base64," +  foregroundCanvasData}
+#         buffered = io.BytesIO()
+#         foreground_img.save(buffered, format="PNG")
+#         final_painting_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+
+
+#         objPainting.put(Body=base64.b64decode(final_painting_str))
+
+#         return {"message":"Success", "data": "data:image/png;base64," +  foregroundCanvasData}
     
 
-    # Remove the javascript file type header
-    aiCanvasData = base64.b64decode(aiCanvasData)
-    foreground_base64_decoded = base64.b64decode(foregroundCanvasData)
-    background_base64_decoded = base64.b64decode(backgroundCanvasData)
+#     # Remove the javascript file type header
+#     aiCanvasData = base64.b64decode(aiCanvasData)
+#     foreground_base64_decoded = base64.b64decode(foregroundCanvasData)
+#     background_base64_decoded = base64.b64decode(backgroundCanvasData)
 
-    # Get the background
-    background_img = Image.open(io.BytesIO(background_base64_decoded)).resize((512,512))
-    foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((512,512))
-    canvas_img =  Image.open(io.BytesIO(aiCanvasData)).resize((512,512))
+#     # Get the background
+#     background_img = Image.open(io.BytesIO(background_base64_decoded)).resize((512,512))
+#     foreground_img = Image.open(io.BytesIO(foreground_base64_decoded)).resize((512,512))
+#     canvas_img =  Image.open(io.BytesIO(aiCanvasData)).resize((512,512))
 
-    # Overlay the foreground onto the background
-    background_img.paste(foreground_img, (0, 0), foreground_img)
+#     # Overlay the foreground onto the background
+#     background_img.paste(foreground_img, (0, 0), foreground_img)
 
-    # save painting
-    buffered = io.BytesIO()
-    background_img.save(buffered, format="PNG")
-    final_painting_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-    now = datetime.now()
-
-
-    dt_string = now.strftime("%d-%m-%Y-%H:%M:%S")
-    filename = "img/" + userId + "-"+dt_string+".png"
-    obj = s3.Object(os.environ['S3_BUCKET'],filename)
-    obj.put(Body=base64.b64decode(final_painting_str))
+#     # save painting
+#     buffered = io.BytesIO()
+#     background_img.save(buffered, format="PNG")
+#     final_painting_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+#     now = datetime.now()
 
 
+#     dt_string = now.strftime("%d-%m-%Y-%H:%M:%S")
+#     filename = "img/" + userId + "-"+dt_string+".png"
+#     obj = s3.Object(os.environ['S3_BUCKET'],filename)
+#     obj.put(Body=base64.b64decode(final_painting_str))
 
-    print(final_painting_str)
+#     print(final_painting_str)
 
-    return {"message":"Success", "data": "data:image/png;base64," + final_painting_str}
+#     return {"message":"Success", "data": "data:image/png;base64," + final_painting_str}
 
 
 

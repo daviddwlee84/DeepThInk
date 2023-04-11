@@ -6,6 +6,7 @@ import io
 import torch
 from easydict import EasyDict
 import os
+import gc
 from matplotlib.colors import rgb2hex
 from torchvision.transforms import ToPILImage
 import replicate
@@ -218,19 +219,56 @@ def apply_stable_diffusion(image, prompt):
     output = version.predict(**inputs)
     return output
 
-def diffusers(image, prompt):
 
-    from diffusers import StableDiffusionImg2ImgPipeline
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
+from diffusers import StableDiffusionImg2ImgPipeline
+from diffusers import StableDiffusionPipeline
+model_id_or_path = "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1"
 
-    # model_id_or_path = "runwayml/stable-diffusion-v1-5"
-    model_id_or_path = "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1"
-    pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16)
-    pipe = pipe.to("cuda")
+img2img_pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
+img2img_pipe.enable_xformers_memory_efficient_attention()
 
-    images = pipe(prompt=prompt+"精细, 高清", image=image, strength=0.75, num_inference_steps=20, guidance_scale=7.5, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印").images
+text2img_pipe = StableDiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
+text2img_pipe.enable_xformers_memory_efficient_attention()
+
+torch.cuda.empty_cache()
+gc.collect()
+
+def img2img_diffusers(image, prompt):
+
+    torch.cuda.empty_cache()
+    gc.collect()
+    with torch.inference_mode():
+        images = img2img_pipe(prompt=prompt+"精细, 高清", image=image, strength=0.75, num_inference_steps=20, guidance_scale=7.5, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印").images
     images[0].save("fantasy_landscape.png")
     
     return images
+
+def text2img_diffusers(prompt):
+
+    torch.cuda.empty_cache()
+    gc.collect()
+    with torch.inference_mode():
+        images = text2img_pipe(
+            prompt=prompt+"精细, 高清", 
+            num_inference_steps=20, 
+            guidance_scale=7.5, 
+            negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印", 
+            num_images_per_prompt=3,
+        ).images
+
+    img_list = []
+
+    for i in range(3):
+        print(images[i], i)
+        images[i].save(f"control_net_in_{i}.png")
+        output_buffer = io.BytesIO()
+        images[i].save(output_buffer, format='PNG')
+        byte_data = output_buffer.getvalue()
+        generated_base64 = "data:image/png;base64," + base64.b64encode(byte_data).decode()
+        img_list.append(generated_base64)
+
+    return img_list
 
 def control_net(image, prompt):
 
@@ -241,17 +279,18 @@ def control_net(image, prompt):
     img = img.resize((512, 512), Image.NEAREST)
     img.save("control_net_in.png")
 
-    from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
     controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-scribble", torch_dtype=torch.float16)
+    torch.cuda.empty_cache()
+    gc.collect()
     # controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-seg", torch_dtype=torch.float16)
-    pipe = StableDiffusionControlNetPipeline.from_pretrained(
-        "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1", controlnet=controlnet, torch_dtype=torch.float16
-    )
-    pipe.to("cuda")
-    generator = torch.manual_seed(0)
+    cn_pipe = StableDiffusionControlNetPipeline.from_pretrained(model_id_or_path, controlnet=controlnet, torch_dtype=torch.float16)
 
-    out_image = pipe(
-        prompt=prompt, num_inference_steps=20, generator=generator, image=img, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印"
+    # this command loads the individual model components on GPU on-demand.
+    cn_pipe.enable_model_cpu_offload()
+    # cn_pipe.enable_xformers_memory_efficient_attention()
+
+    out_image = cn_pipe(
+        prompt=prompt, num_inference_steps=20, image=img, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印"
     ).images
 
     out_image[0].save("control_net.png")
@@ -291,8 +330,9 @@ def run_inference(label_data, model, opt, prompt, flag):
     generated_base64 = tensor_to_base64(generated)
 
     if (flag == 2):
-        res = diffusers(generated, prompt)
-        print(res)
+        res = img2img_diffusers(generated, prompt)
+        print("img2img_diffusers done", res)
+        
         # response = requests.get(res[0])
         # img = Image.open(res[0])
         # size = 512, 512

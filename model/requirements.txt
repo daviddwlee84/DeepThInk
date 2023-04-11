@@ -1,4 +1,4 @@
-boto3==1.26.45
+accelerate=0.18.0
 dill==0.3.4
 dominate==2.7.0
 easydict==1.9
@@ -6,7 +6,7 @@ Flask==2.1.0
 Flask_Cors==3.0.9
 gym==0.26.2
 matplotlib==3.3.2
-numpy==1.23.5
+numpy==1.22.0
 onnx==1.13.0
 onnx_caffe2==1.0.0
 opencv_python==4.5.3.56
