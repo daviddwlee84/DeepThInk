@@ -279,10 +279,13 @@ def control_net(image, prompt):
     img = img.resize((512, 512), Image.NEAREST)
     img.save("control_net_in.png")
 
-    controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-scribble", torch_dtype=torch.float16)
     torch.cuda.empty_cache()
     gc.collect()
-    # controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-seg", torch_dtype=torch.float16)
+    # controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-scribble", torch_dtype=torch.float16)
+    controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-seg", torch_dtype=torch.float16)
+
+    torch.cuda.empty_cache()
+    gc.collect()
     cn_pipe = StableDiffusionControlNetPipeline.from_pretrained(model_id_or_path, controlnet=controlnet, torch_dtype=torch.float16)
 
     # this command loads the individual model components on GPU on-demand.

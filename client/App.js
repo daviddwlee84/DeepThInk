@@ -32,9 +32,9 @@ var device = Dimensions.get("window");
 const CANVASWIDTH = device.height * 0.8;
 const CANVASHEIGHT = device.height * 0.8;
 
-// const LOCALURL = "http://127.0.0.1:8000";
+const LOCALURL = "http://127.0.0.1:8000";
 // const LOCALURL = "http://region-11.autodl.com:25172"
-const LOCALURL = ""
+// const LOCALURL = ""
 
 // Connect to Go backend
 // for web
@@ -848,8 +848,8 @@ export default class App extends Component {
                   }}
                 >
                   <TextInput
-                    style={{height: 40}}
-                    placeholder="Prompt..."
+                    style={styles.input}
+                    placeholder="文字描述"
                     onChangeText={(text) => this.setState({text})}
                     value={this.state.text}
                   />
@@ -1384,5 +1384,12 @@ const styles = StyleSheet.create({
   Cat: {
     color: "pink",
     backgroundColor: "pink",
+  },
+  input: {
+    height: 45,
+    margin: 12,
+    borderRadius: 5,
+    borderWidth: 1,
+    padding: 8,
   },
 });
