@@ -6,13 +6,11 @@ import { Button, Select, Input, Typography, Card, Image } from 'antd';
 const { Title } = Typography;
  
 const options = [
-	{ value: '3D绘画', label: '3D绘画' },
 	{ value: '油画', label: '油画' },
 	{ value: '插画', label: '插画' },
-	{ value: '概念画', label: '概念画' },
+	{ value: '卡通', label: '卡通' },
 	{ value: '科幻', label: '科幻' },
 	{ value: '古风', label: '古风' },
-	{ value: '未来感', label: '未来感' },
 	{ value: '高清', label: '高清' },
 	{ value: '壁纸', label: '壁纸' },
 	{ value: '色彩艳丽', label: '色彩艳丽' },
@@ -36,6 +34,7 @@ const InspireMode = (props) => {
 		"two": [],
 		"three": []
 	});
+	const [loadings, setLoadings] = useState([]);
 
 	const sections = ["one", "two", "three"];
 
@@ -43,9 +42,15 @@ const InspireMode = (props) => {
     console.log("Mounting...");
   },[]);
 
-	const handleGenerate = async (index) => {
-		console.log(index);
-		console.log(`${prompt[index]},${style[index]}`);
+	const handleGenerate = async (section, index) => {
+		console.log(section);
+		console.log(`${prompt[section]},${style[section]}`);
+
+		setLoadings((prevLoadings) => {
+      const newLoadings = [...prevLoadings];
+      newLoadings[index] = true;
+      return newLoadings;
+    });
 
 		const response = await fetch(`${localurl}/inspire`, {
       method: 'POST',
@@ -54,21 +59,21 @@ const InspireMode = (props) => {
           'Authorization': 'Token f40e401a60e03f6ae459a36e1faa4e5c575819f5'
       },
       body: JSON.stringify({
-        prompt: `${prompt[index]},${style[index]}`,
+        prompt: `${prompt[section]},${style[section]}`,
       }),
     });
 
     const msg = await response.json()
     console.log(msg.data)
 
-		if(index === "one") {
+		if(section === "one") {
 			setList((olddata)=>{
 				return{
 				...olddata,
 				one: msg.data
 				}
 			})
-		}else if(index === "two"){
+		}else if(section === "two"){
 			setList((olddata)=>{
 				return{
 				...olddata,
@@ -84,10 +89,17 @@ const InspireMode = (props) => {
 			})
 		}
 
+		setLoadings((prevLoadings) => {
+			const newLoadings = [...prevLoadings];
+			newLoadings[index] = false;
+			return newLoadings;
+		});
+
 	};
 
 	return (
 		<>
+			<Title style={{ margin: 10 }} level={3}>AI艺术疗愈</Title>
 			{sections.map((section, index) => (
 				<View style={{ flexDirection: "row", margin: "2%" }}>
 					<Card style={{ width: "40%" }}>
@@ -119,7 +131,7 @@ const InspireMode = (props) => {
 								}
 								
 							}}
-							style={{ width: '90%', marginTop: "10px" }}
+							style={{ width: '100%', marginTop: "10px" }}
 							placeholder="文字描述"
 							value={prompt[section]}
 						/>
@@ -127,7 +139,7 @@ const InspireMode = (props) => {
 							size="large"
 							mode="multiple"
 							allowClear
-							style={{ width: '70%', maxWidth: '70%', marginTop: "15px", marginRight: "10px" }}
+							style={{ width: '60%', maxWidth: '70%', marginTop: "15px", marginRight: "10px" }}
 							onChange={(value) => {
 								if(section === "one") {
 									setStyle((olddata)=>{
@@ -155,7 +167,14 @@ const InspireMode = (props) => {
 							placeholder="风格，多选"
 							options={options}
 						/>
-						<Button type="primary" style={{ width: '20%', marginTop: "15px" }} onClick = {() => handleGenerate(section)} >生成</Button>
+						<Button 
+							type="primary" 
+							style={{ width: '30%', marginTop: "15px" }} 
+							onClick = {() => handleGenerate(section, index)}
+							loading={loadings[index]}
+						>
+							生成 / 换一批
+						</Button>
 					</Card>
 					<Card style={{ width: "60%" }}>
 						<Image.PreviewGroup>
