@@ -14,11 +14,11 @@ import gc
 import uuid
 import base64
 from PIL import Image, ImageDraw, ImageColor
-import torch
+import time
+import queue
+import threading
 import io
-import os
 from dotenv import load_dotenv
-from datetime import datetime
 import requests
 
 load_dotenv()  
@@ -26,6 +26,8 @@ load_dotenv()
 app = Flask(__name__, static_folder="DeepThInkWeb")
 CORS(app)
 
+request_queue = queue.Queue()
+result_dict = {}
 # Load the model
 model, opt = load_model()
 model.eval()
@@ -34,6 +36,27 @@ from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
 from diffusers import StableDiffusionImg2ImgPipeline
 from diffusers import StableDiffusionPipeline
 
+# 处理队列中的请求
+def process_requests():
+    while True:
+        req = request_queue.get()
+        if req:
+            prompt = req.get("prompt")
+            client_id = req.get("client_id")
+            images = text2img_diffusers(prompt)
+
+            for i in range(3):
+                # Remove the javascript file type header
+                generated_image_strip_header = images[i].lstrip("data:image/png;base64")
+                # Save the generated image
+                with open(f"outputs/{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}_{i}.png", "wb") as fh:
+                    fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
+
+            result_dict[client_id] = images
+
+# 创建一个后台线程来处理队列中的请求
+worker = threading.Thread(target=process_requests, daemon=True)
+worker.start()
 
 @app.route('/')
 def hello_world():
@@ -68,7 +91,6 @@ def generate():
 
     # Convert byte64 into labelmap
     image_array = processByte64(image_data)
-    # print(image_array)
 
     # Perform inference gaugan and stable diffusion
     if(flag != 3):
@@ -76,45 +98,31 @@ def generate():
     else:
         generated_image = control_net(image_data, prompt)
 
-
-    #
-    #
     # response = requests.get(generated_image[0])
     # img = Image.open(io.BytesIO(response.content))
     # size = 256, 256
     # img_resized = img.resize(size, Image.ANTIALIAS)
     # print("+++++++", img_resized)
 
-    # output_buffer = io.BytesIO()
-    # img_resized.save(output_buffer, format='PNG')
-    # byte_data = output_buffer.getvalue()
-    # base64_str = base64.b64encode(byte_data).decode()
-    # #
-    #
-    # print("+++++++", base64_str)
-
-    # Remove the javascript file type header
-    # generated_image_strip_header = generated_image.lstrip(
-    #     "data:image/png;base64")
-
-    # Save the generated image
-    # with open(f"outputs/{request_id}_GENERATED.png", "wb") as fh:
-    #     fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
-
     return {"message": "Successfully got image", "data": generated_image}
 
 @app.route('/inspire', methods=['POST'])
 def inspire():
-    # Generate a request id for saving the images
-    request_id = str(uuid.uuid4())
 
+    client_id = str(uuid.uuid4())
     # Fetch image data
     data = request.get_json()
     prompt = data.get("prompt")
     print("---------------", prompt)
-    images = text2img_diffusers(prompt)
+    request_queue.put({"client_id": client_id, "prompt": prompt})
 
-    return {"message": "Successfully got prompt", "data": images}
+    while client_id not in result_dict:
+        time.sleep(0.1)
+
+    img_data = result_dict[client_id]
+    del result_dict[client_id]
+
+    return {"message": "Successfully got prompt", "data": img_data}
 
 @app.route('/stylize', methods=['POST'])
 def stylize():

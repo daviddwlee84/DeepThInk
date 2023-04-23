@@ -261,7 +261,6 @@ def text2img_diffusers(prompt):
 
     for i in range(3):
         print(images[i], i)
-        images[i].save(f"control_net_in_{i}.png")
         output_buffer = io.BytesIO()
         images[i].save(output_buffer, format='PNG')
         byte_data = output_buffer.getvalue()
