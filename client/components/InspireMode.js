@@ -114,7 +114,7 @@ const InspireMode = (props) => {
 	return (
 		<>
 			<Title style={{ margin: 10 }} level={3}>AI艺术疗愈</Title>
-      <span>{"id: "}
+      <span style={{ marginLeft: "2%", marginTop: "2%" }}>{"用户id："}
 			  <Input placeholder="请输入id" status={idStatus} onChange={onChange} style={{width: 200}} />
       </span>
 			{sections.map((section, index) => (
