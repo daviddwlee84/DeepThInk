@@ -2,7 +2,7 @@ import React, { useEffect, useState  } from 'react';
 import {
   View,
 } from "react-native";
-import { Button, Select, Input, Typography, Card, Image } from 'antd';
+import { Button, Select, Input, Typography, Card, Image, message } from 'antd';
 const { Title } = Typography;
  
 const options = [
@@ -35,71 +35,88 @@ const InspireMode = (props) => {
 		"three": []
 	});
 	const [loadings, setLoadings] = useState([]);
+	const [id, setId] = useState('');
+	const [idStatus, setIdStatus] = useState('basic');
+
+	const onChange = (e) => {
+		setId(e.target.value);
+	};
 
 	const sections = ["one", "two", "three"];
 
-  useEffect(() => {
-    console.log("Mounting...");
-  },[]);
+	useEffect(() => {
+		console.log("Mounting...");
+	},[]);
 
 	const handleGenerate = async (section, index) => {
 		console.log(section);
+		console.log(idStatus);
+		console.log(id);
 		console.log(`${prompt[section]},${style[section]}`);
-
-		setLoadings((prevLoadings) => {
-      const newLoadings = [...prevLoadings];
-      newLoadings[index] = true;
-      return newLoadings;
-    });
-
-		const response = await fetch(`${localurl}/inspire`, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token f40e401a60e03f6ae459a36e1faa4e5c575819f5'
-      },
-      body: JSON.stringify({
-        prompt: `${prompt[section]},${style[section]}`,
-      }),
-    });
-
-    const msg = await response.json()
-    console.log(msg.data)
-
-		if(section === "one") {
-			setList((olddata)=>{
-				return{
-				...olddata,
-				one: msg.data
-				}
-			})
-		}else if(section === "two"){
-			setList((olddata)=>{
-				return{
-				...olddata,
-				two: msg.data
-				}
-			})
-		}else{
-			setList((olddata)=>{
-				return{
-				...olddata,
-				three: msg.data
-				}
-			})
-		}
-
-		setLoadings((prevLoadings) => {
-			const newLoadings = [...prevLoadings];
-			newLoadings[index] = false;
-			return newLoadings;
-		});
-
+    if(id === ""){
+      setIdStatus('error');
+      message.error('请输入id');
+      return;
+    } else {
+      setIdStatus('basic');
+      setLoadings((prevLoadings) => {
+        const newLoadings = [...prevLoadings];
+        newLoadings[index] = true;
+        return newLoadings;
+      });
+  
+      const response = await fetch(`${localurl}/inspire`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token f40e401a60e03f6ae459a36e1faa4e5c575819f5'
+        },
+        body: JSON.stringify({
+          id: id,
+          prompt: `${prompt[section]},${style[section]}`,
+        }),
+      });
+  
+      const msg = await response.json()
+      console.log(msg.data)
+  
+      if(section === "one") {
+      	setList((olddata)=>{
+      		return{
+      		...olddata,
+      		one: msg.data
+      		}
+      	})
+      }else if(section === "two"){
+      	setList((olddata)=>{
+      		return{
+      		...olddata,
+      		two: msg.data
+      		}
+      	})
+      }else{
+      	setList((olddata)=>{
+      		return{
+      		...olddata,
+      		three: msg.data
+      		}
+      	})
+      }
+  
+      setLoadings((prevLoadings) => {
+      	const newLoadings = [...prevLoadings];
+      	newLoadings[index] = false;
+      	return newLoadings;
+      });
+    }
 	};
 
 	return (
 		<>
 			<Title style={{ margin: 10 }} level={3}>AI艺术疗愈</Title>
+      <span>{"id: "}
+			  <Input placeholder="请输入id" status={idStatus} onChange={onChange} style={{width: 200}} />
+      </span>
 			{sections.map((section, index) => (
 				<View style={{ flexDirection: "row", margin: "2%" }}>
 					<Card style={{ width: "40%" }}>

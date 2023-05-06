@@ -42,6 +42,7 @@ def process_requests():
         req = request_queue.get()
         if req:
             prompt = req.get("prompt")
+            id = req.get("id")
             client_id = req.get("client_id")
             images = text2img_diffusers(prompt)
 
@@ -49,7 +50,7 @@ def process_requests():
                 # Remove the javascript file type header
                 generated_image_strip_header = images[i].lstrip("data:image/png;base64")
                 # Save the generated image
-                with open(f"outputs/{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}_{i}.png", "wb") as fh:
+                with open(f"outputs/{id}_{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}_{i}.png", "wb") as fh:
                     fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
 
             result_dict[client_id] = images
@@ -113,8 +114,9 @@ def inspire():
     # Fetch image data
     data = request.get_json()
     prompt = data.get("prompt")
-    print("---------------", prompt)
-    request_queue.put({"client_id": client_id, "prompt": prompt})
+    id = data.get("id")
+    print("---------------", prompt, id)
+    request_queue.put({"client_id": client_id, "prompt": prompt, "id": id})
 
     while client_id not in result_dict:
         time.sleep(0.1)
