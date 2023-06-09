@@ -1,14 +1,14 @@
 export default {
   colors: [
     {
-      color: '#384f83',
+      color: '#0907E6',
       id: 154,
       label: 'Sea',
       logo: require('../resources/seaLogo.png'),
       // logo: require('../resources/tmp/seaLogo2.png'),
     },
     {
-      color: '#efefef',
+      color: '#06E6E6',
       id: 105,
       label: 'Cloud',
       logo: require('../resources/cloudLogo.png'),
@@ -16,48 +16,48 @@ export default {
       labelColor: "#d3d3d3"
     },
     {
-      color: '#2c1e16',
+      color: '#000AFF',
       id: 110,
       label: 'Dirt',
       logo: require('../resources/dirtLogo.png'),
       // logo: require('../resources/tmp/dirtLogo2.png'),
     },
     {
-      color: '#5d6e32',
+      color: '#04C803',
       id: 96,
       label: 'Bush',
       logo: require('../resources/bushLogo.png'),
       // logo: require('../resources/tmp/bushLogo2.png'),
     },
     {
-      color: '#b7d24e',
+      color: '#04FA07',
       id: 123,
       label: 'grass',
       labelColor: 'black',
       logo: require('../resources/bushLogo.png'),
     },
     {
-      color: '#3c3b4b',
+      color: '#8FFF8C',
       id: 134,
       label: 'Mountain',
       logo: require('../resources/mountainLogo.png'),
       // logo: require('../resources/tmp/mountainLogo2.png'),
     },
     // {
-    //   color: '#987e6a',
+    //   color: '#8C8C8C',
     //   id: 148,
     //   label: 'road',
     //   logo: './resources/roadLogo.png',
     // },
     {
-      color: '#759edf',
+      color: '#06E6E6',
       id: 156,
       label: 'Sky',
       logo: require('../resources/skyLogo.png'),
       // logo: require('../resources/tmp/skyLogo2.png'),
     },
     {
-      color: '#352613',
+      color: '#04C803',
       id: 168,
       label: 'Tree',
       logo: require('../resources/treeLogo.png'),
@@ -70,7 +70,7 @@ export default {
     //   logo: './resources/fogLogo.png',
     // },
     {
-      color: '#776c2d',
+      color: '#FF6600',
       id: 126,
       label: 'Hill',
       logo: require('../resources/hillLogo.png'),
@@ -83,7 +83,7 @@ export default {
     //   logo: './resources/leavesLogo.png',
     // },
     {
-      color: '#32604d',
+      color: '#0BC8C8',
       id: 147,
       label: 'River',
       logo: require('../resources/riverLogo.png'),

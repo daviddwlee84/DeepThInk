@@ -1,41 +1,41 @@
 colorMap = {
-    "#384f83": {
+    "#0907E6": {
         'id': 154,
         'label': "sea"
     },
-    "#efefef": {
+    "#06E6E6": {
         'id': 105,
         'label': "cloud",
     },
-    "#2c1e16": {
+    "#000AFF": {
         'id': 110,
         'label': "dirt"
     },
-    "#5d6e32": {
+    "#04C803": {
         'id': 96,
         'label': "bush"
     },
-    "#b7d24e": {
+    "#04FA07": {
         'id': 123,
         'label': "grass",
     },
-    "#3c3b4b": {
+    "#8FFF8C": {
         'id': 134,
         'label': "mountain"
     },
-    "#987e6a": {
+    "#8C8C8C": {
         'id': 148,
         'label': "road"
     },
-    "#759edf": {
+    "#06E6E6": {
         'id': 156,
         'label': "sky"
     },
-    "#352613": {
+    "#04C803": {
         'id': 168,
         'label': "tree"
     },
-    "#e670b6": {
+    "#FF0000": {
         'id': 118,
         'label': "flower"
     },
@@ -43,7 +43,7 @@ colorMap = {
         'id': 119,
         'label': "fog",
     },
-    "#776c2d": {
+    "#FF6600": {
         'id': 126,
         'label': "hill"
     },
@@ -51,7 +51,7 @@ colorMap = {
         'id': 128,
         'label': "leaves"
     },
-    "#32604d": {
+    "#0BC8C8": {
         'id': 147,
         'label': "river"
     },
