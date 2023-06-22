@@ -20,6 +20,8 @@ import threading
 import io
 from dotenv import load_dotenv
 import requests
+import hashlib
+import random
 
 load_dotenv()  
 
@@ -32,9 +34,36 @@ result_dict = {}
 model, opt = load_model()
 model.eval()
 
-from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
-from diffusers import StableDiffusionImg2ImgPipeline
-from diffusers import StableDiffusionPipeline
+appid = '20230525001689831'  # 你的appid
+secretKey = 'gcT0NiX5gt3lk8tuFPkA'  # 你的密钥
+
+def baidu_fanyi(query):
+    salt = random.randint(1, 10)  # 随机数
+    code = appid + query + str(salt) + secretKey
+    sign = hashlib.md5(code.encode()).hexdigest()  # 签名
+
+    api = "http://api.fanyi.baidu.com/api/trans/vip/translate"
+
+    data = {
+        "q": query,
+        "from": "auto",
+        "to": "en",
+        "appid": appid,
+        "salt": salt,
+        "sign": sign
+    }
+
+    response = requests.post(api, data)
+
+    try:
+        result = response.json()
+        dst = result.get("trans_result")[0].get("dst")
+
+    except Exception as e:
+        dst = query
+
+    finally:
+        return dst
 
 # 处理队列中的请求
 def process_requests():
@@ -114,9 +143,12 @@ def inspire():
     # Fetch image data
     data = request.get_json()
     prompt = data.get("prompt")
+
+    ch_zn_prompt = baidu_fanyi(prompt)
+
     id = data.get("id")
-    print("---------------", prompt, id)
-    request_queue.put({"client_id": client_id, "prompt": prompt, "id": id})
+    print("---------------", ch_zn_prompt, id)
+    request_queue.put({"client_id": client_id, "prompt": ch_zn_prompt, "id": id})
 
     while client_id not in result_dict:
         time.sleep(0.1)

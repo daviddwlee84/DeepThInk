@@ -221,23 +221,19 @@ def apply_stable_diffusion(image, prompt):
 
 
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
-from diffusers import StableDiffusionImg2ImgPipeline
 from diffusers import StableDiffusionPipeline
-model_id_or_path = "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1"
+# model_id_or_path = "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1"
+model_id_or_path = "runwayml/stable-diffusion-v1-5"
 
-img2img_pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
-img2img_pipe.enable_xformers_memory_efficient_attention()
 
-text2img_pipe = StableDiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
-text2img_pipe.enable_xformers_memory_efficient_attention()
-
-torch.cuda.empty_cache()
-gc.collect()
 
 def img2img_diffusers(image, prompt):
 
+    from diffusers import StableDiffusionImg2ImgPipeline
     torch.cuda.empty_cache()
-    gc.collect()
+    img2img_pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
+    img2img_pipe.enable_xformers_memory_efficient_attention()
+
     with torch.inference_mode():
         images = img2img_pipe(prompt=prompt+"精细, 高清", image=image, strength=0.75, num_inference_steps=20, guidance_scale=7.5, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印").images
     images[0].save("fantasy_landscape.png")
@@ -246,8 +242,9 @@ def img2img_diffusers(image, prompt):
 
 def text2img_diffusers(prompt):
 
-    torch.cuda.empty_cache()
-    gc.collect()
+    text2img_pipe = StableDiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
+    text2img_pipe.enable_xformers_memory_efficient_attention()
+    
     with torch.inference_mode():
         images = text2img_pipe(
             prompt=prompt+"精细, 高清", 
@@ -278,13 +275,9 @@ def control_net(image, prompt):
     img = img.resize((512, 512), Image.NEAREST)
     img.save("control_net_in.png")
 
-    torch.cuda.empty_cache()
-    gc.collect()
     # controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-scribble", torch_dtype=torch.float16)
     controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-seg", torch_dtype=torch.float16)
 
-    torch.cuda.empty_cache()
-    gc.collect()
     cn_pipe = StableDiffusionControlNetPipeline.from_pretrained(model_id_or_path, controlnet=controlnet, torch_dtype=torch.float16)
 
     # this command loads the individual model components on GPU on-demand.
