@@ -27,6 +27,7 @@ import messageKinds from "./constants/messageKinds.js";
 import { ScrollView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { RgbaColorPicker } from "react-colorful";
+import { SearchBar } from 'react-native-elements';
 
 var device = Dimensions.get("window");
 const CANVASWIDTH = device.height * 0.8;
@@ -95,6 +96,8 @@ export default class App extends Component {
     imageFilter: "",
     userBrushColor: "#00FF00",
     colorPickerDisplay: { r: 0, g: 255, b: 0, a: 1 }, // another color state to keep track of the current color picker state
+    searchValue: "", // text input by user for searching desired brush color
+    filteredData: colorMap.colors, // result of filtering colorMap with searchValue
 
     userBrushBase64: "data:image/png;base64,", // user brush
     userBrushType: userBrushes.PENCIL,
@@ -130,6 +133,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.sendRequestHelper = this.sendRequestHelper.bind(this);
+    this.arrayholder = colorMap.colors;
   }
 
   // Run when component is first rendered
@@ -468,6 +472,16 @@ export default class App extends Component {
     // Display user canvas
     this.enableUserCanvas();
   }
+
+  searchBrushColor = (texte) => {
+    const filterResult = this.arrayholder.filter((item) => {
+      const item_label = item.label.toUpperCase();
+      const text_input = texte.toUpperCase();
+      return item_label.indexOf(text_input) > -1;
+    });
+    this.setState({ filteredData: filterResult});
+    this.setState({ searchValue: texte });
+  };
 
   render() {
     let brushSlider = (
@@ -966,8 +980,15 @@ export default class App extends Component {
           {/* AI brush palette buttons */}
           {this.state.currentBrush == brushTypes.AI && (
             <View style={styles.brushesContainer}>
+            <SearchBar
+              placeholder="搜索颜色"
+              lightTheme
+              round
+              onChangeText={this.searchBrushColor}
+              value={this.state.searchValue}
+            />
               <ScrollView>
-                {colorMap.colors.map((obj) => {
+                {this.state.filteredData.map((obj) => {
                   return (
                     <View style={{ margin: 2 }}>
                       <TouchableOpacity
