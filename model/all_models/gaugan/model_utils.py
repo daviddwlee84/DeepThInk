@@ -1,4 +1,5 @@
 import base64
+import time
 from typing import Tuple
 import numpy as np
 from PIL import Image, ImageOps
@@ -68,8 +69,8 @@ def processByte64(base64_string):
             image_hex_row.append(hex)
         image_hex.append(image_hex_row)
     image_hex = np.array(image_hex)
+    # print("image hex is", image_hex, "image hexed")
     image_torch = torch.tensor(np.array(image))
-
     # Get labels
     image_label = getLabelMap(image_hex)
     # print("image np is", image_hex)
@@ -176,6 +177,7 @@ def load_model() -> Tuple[Pix2PixModel, dict]:
     model = Pix2PixModel(opt)
     return model, opt
 
+# replicate api of stable diffusion
 def apply_stable_diffusion(image, prompt):
     model = replicate.models.get("stability-ai/stable-diffusion-img2img")
     version = model.versions.get("15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d")
@@ -219,8 +221,65 @@ def apply_stable_diffusion(image, prompt):
     output = version.predict(**inputs)
     return output
 
+# replicate api of control net
+def control_net_api(prompt, request_id):
+    output = replicate.run(
+        "rossjillian/controlnet_1-1:fe97435bfd17881fadfb8e290ebbf172f5835ac2ee015509d9d66b61a24bc5d3",
+        input={
+            # Input prompt
+            'prompt': prompt,
 
-from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
+            'image_resolution': "512",
+
+            'a_prompt': "Best quality, extremely detailed",
+
+            # The prompt NOT to guide the image generation. Ignored when not using
+            # guidance
+            'n_prompt': "Longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+
+            # Inital image to generate variations of.
+            'image': open(f"outputs/origin+{request_id}_SEGMENTATION.png", "rb"),
+            "image_resolution": "512",
+
+            'structure': 'seg',
+
+            # Prompt strength when providing the image. 1.0 corresponds to full
+            # destruction of information in init image
+            'prompt_strength': 0.8,
+
+            # Number of images to output. Higher number of outputs may OOM.
+            # Range: 1 to 8
+            'num_samples': "1",
+
+            # Number of denoising steps
+            # Range: 1 to 500
+            'steps': 20,
+
+            # Scale for classifier-free guidance
+            # Range: 1 to 20
+            'scale': 9,
+        }
+    )
+    print(output[0])
+    response = requests.get(output[0])
+    img = Image.open(io.BytesIO(response.content))
+    size = 512, 512
+    img_resized = img.resize(size, Image.ANTIALIAS)
+    print("+++++++", img_resized)
+    
+    output_buffer = io.BytesIO()
+    img_resized.save(output_buffer, format='PNG')
+    byte_data = output_buffer.getvalue()
+    generated_base64 = "data:image/png;base64," + base64.b64encode(byte_data).decode()
+
+    generated_image_strip_header = generated_base64.lstrip("data:image/png;base64")
+    # Save the generated image
+    with open(f"outputs/control_net_api+{request_id}_{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}.png", "wb") as fh:
+        fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
+
+    return generated_base64
+
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, StableDiffusionControlNetImg2ImgPipeline
 from diffusers import StableDiffusionPipeline
 # model_id_or_path = "IDEA-CCNL/Taiyi-Stable-Diffusion-1B-Chinese-v0.1"
 model_id_or_path = "runwayml/stable-diffusion-v1-5"
@@ -231,26 +290,34 @@ def img2img_diffusers(image, prompt):
 
     from diffusers import StableDiffusionImg2ImgPipeline
     torch.cuda.empty_cache()
+    gc.collect()
     img2img_pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
     img2img_pipe.enable_xformers_memory_efficient_attention()
 
+    torch.cuda.empty_cache()
+    gc.collect()
     with torch.inference_mode():
-        images = img2img_pipe(prompt=prompt+"精细, 高清", image=image, strength=0.75, num_inference_steps=20, guidance_scale=7.5, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印").images
+        images = img2img_pipe(prompt=prompt+", Best quality, extremely detailed", image=image, strength=0.75, num_inference_steps=20, guidance_scale=7.5, negative_prompt=" Longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality").images
     images[0].save("fantasy_landscape.png")
     
     return images
 
 def text2img_diffusers(prompt):
 
+    torch.cuda.empty_cache()
+    gc.collect()
+    
     text2img_pipe = StableDiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16).to('cuda:0')
     text2img_pipe.enable_xformers_memory_efficient_attention()
     
+    torch.cuda.empty_cache()
+    gc.collect()
     with torch.inference_mode():
         images = text2img_pipe(
-            prompt=prompt+"精细, 高清", 
+            prompt=prompt+"Best quality, extremely detailed", 
             num_inference_steps=20, 
             guidance_scale=7.5, 
-            negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印", 
+            negative_prompt=" Longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality", 
             num_images_per_prompt=3,
         ).images
 
@@ -266,7 +333,7 @@ def text2img_diffusers(prompt):
 
     return img_list
 
-def control_net(image, prompt):
+def control_net_hf(image, prompt, request_id):
 
     base64_decoded = base64.b64decode(image)
     img = Image.open(io.BytesIO(base64_decoded))
@@ -275,17 +342,24 @@ def control_net(image, prompt):
     img = img.resize((512, 512), Image.NEAREST)
     img.save("control_net_in.png")
 
+    torch.cuda.empty_cache()
+    gc.collect()
     # controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-scribble", torch_dtype=torch.float16)
+    # controlnet = ControlNetModel.from_pretrained("lllyasviel/control_v11p_sd15_seg", torch_dtype=torch.float16)
     controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-seg", torch_dtype=torch.float16)
+
 
     cn_pipe = StableDiffusionControlNetPipeline.from_pretrained(model_id_or_path, controlnet=controlnet, torch_dtype=torch.float16)
 
     # this command loads the individual model components on GPU on-demand.
     cn_pipe.enable_model_cpu_offload()
+
+    torch.cuda.empty_cache()
+    gc.collect()
     # cn_pipe.enable_xformers_memory_efficient_attention()
 
     out_image = cn_pipe(
-        prompt=prompt, num_inference_steps=20, image=img, negative_prompt=" 广告, ，, ！, 。, ；, 资讯, 新闻, 水印"
+        prompt=prompt+", Best quality, extremely detailed", num_inference_steps=20, image=img, negative_prompt=" Longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality"
     ).images
 
     out_image[0].save("control_net.png")
@@ -295,10 +369,15 @@ def control_net(image, prompt):
     byte_data = output_buffer.getvalue()
     generated_base64 = "data:image/png;base64," + base64.b64encode(byte_data).decode()
 
+    generated_image_strip_header = generated_base64.lstrip("data:image/png;base64")
+    # Save the generated image
+    with open(f"outputs/control_net_hf+{request_id}_{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}.png", "wb") as fh:
+        fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
+
     return generated_base64
 
 
-def run_inference(label_data, model, opt, prompt, flag):
+def run_inference(label_data, model, opt, prompt, flag, request_id):
     assert model is not None, 'Error: no model loaded.'
     labelmap = Image.fromarray(np.array(label_data).astype(np.uint8))
     params = None
@@ -327,16 +406,15 @@ def run_inference(label_data, model, opt, prompt, flag):
     if (flag == 2):
         res = img2img_diffusers(generated, prompt)
         print("img2img_diffusers done", res)
-        
-        # response = requests.get(res[0])
-        # img = Image.open(res[0])
-        # size = 512, 512
-        # img_resized = img.resize(size, Image.ANTIALIAS)
-        # print("+++++++", img_resized)
 
         output_buffer = io.BytesIO()
         res[0].save(output_buffer, format='PNG')
         byte_data = output_buffer.getvalue()
         generated_base64 = "data:image/png;base64," + base64.b64encode(byte_data).decode()
+
+        generated_image_strip_header = generated_base64.lstrip("data:image/png;base64")
+        # Save the generated image
+        with open(f"outputs/gaugan_sd+{request_id}_{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}.png", "wb") as fh:
+            fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
 
     return generated_base64

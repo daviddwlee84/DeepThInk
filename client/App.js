@@ -32,9 +32,9 @@ var device = Dimensions.get("window");
 const CANVASWIDTH = device.height * 0.8;
 const CANVASHEIGHT = device.height * 0.8;
 
-// const LOCALURL = "http://127.0.0.1:8000";
+const LOCALURL = "http://127.0.0.1:8000";
 // const LOCALURL = "http://region-11.autodl.com:25172"
-const LOCALURL = ""
+// const LOCALURL = ""
 
 // Connect to Go backend
 // for web
@@ -184,11 +184,31 @@ export default class App extends Component {
     });
   };
 
-  grabPixelsCN = async () => {
+  grabPixelsCN_HF = async () => {
     this.setState((prevState) => ({
       ...prevState,
       isLoading: true,
       flag: 3
+    }));
+    var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
+      var resultImage = value.split(";base64,")[1];
+      console.log("result image is", resultImage);
+      this.setState(
+        (prevState) => ({
+          ...prevState,
+          imageData: resultImage,
+        }),
+        // Do callback to send to server after the imageData is set
+        this.sendRequestHelper
+      );
+    });
+  };
+
+  grabPixelsCN_API = async () => {
+    this.setState((prevState) => ({
+      ...prevState,
+      isLoading: true,
+      flag: 4
     }));
     var getImage = this.refs.drawCanvasRef.getBase64().then((value) => {
       var resultImage = value.split(";base64,")[1];
@@ -857,7 +877,7 @@ export default class App extends Component {
                     flexDirection: "row",
                     justifyContent: "space-around",
                   }}> 
-                    <View style={{ padding: 5, width: "20%" }}>
+                    <View style={{ padding: 5, width: "12%" }}>
                       <Button
                         style={{ marginTop: 10, height: "80" }}
                         color="#5e748a"
@@ -866,7 +886,7 @@ export default class App extends Component {
                       />
                     </View>
 
-                    <View style={{ padding: 5, width: "20%" }}>
+                    <View style={{ padding: 5, width: "15%" }}>
                       <Button
                         mode="contained"
                         style={{ padding: 10 }}
@@ -877,24 +897,35 @@ export default class App extends Component {
                       />
                     </View>
 
-                    <View style={{ padding: 5, width: "30%" }}>
+                    <View style={{ padding: 5, width: "21%" }}>
                       <Button
                         mode="contained"
                         style={{ padding: 10 }}
                         onPress={this.grabPixelsSd.bind(this)}
                         color="#88508c"
-                        title="Stable Diffusion"
+                        title="gauGAN + SD"
                         disabled={this.state.isLoading}
                       />
                     </View>
 
-                    <View style={{ padding: 5, width: "25%" }}>
+                    <View style={{ padding: 5, width: "28%" }}>
                       <Button
                         mode="contained"
                         style={{ padding: 10 }}
-                        onPress={this.grabPixelsCN.bind(this)}
+                        onPress={this.grabPixelsCN_HF.bind(this)}
                         color="#88508c"
-                        title="Control Net"
+                        title="Control Net - HF"
+                        disabled={this.state.isLoading}
+                      />
+                    </View>
+
+                    <View style={{ padding: 5, width: "28%" }}>
+                      <Button
+                        mode="contained"
+                        style={{ padding: 10 }}
+                        onPress={this.grabPixelsCN_API.bind(this)}
+                        color="#88508c"
+                        title="Control Net - API"
                         disabled={this.state.isLoading}
                       />
                     </View>

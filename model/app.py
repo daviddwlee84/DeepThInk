@@ -1,10 +1,11 @@
 """
 Flask server for running deployed gauGAN model
 """
+import os
 import numpy as np
 from numpy import imag
 from all_models.gaugan.model_utils import (processByte64, load_model,
-                                           run_inference, control_net, text2img_diffusers)
+                                           run_inference, control_net_hf, control_net_api, text2img_diffusers)
 from all_models.fast_neural_style.style_utils import stylizeImage
 from brushes import getBrush
 from flask import Flask, request, current_app
@@ -79,7 +80,7 @@ def process_requests():
                 # Remove the javascript file type header
                 generated_image_strip_header = images[i].lstrip("data:image/png;base64")
                 # Save the generated image
-                with open(f"outputs/{id}_{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}_{i}.png", "wb") as fh:
+                with open(f"outputs/inspire_mode+{id}_{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}_{prompt}_{i}.png", "wb") as fh:
                     fh.write(base64.urlsafe_b64decode(generated_image_strip_header))
 
             result_dict[client_id] = images
@@ -116,17 +117,24 @@ def generate():
     # print("---------------", image_data)
 
     # Save the image segmentation map
-    with open(f"outputs/{request_id}_SEGMENTATION.png", "wb") as fh:
+    with open(f"outputs/origin+{request_id}_SEGMENTATION.png", "wb") as fh:
         fh.write(base64.urlsafe_b64decode(image_data))
 
+    # translate prompt
+    en_prompt = baidu_fanyi(prompt)
     # Convert byte64 into labelmap
     image_array = processByte64(image_data)
+    # print("---------------", image_array)
+
+    print("---------------", en_prompt, id)
 
     # Perform inference gaugan and stable diffusion
-    if(flag != 3):
-        generated_image = run_inference(image_array, model, opt, prompt, flag)
-    else:
-        generated_image = control_net(image_data, prompt)
+    if(flag != 3 and flag != 4):
+        generated_image = run_inference(image_array, model, opt, en_prompt, flag, request_id)
+    elif (flag == 3):
+        generated_image = control_net_hf(image_data, en_prompt, request_id)
+    elif (flag == 4):
+        generated_image = control_net_api(en_prompt, request_id)
 
     # response = requests.get(generated_image[0])
     # img = Image.open(io.BytesIO(response.content))

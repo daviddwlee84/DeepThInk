@@ -223,7 +223,7 @@ export default class DrawCanvas extends Component {
 		var ctx = canvas.getContext("2d");
 
 		// Fill upper half of the canvas with sky
-		ctx.fillStyle = "#efefef";
+		ctx.fillStyle = "#06e6e6";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		// if (this.props.isFirstLoadDrawCanvas)
 		// {
