@@ -980,13 +980,14 @@ export default class App extends Component {
           {/* AI brush palette buttons */}
           {this.state.currentBrush == brushTypes.AI && (
             <View style={styles.brushesContainer}>
-            <SearchBar
-              placeholder="搜索颜色"
-              lightTheme
-              round
-              onChangeText={this.searchBrushColor}
-              value={this.state.searchValue}
-            />
+              <SearchBar
+                placeholder="搜索颜色"
+                lightTheme
+                // round
+                onChangeText={this.searchBrushColor}
+                value={this.state.searchValue}
+                style={{ width: "60%", }}
+              />
               <ScrollView>
                 {this.state.filteredData.map((obj) => {
                   return (
@@ -999,7 +1000,6 @@ export default class App extends Component {
                           borderWidth: this.state.color == obj.color ? 10 : 0,
                           borderColor: 
                             obj.color == "#efefef" ? "#d1d1d1" : "#f2f2eb",
-
                           // backgroundColor:
                           //   this.state.color == obj.color
                           //     ? "#3d3d3d"
@@ -1354,7 +1354,7 @@ const styles = StyleSheet.create({
   brushes: {
     margin: 0,
     height: device.height * 0.06,
-    width: device.height * 0.06 * 1.8,
+    width: device.height * 0.05 * 2.7,
     padding: 0,
     userDrag: "none",
     userSelect: "none",
@@ -1372,6 +1372,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     height: device.height,
+    width: "180px",
     borderLeftColor: "#C8C8C8",
     backgroundColor: "#f2f2eb",
     borderLeftWidth: 3,

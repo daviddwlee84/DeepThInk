@@ -136,12 +136,6 @@ def generate():
     elif (flag == 4):
         generated_image = control_net_api(en_prompt, request_id)
 
-    # response = requests.get(generated_image[0])
-    # img = Image.open(io.BytesIO(response.content))
-    # size = 256, 256
-    # img_resized = img.resize(size, Image.ANTIALIAS)
-    # print("+++++++", img_resized)
-
     return {"message": "Successfully got image", "data": generated_image}
 
 @app.route('/inspire', methods=['POST'])
