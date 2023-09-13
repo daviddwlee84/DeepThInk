@@ -32,8 +32,8 @@ CORS(app)
 request_queue = queue.Queue()
 result_dict = {}
 # Load the model
-model, opt = load_model()
-model.eval()
+# model, opt = load_model()
+# model.eval()
 
 appid = '20230525001689831'  # 你的appid
 secretKey = 'gcT0NiX5gt3lk8tuFPkA'  # 你的密钥
@@ -129,14 +129,32 @@ def generate():
     print("---------------", en_prompt, id)
 
     # Perform inference gaugan and stable diffusion
-    if(flag != 3 and flag != 4):
-        generated_image = run_inference(image_array, model, opt, en_prompt, flag, request_id)
-    elif (flag == 3):
+    if (flag == 3):
         generated_image = control_net_hf(image_data, en_prompt, request_id)
     elif (flag == 4):
         generated_image = control_net_api(en_prompt, request_id)
 
     return {"message": "Successfully got image", "data": generated_image}
+
+@app.route('/blip', methods=['POST'])
+def blip():
+
+    request_id = str(uuid.uuid4())
+    import replicate
+    data = request.get_json()
+    image_data = data.get("imageData")
+
+        # Save the image segmentation map
+    with open(f"outputs/BLIP+{request_id}_BLIP.png", "wb") as fh:
+        fh.write(base64.urlsafe_b64decode(image_data))
+
+    output = replicate.run(
+        "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746",
+        input={"image": open(f"outputs/BLIP+{request_id}_BLIP.png", "rb")}
+    )
+    print(output)
+
+    return {"message": "Successfully got prompt", "data": output}
 
 @app.route('/inspire', methods=['POST'])
 def inspire():
@@ -301,4 +319,4 @@ def colorize():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=6006)
