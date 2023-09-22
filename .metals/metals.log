@@ -1,5 +1,0 @@
-[0m2021.12.12 17:19:36 INFO  Started: Metals version 0.10.9 in workspace '/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art' for client Visual Studio Code 1.61.0.[0m
-[0m2021.12.12 17:19:40 INFO  time: initialize in 4.28s[0m
-[0m2021.12.12 17:19:42 WARN  Build server is not auto-connectable.[0m
-[0m2021.12.12 17:19:42 WARN  no build tool detected in workspace '/mnt/427bdd3d-17db-4d44-b722-f3e4fd35d808/projects/gauGAN/hai-art'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. [0m
-[0m2021.12.15 10:00:28 INFO  shutting down Metals[0m
